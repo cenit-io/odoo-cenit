@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <menuitem id="menu_cenit_integration" name="Cenit Integration" sequence="30" />
+
+        <record id="view_cenit_hub__config_settings" model="ir.ui.view">
+            <field name="name">Cenit Hub settings</field>
+            <field name="model">cenit.hub.settings</field>
+            <field name="arch" type="xml">
+                <form string="Configure Cenit Hub" class="oe_form_configuration">
+                    <header>
+                        <button string="Apply" type="object" name="execute" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" type="object" name="cancel" class="oe_link"/>
+                    </header>
+                    <div>
+                        <group string="Cenit Hub Connection settings">
+                            <field name="cenit_url" placeholder="www.cenithub.com" />
+                            <field name="cenit_user_key" placeholder="Your cenit's user key" />
+                            <field name="cenit_user_token" placeholder="Your cenit's user token" />
+                            <field name="odoo_endpoint" placeholder="Set a connection" />
+                        </group>
+<!--
+                        <group string="Other settings">
+                            <field name="cenit_translator" />
+                        </group>
+-->
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_cenit_hub_configuration" model="ir.actions.act_window">
+            <field name="name">Cenit Hub settings</field>
+            <field name="res_model">cenit.hub.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+        </record>
+
+        <menuitem id="menu_cenit_hub_configuration" parent="base.menu_config"
+            sequence="90" action="action_cenit_hub_configuration"/>
+
+    </data>
+</openerp>
