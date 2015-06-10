@@ -54,7 +54,7 @@ class CenitHubConfig (models.TransientModel):
             cr, uid, "odoo_cenit.cenit_url", default=None, context=context
         )
 
-        return {'cenit_url': cenit_url or False}
+        return {'cenit_url': cenit_url or 'http://www.cenithub.com'}
 
     def get_default_cenit_user_key (self, cr, uid, ids, context=None):
         cenit_user_key = self.pool.get ("ir.config_parameter").get_param (

@@ -4,7 +4,7 @@
 
         <menuitem id="menu_cenit_integration" name="Cenit Integration" sequence="30" />
 
-        <record id="view_cenit_hub__config_settings" model="ir.ui.view">
+        <record id="view_cenit_settings" model="ir.ui.view">
             <field name="name">Cenit Hub settings</field>
             <field name="model">cenit.hub.settings</field>
             <field name="arch" type="xml">
@@ -21,25 +21,73 @@
                             <field name="cenit_user_token" placeholder="Your cenit's user token" />
                             <field name="odoo_endpoint" placeholder="Set a connection" />
                         </group>
-<!--
-                        <group string="Other settings">
-                            <field name="cenit_translator" />
-                        </group>
--->
                     </div>
                 </form>
             </field>
         </record>
 
-        <record id="action_cenit_hub_configuration" model="ir.actions.act_window">
+        <record id="action_cenit_settings" model="ir.actions.act_window">
             <field name="name">Cenit Hub settings</field>
             <field name="res_model">cenit.hub.settings</field>
             <field name="view_mode">form</field>
             <field name="target">inline</field>
         </record>
 
-        <menuitem id="menu_cenit_hub_configuration" parent="base.menu_config"
-            sequence="90" action="action_cenit_hub_configuration"/>
+        <menuitem id="menu_cenit_settings" parent="base.menu_config"
+            sequence="90" action="action_cenit_settings"/>
+
+
+        <record id="action_cenit_settings" model="ir.actions.act_window">
+            <field name="name">Settings</field>
+            <field name="res_model">cenit.hub.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+        </record>
+
+        <menuitem id="menu_cenit_settings_alt" name="Settings"
+            parent="menu_cenit_integration" sequence="90" />
+
+
+        <record id="wizard_cenit_install" model="ir.ui.view">
+            <field name="name">Cenit Hub settings</field>
+            <field name="model">cenit.hub.settings</field>
+            <field name="inherit_id" ref="base.res_config_installer" />
+            <field name="arch" type="xml">
+                <form position="attributes">
+                    <attribute name="string">Cenit Hub settings</attribute>
+                </form>
+                <footer position="replace">
+                    <footer>
+                        <button string="Apply" type="object" name="execute" class="oe_highlight"/>
+                    </footer>
+                </footer>
+                <separator string="title" position="replace">
+                    <p class="oe_grey">
+                        Set the credentials given to your Cenit tenant.
+                    </p>
+                    <group>
+                        <field name="cenit_user_key" placeholder="Your cenit's user key" />
+                        <field name="cenit_user_token" placeholder="Your cenit's user token" />
+                    </group>
+                </separator>
+            </field>
+        </record>
+
+        <record id="action_wizard_cenit_install" model="ir.actions.act_window">
+            <field name="name">Configure Cenit data</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">cenit.hub.settings</field>
+            <field name="view_id" ref="wizard_cenit_install" />
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <record id="todo_wizard_cenit_install" model="ir.actions.todo">
+            <field name="action_id" ref="action_wizard_cenit_install"/>
+            <field name="sequence">1</field>
+            <field name="type">automatic</field>
+        </record>
 
     </data>
 </openerp>

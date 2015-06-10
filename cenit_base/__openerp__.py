@@ -24,6 +24,7 @@
     'version': '0.2',
     'author': 'OpenJAF',
     'website': 'http://www.openjaf.com',
+    #~ 'license': 'LGPL-3',
     'category': 'Integration',
     'description': """
         Cenit Client for Odoo
