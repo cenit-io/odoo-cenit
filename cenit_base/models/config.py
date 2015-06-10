@@ -40,10 +40,10 @@ class CenitHubConfig (models.TransientModel):
     _name = 'cenit.hub.settings'
     _inherit = 'res.config.settings'
 
-    cenit_url = fields.Char ('Cenit URL', required=1)
+    cenit_url = fields.Char ('Cenit URL')
     cenit_user_key = fields.Char ('Cenit User key')
     cenit_user_token = fields.Char ('Cenit User token')
-    odoo_endpoint = fields.Many2one ('cenit.connection', string='Odoo endpoint')
+    #~ odoo_endpoint = fields.Many2one ('cenit.connection', string='Odoo endpoint')
 
     ############################################################################
     # Default values getters
@@ -69,15 +69,15 @@ class CenitHubConfig (models.TransientModel):
 
         return {'cenit_user_token': cenit_user_token or False}
 
-    def get_default_odoo_endpoint (self, cr, uid, ids, context=None):
-        odoo_endpoint = self.pool.get ("ir.config_parameter").get_param (
-            cr, uid, "odoo_cenit.odoo_endpoint", default=None, context=context
-        )
-
-        if (type(odoo_endpoint) in (unicode, str)) and odoo_endpoint.isdigit ():
-            odoo_endpoint = int(odoo_endpoint)
-
-        return {'odoo_endpoint': odoo_endpoint or False}
+    #~ def get_default_odoo_endpoint (self, cr, uid, ids, context=None):
+        #~ odoo_endpoint = self.pool.get ("ir.config_parameter").get_param (
+            #~ cr, uid, "odoo_cenit.odoo_endpoint", default=None, context=context
+        #~ )
+#~
+        #~ if (type(odoo_endpoint) in (unicode, str)) and odoo_endpoint.isdigit ():
+            #~ odoo_endpoint = int(odoo_endpoint)
+#~
+        #~ return {'odoo_endpoint': odoo_endpoint or False}
 
     ############################################################################
     # Values setters
@@ -107,10 +107,10 @@ class CenitHubConfig (models.TransientModel):
                 record.cenit_user_token or '', context=context
             )
 
-    def set_odoo_endpoint (self, cr, uid, ids, context=None):
-        config_parameters = self.pool.get ("ir.config_parameter")
-        for record in self.browse (cr, uid, ids, context=context):
-            config_parameters.set_param (
-                cr, uid, "odoo_cenit.odoo_endpoint",
-                record.odoo_endpoint.id or '', context=context
-            )
+    #~ def set_odoo_endpoint (self, cr, uid, ids, context=None):
+        #~ config_parameters = self.pool.get ("ir.config_parameter")
+        #~ for record in self.browse (cr, uid, ids, context=context):
+            #~ config_parameters.set_param (
+                #~ cr, uid, "odoo_cenit.odoo_endpoint",
+                #~ record.odoo_endpoint.id or '', context=context
+            #~ )

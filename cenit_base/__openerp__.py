@@ -22,6 +22,7 @@
 {
     'name': 'Cenit Client',
     'version': '0.2',
+    'application': True,
     'author': 'OpenJAF',
     'website': 'http://www.openjaf.com',
     #~ 'license': 'LGPL-3',
