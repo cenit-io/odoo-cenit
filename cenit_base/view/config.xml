@@ -29,7 +29,7 @@
         </record>
 
         <record id="action_cenit_settings" model="ir.actions.act_window">
-            <field name="name">Cenit Hub settings</field>
+            <field name="name">Hub settings</field>
             <field name="res_model">cenit.hub.settings</field>
             <field name="view_mode">form</field>
             <field name="target">inline</field>
@@ -37,39 +37,23 @@
         </record>
 
         <menuitem id="menu_cenit_settings" parent="base.menu_config"
-            sequence="90" action="action_cenit_settings"/>
+            sequence="90" name="Cenit settings"/>
 
+        <menuitem id="menu_cenit_hub_settings" parent="menu_cenit_settings"
+            sequence="0" action="action_cenit_settings"/>
 
-        <record id="view_cenit_settings_alt" model="ir.ui.view">
-            <field name="name">Cenit Hub settings</field>
-            <field name="model">cenit.hub.settings</field>
-            <field name="arch" type="xml">
-                <form string="Configure Cenit Hub" class="oe_form_configuration">
-                    <group string="Connection settings">
-                        <field name="cenit_url" placeholder="http://www.cenithub.com" />
-                        <field name="cenit_user_key" placeholder="Your cenit's user key" />
-                        <field name="cenit_user_token" placeholder="Your cenit's user token" />
-<!--
-                        <field name="odoo_endpoint" placeholder="Set a connection" />
--->
-                    </group>
-                </form>
-            </field>
-        </record>
-
-        <record id="action_cenit_settings_alt" model="ir.actions.act_window">
-            <field name="name">Hub Settings</field>
-            <field name="res_model">cenit.hub.settings</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref="view_cenit_settings_alt"/>
-        </record>
+        <menuitem id="menu_cenit_integrations_settings" parent="menu_cenit_settings"
+            sequence="1" name="Integration settings"/>
 
         <menuitem id="menu_cenit_settings_alt" name="Settings"
             parent="menu_cenit_integration" sequence="10"/>
 
         <menuitem id="menu_cenit_settings_hub" name="Hub Settings"
             parent="menu_cenit_settings_alt" sequence="0"
-            action="action_cenit_settings_alt" />
+            action="action_cenit_settings" />
+
+        <menuitem id="menu_cenit_integrations_settings_alt" name="Integrations"
+            parent="menu_cenit_settings_alt" sequence="1" />
 
 
         <record id="wizard_cenit_install" model="ir.ui.view">

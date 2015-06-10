@@ -23,13 +23,8 @@
 #
 
 import logging
-import simplejson
-import urllib2
-import urlparse
 
-from openerp import models, fields, api
-from openerp.addons.web.http import request
-from openerp.tools.translate import _
+from openerp import models, fields
 
 
 _logger = logging.getLogger(__name__)
