@@ -29,6 +29,8 @@ from openerp.addons.web.http import request
 
 _logger = logging.getLogger(__name__)
 
+API_PATH = "/api/v1"
+
 
 class CenitApi(models.AbstractModel):
 
@@ -60,7 +62,7 @@ class CenitApi(models.AbstractModel):
 
     @api.one
     def push_to_cenit(self):
-        path = "/api/v1/push"
+        path = "/push"
         values = {
             self.cenit_model: self._get_values()
         }
@@ -71,7 +73,6 @@ class CenitApi(models.AbstractModel):
 
             if rc.get('success', False):
                 update = self._calculate_update(rc['success'])[0]
-                _logger.info("\n\nWriting update %s\n", update)
                 rc = self.with_context(local=True).write(update)
             else:
                 _logger.error (rc.get('errors'))
@@ -83,7 +84,7 @@ class CenitApi(models.AbstractModel):
 
     @api.one
     def drop_from_cenit (self):
-        path = "/api/v1/%s/%s" % (self.cenit_model, self.cenitID)
+        path = "/%s/%s" % (self.cenit_model, self.cenitID)
 
         rc = False
 
@@ -100,7 +101,7 @@ class CenitApi(models.AbstractModel):
         payload = simplejson.dumps(vals)
 
         r = requests.post(
-            config.get('cenit_url') + path,
+            config.get('cenit_url') + API_PATH + path,
             data = payload,
             headers = self.headers(config)
         )
@@ -111,11 +112,12 @@ class CenitApi(models.AbstractModel):
         raise Warning('Error trying to configure Cenit.')
 
     @api.model
-    def get(self, path):
+    def get(self, path, params=None):
         config = self.instance()
 
         r = requests.get(
-            config.get('cenit_url') + path,
+            config.get('cenit_url') + API_PATH + path,
+            params = params,
             headers = self.headers(config)
         )
         if 200 <= r.status_code < 300:
@@ -129,7 +131,7 @@ class CenitApi(models.AbstractModel):
         config = self.instance()
 
         r = requests.delete (
-            config.get('cenit_url') + path,
+            config.get('cenit_url') + API_PATH + path,
             headers = self.headers(config)
         )
         if 200 <= r.status_code < 300:
