@@ -40,6 +40,11 @@ class CenitHubConfig (models.TransientModel):
     cenit_user_token = fields.Char ('Cenit User token')
     #~ odoo_endpoint = fields.Many2one ('cenit.connection', string='Odoo endpoint')
 
+    module_cenit_extra = fields.Boolean('Use extra Toolkit',
+        help="Allow you to import your existant Cenit data and provides a"
+             "dynamic mapper for your DataTypes and Schemas"
+    )
+
     ############################################################################
     # Default values getters
     ############################################################################

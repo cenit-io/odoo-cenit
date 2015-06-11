@@ -24,6 +24,14 @@
 -->
                         </group>
                     </div>
+                    <div name="Custom Features">
+                        <group string="Addons">
+                            <div name="module_cenit_extra">
+                                <field name="module_cenit_extra" class="oe_inline" />
+                                <label for="module_cenit_extra" />
+                            </div>
+                        </group>
+                    </div>
                 </form>
             </field>
         </record>
