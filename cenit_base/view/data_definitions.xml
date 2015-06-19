@@ -110,6 +110,7 @@
             <field name="arch" type="xml">
                 <tree string="Libraries" >
                     <field name="name" />
+                    <field name="slug" />
                     <field name="schemas" />
                 </tree>
             </field>

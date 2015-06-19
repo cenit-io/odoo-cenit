@@ -116,7 +116,7 @@ class CenitConnection (models.Model):
 
     @api.one
     def _get_conn_data(self):
-        path = "/connection/%s" % self.cenitID
+        path = "/setup/connection/%s" % self.cenitID
         rc = self.get(path)
 
         vals = {
@@ -813,7 +813,7 @@ class CenitFlow (models.Model):
 
     @api.one
     def http_post(self, data):
-        path = "/push"
+        path = "/%s/push" % (self.schema.library.slug)
 
         root = self.schema.cenit_root()
         if isinstance(root, list):

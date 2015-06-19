@@ -240,16 +240,10 @@
             <field name="arch" type="xml">
                 <tree string="Flows" >
                     <field name="name" />
-                    <field name="data_type" />
-                    <field name="connection_role" />
+                    <field name="schema" />
                     <field name="webhook" />
-                    <!--
-                        <button name="process_all" type="object" string="Process" icon="gtk-go-forward" attrs="{'invisible': [('purpose', '=', 'receive')]}"/>
-                        <button name="set_send_execution" type="object" string="Set Send Execution" icon="terp-stock_effects-object-colorize" attrs="{'invisible': [('purpose', '=', 'receive')]}"/>
-                        <button name="set_receive_execution" type="object" string="Set Reference" icon="terp-stock_effects-object-colorize" attrs="{'invisible': [('purpose', '=', 'send')]}"/>
-                        <button name="clean_reference" type="object" string="Clean Reference" icon="gtk-clear" attrs="{'invisible': [('purpose', '=', 'send')]}"/>
-                    -->
-
+                    <field name="event" />
+                    <field name="cenit_translator" />
                 </tree>
             </field>
         </record>

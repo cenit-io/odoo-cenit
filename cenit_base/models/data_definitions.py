@@ -91,6 +91,7 @@ class CenitSchema(models.Model):
 
         return vals
 
+    @api.one
     def _calculate_update(self, values):
         update = {}
 
@@ -118,6 +119,7 @@ class CenitLibrary(models.Model):
     cenitID = fields.Char('Cenit ID')
 
     name = fields.Char('Name', required=True)
+    slug = fields.Char('Slug')
 
     schemas = fields.One2many(
         'cenit.schema',
@@ -138,6 +140,23 @@ class CenitLibrary(models.Model):
             vals.update({'id': self.cenitID})
 
         return vals
+
+    @api.one
+    def _calculate_update(self, values):
+        update = {}
+
+        for k,v in values.items():
+            if k == "%s" % (self.cenit_models):
+                update = {
+                    'cenitID': v[0]['id'],
+                }
+                path = "/setup/library/%s" % (update.get('cenitID'))
+                rc = self.get(path)
+                slug = rc.get('library', {}).get('slug', False)
+                if slug:
+                    update.update({'slug': slug})
+
+        return update
 
 
 class CenitDataType(models.Model):
