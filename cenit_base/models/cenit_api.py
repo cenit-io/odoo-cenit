@@ -26,6 +26,8 @@ import logging
 from openerp import models, fields, api
 from openerp.addons.web.http import request
 
+from openerp import exceptions
+
 
 _logger = logging.getLogger(__name__)
 
@@ -62,36 +64,36 @@ class CenitApi(models.AbstractModel):
 
     @api.one
     def push_to_cenit(self):
-        path = "/push"
+        path = "/setup/push"
         values = {
             self.cenit_model: self._get_values()
         }
 
         rc = False
-        try:
-            rc = self.post(path, values)
+        #~ try:
+        rc = self.post(path, values)
 
-            if rc.get('success', False):
-                update = self._calculate_update(rc['success'])[0]
-                rc = self.with_context(local=True).write(update)
-            else:
-                _logger.error (rc.get('errors'))
-                return False
-        except Warning as e:
-            _logger.exception(e)
+        if rc.get('success', False):
+            update = self._calculate_update(rc['success'])[0]
+            rc = self.with_context(local=True).write(update)
+        else:
+            _logger.error (rc.get('errors'))
+            return False
+        #~ except Warning as e:
+            #~ _logger.exception(e)
 
         return rc
 
     @api.one
     def drop_from_cenit (self):
-        path = "/%s/%s" % (self.cenit_model, self.cenitID)
+        path = "/setup/%s/%s" % (self.cenit_model, self.cenitID)
 
         rc = False
 
-        try:
-            rc = self.delete (path)
-        except Warning as e:
-            _logger.exception (e)
+        #~ try:
+        rc = self.delete (path)
+        #~ except Warning as e:
+            #~ _logger.exception (e)
 
         return rc
 
@@ -108,8 +110,12 @@ class CenitApi(models.AbstractModel):
         if 200 <= r.status_code < 300:
             return simplejson.loads(r.content)
 
-        _logger.exception(simplejson.loads(r.content))
-        raise Warning('Error trying to configure Cenit.')
+        error = simplejson.loads(r.content)
+        if 400 <= error.get('code', 400) < 500:
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
+
+        raise exceptions.ValidationError("Cenit returned with errors")
+
 
     @api.model
     def get(self, path, params=None):
@@ -123,8 +129,32 @@ class CenitApi(models.AbstractModel):
         if 200 <= r.status_code < 300:
             return simplejson.loads(r.content)
 
-        _logger.exception(simplejson.loads(r.content))
-        raise Warning('Error getting data from Cenit.')
+
+        error = simplejson.loads(r.content)
+        if 400 <= error.get('code', 400) < 500:
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
+
+        raise exceptions.ValidationError("Cenit returned with errors")
+
+    @api.model
+    def put(self, path, vals):
+        config = self.instance()
+        payload = simplejson.dumps(vals)
+
+        r = requests.put(
+            config.get('cenit_url') + API_PATH + path,
+            data = payload,
+            headers = self.headers(config)
+        )
+        if 200 <= r.status_code < 300:
+            return simplejson.loads(r.content)
+
+
+        error = simplejson.loads(r.content)
+        if 400 <= error.get('code', 400) < 500:
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
+
+        raise exceptions.ValidationError("Cenit returned with errors")
 
     @api.model
     def delete(self, path):
@@ -137,8 +167,11 @@ class CenitApi(models.AbstractModel):
         if 200 <= r.status_code < 300:
             return True
 
-        _logger.exception(simplejson.loads(r.content))
-        raise Warning('Error removing data in Cenit.')
+        error = simplejson.loads(r.content)
+        if 400 <= error.get('code', 400) < 500:
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
+
+        raise exceptions.ValidationError("Cenit returned with errors")
 
     @api.model
     def instance(self):
