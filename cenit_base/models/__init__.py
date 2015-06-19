@@ -30,3 +30,4 @@ import setup
 
 import serializer
 import handler
+import installer
