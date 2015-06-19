@@ -382,6 +382,7 @@ class CenitFlow (models.Model):
     cenitID = fields.Char('Cenit ID')
 
     name = fields.Char('Name', size=64, required=True, unique=True)
+    active = fields.Boolean('Active', default=True)
     event = fields.Many2one("cenit.event", string='Event')
 
     cron = fields.Many2one('ir.cron', string='Cron rules')
@@ -415,12 +416,12 @@ class CenitFlow (models.Model):
 
     method = fields.Selection(related="webhook.method")
 
-    cenit_response_translator = fields.Selection(
-        [], string="Response translator"
-    )
-    response_data_type = fields.Many2one(
-        'cenit.data_type', string='Response data type'
-    )
+    #~ cenit_response_translator = fields.Selection(
+        #~ [], string="Response translator"
+    #~ )
+    #~ response_data_type = fields.Many2one(
+        #~ 'cenit.data_type', string='Response data type'
+    #~ )
 
     _sql_constraints = [
         ('name_uniq', 'UNIQUE(name)', 'The name must be unique!'),
@@ -430,7 +431,7 @@ class CenitFlow (models.Model):
     def _get_values(self):
         vals = {
             'name': self.name,
-            'active': True,
+            'active': self.active,
             'discard_events': False,
             'data_type_scope': 'All',
         }

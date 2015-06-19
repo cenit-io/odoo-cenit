@@ -183,6 +183,7 @@ class CenitDataType(models.Model):
     cenit_root = fields.Char(compute='_compute_root', store=True)
 
     name = fields.Char('Name', size=128, required=True)
+    active = fields.Boolean('Active', default=True)
     library = fields.Many2one(
         'cenit.library',
         string = 'Library',

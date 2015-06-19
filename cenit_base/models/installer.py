@@ -25,7 +25,7 @@
 import logging
 import simplejson
 
-from openerp import models, fields, api
+from openerp import models, fields, api, exceptions
 
 
 _logger = logging.getLogger(__name__)
@@ -328,7 +328,12 @@ class CollectionInstaller(models.TransientModel):
                     'connection_role': rc[0].id
                 })
 
-            domain = [('name', '=', flow_data.get('name'))]
+            domain = [
+                ('name', '=', flow_data.get('name')),
+                '|',
+                    ('active', '=', True),
+                    ('active', '=', False),
+            ]
             candidates = flow_pool.search(domain)
 
             if not candidates:
@@ -438,9 +443,18 @@ class CollectionInstaller(models.TransientModel):
         path = "/setup/shared_collection"
         rc = cenit_api.get(path, params=args)
 
-        if not isinstance(rc, list) or len(rc) != 1:
-            #~ raise ValidationError
-            raise Exception("Hey!! something wicked just happened")
+        _logger.info("\n\nRC: %s\n", rc)
+
+        if not isinstance(rc, list):
+            raise exceptions.ValidationError(
+                "Hey!! something wicked just happened"
+            )
+        elif len(rc) != 1:
+            raise exceptions.MissingError(
+                "Required '%s [%s]' not found in Cenit" % (
+                    name, version or "any"
+                )
+            )
 
         rc = rc[0].get('shared_collection', {})
         data = {

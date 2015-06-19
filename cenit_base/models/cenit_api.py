@@ -23,10 +23,8 @@ import requests
 import simplejson
 import logging
 
-from openerp import models, fields, api
+from openerp import models, fields, api, exceptions
 from openerp.addons.web.http import request
-
-from openerp import exceptions
 
 
 _logger = logging.getLogger(__name__)
@@ -101,6 +99,8 @@ class CenitApi(models.AbstractModel):
     def post (self, path, vals):
         config = self.instance()
         payload = simplejson.dumps(vals)
+
+        _logger.info("\n\nPosting payload: %s\n", payload)
 
         r = requests.post(
             config.get('cenit_url') + API_PATH + path,

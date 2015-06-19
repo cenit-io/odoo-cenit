@@ -30,7 +30,11 @@ from openerp import models, fields
 _logger = logging.getLogger(__name__)
 
 
-class CenitHubConfig (models.TransientModel):
+COLLECTION_NAME = "Basic Collection"
+COLLECTION_VERSION = "1.0.0"
+
+
+class CenitSettings (models.TransientModel):
 
     _name = 'cenit.hub.settings'
     _inherit = 'res.config.settings'
@@ -43,6 +47,11 @@ class CenitHubConfig (models.TransientModel):
     module_cenit_extra = fields.Boolean('Use extra Toolkit',
         help="Allow you to import your existant Cenit data and provides a"
              "dynamic mapper for your DataTypes and Schemas"
+    )
+
+    module_cenit_twilio = fields.Boolean('Twilio API',
+        help="Allow you to use Twilio Schemas and Flows to send your custom"
+             "DataTypes as SMSs through the Twilio Service"
     )
 
     ############################################################################
@@ -114,3 +123,109 @@ class CenitHubConfig (models.TransientModel):
                 #~ cr, uid, "odoo_cenit.odoo_endpoint",
                 #~ record.odoo_endpoint.id or '', context=context
             #~ )
+
+    ############################################################################
+    # Actions
+    ############################################################################
+
+    def execute(self, cr, uid, ids, context=None):
+        prev = {}
+        prev.update(
+            self.get_default_cenit_user_key(cr, uid, ids, context=context)
+        )
+        prev.update(
+            self.get_default_cenit_user_token(cr, uid, ids, context=context)
+        )
+
+        rc = super(CenitSettings, self).execute(cr, uid, ids, context=context)
+
+        objs = self.browse(cr, uid, ids)
+        if not objs:
+            return rc
+        obj = objs[0]
+
+        same = (prev.get('cenit_user_key', False) == obj.cenit_user_key) and \
+               (prev.get('cenit_user_token', False) == obj.cenit_user_token)
+        empty = not (obj.cenit_user_key and obj.cenit_user_token)
+
+        if same or empty:
+            return rc
+
+        installer = self.pool.get('cenit.collection.installer')
+        data = installer.get_collection_data(
+            cr, uid,
+            COLLECTION_NAME,
+            version = COLLECTION_VERSION,
+            context = context
+        )
+
+        installer.install_collection(cr, uid, data.get('id'), context=context)
+
+        return rc
+
+
+class CenitAccountSettings(models.TransientModel):
+    _name = "cenit.account.settings"
+    _inherit = "res.config.settings"
+
+    cenit_email = fields.Char ('Cenit user email')
+    cenit_captcha = fields.Char ('Enter the text in the image')
+
+    ############################################################################
+    # Default values getters
+    ############################################################################
+
+    def get_default_cenit_email (self, cr, uid, ids, context=None):
+        user = self.pool.get('res.users').browse(cr, uid, uid, context=context)
+
+        return {'cenit_email': user.login or False}
+
+    ############################################################################
+    # Actions
+    ############################################################################
+
+    def fields_view_get(self,
+        cr, uid,
+        view_id=None, view_type='tree',
+        context=None, toolbar=False, submenu=False
+    ):
+
+        rc = super(CenitAccountSettings, self).fields_view_get(
+            cr, uid, view_id=view_id, view_type=view_type, context=context,
+            toolbar=toolbar, submenu=submenu
+        )
+
+        arch = rc['arch']
+        if not arch.startswith('<form string="Cenit Hub account settings">'):
+            return rc
+
+        img_data = "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
+
+        arch = arch.replace(
+            'img_data_here', img_data
+        )
+
+        rc['arch'] = arch
+        return rc
+
+    def execute(self, cr, uid, ids, context=None):
+        rc = super(CenitAccountSettings, self).execute(
+            cr, uid, ids, context=context
+        )
+
+        if not context.get('install', False):
+            return rc
+
+        objs = self.browse(cr, uid, ids)
+        if not objs:
+            return rc
+        obj = objs[0]
+
+        cenit_api = self.pool.get('cenit.api')
+        path = "/setup/account"
+        vals = {'email': obj.cenit_email}
+        rc = cenit_api.put(cr, uid, path, vals, context=context)
+        _logger.info("\n\nRC: %s\n", rc)
+
+
+        return rc

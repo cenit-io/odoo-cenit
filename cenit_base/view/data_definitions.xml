@@ -65,10 +65,15 @@
                 <form string="Data Type">
                     <sheet>
                         <group>
-                            <field name="name"/>
-                            <field name="model"/>
-                            <field name="library"/>
-                            <field name="schema"/>
+                            <group>
+                                <field name="name"/>
+                                <field name="model"/>
+                                <field name="library"/>
+                                <field name="schema"/>
+                            </group>
+                            <group>
+                                <field name="active"/>
+                            </group>
                         </group>
                         <notebook>
                             <page string="Mapping">

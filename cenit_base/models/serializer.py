@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 import logging
 import simplejson
 
@@ -7,7 +8,7 @@ from openerp import models, api
 
 
 _logger = logging.getLogger(__name__)
-
+re_key = re.compile("\\{(.*?)\\}")
 
 class CenitSerializer(models.TransientModel):
     _name = 'cenit.serializer'
@@ -39,6 +40,16 @@ class CenitSerializer(models.TransientModel):
         return False
 
     @api.model
+    def _eval(self, obj, name):
+        key = name.split(".")[0]
+        try:
+            rc = getattr(obj, key)
+        except:
+            rc = name
+
+        return key, rc
+
+    @api.model
     def serialize(self, obj, data_type):
         vals = {}
         wdt = self.env['cenit.data_type']
@@ -50,7 +61,7 @@ class CenitSerializer(models.TransientModel):
 
             columns = self.env[obj._name]._columns
             for field in data_type.lines:
-                if field.line_type == 'field' and getattr(obj, field.name):
+                if field.line_type == 'field':
                     checker = self._get_checker (schema.get (field.value))
                     vals[field.value] = checker (getattr(obj, field.name))
                 elif field.line_type == 'model':
@@ -66,7 +77,13 @@ class CenitSerializer(models.TransientModel):
                     _reset.append(field.value)
                     vals[field.value] = self.find_reference(field, obj)
                 elif field.line_type == 'default':
-                    vals[field.value] = field.name
+                    kwargs = dict([
+                        (self._eval(obj, key)) for key in re_key.findall(
+                            field.name
+                        )
+                    ])
+                    _logger.info("\n\nKwArgs for %s: %s\n", field.value, kwargs)
+                    vals[field.value] = field.name.format(**kwargs)
 
             vals.update ({
                 "_reset": _reset
