@@ -42,7 +42,7 @@ class CenitSchema(models.Model):
             root = schema.get('name', False)
 
         if not root:
-            root = ".".join(self.schema.uri.split(".")[:-1])
+            root = ".".join(self.uri.split(".")[:-1])
 
         return "_".join(root.lower().split())
 
@@ -213,7 +213,7 @@ class CenitDataType(models.Model):
     @api.one
     def sync_rules(self, flows=None):
         if not flows:
-            flows = self._get_flows()
+            flows = self._get_flows()[0]
 
         for flow in flows:
             purpose = flow._get_direction()[0]

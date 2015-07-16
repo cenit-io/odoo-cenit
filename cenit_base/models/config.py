@@ -30,7 +30,7 @@ from openerp import models, fields
 _logger = logging.getLogger(__name__)
 
 
-COLLECTION_NAME = "Basic Collection"
+COLLECTION_NAME = "basic"
 COLLECTION_VERSION = "1.0.0"
 
 
@@ -63,7 +63,7 @@ class CenitSettings (models.TransientModel):
             cr, uid, "odoo_cenit.cenit_url", default=None, context=context
         )
 
-        return {'cenit_url': cenit_url or 'http://www.cenithub.com'}
+        return {'cenit_url': cenit_url or 'https://www.cenithub.com'}
 
     def get_default_cenit_user_key (self, cr, uid, ids, context=None):
         cenit_user_key = self.pool.get ("ir.config_parameter").get_param (
@@ -155,8 +155,8 @@ class CenitSettings (models.TransientModel):
         data = installer.get_collection_data(
             cr, uid,
             COLLECTION_NAME,
-            version = COLLECTION_VERSION,
-            context = context
+            version=COLLECTION_VERSION,
+            context=context
         )
 
         installer.install_collection(cr, uid, data.get('id'), context=context)

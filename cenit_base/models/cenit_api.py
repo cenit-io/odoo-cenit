@@ -70,9 +70,10 @@ class CenitApi(models.AbstractModel):
         rc = False
         #~ try:
         rc = self.post(path, values)
+        _logger.info("\n\nRC:: %s\n", rc)
 
         if rc.get('success', False):
-            update = self._calculate_update(rc['success'])[0]
+            update = self._calculate_update(rc['success'])
             rc = self.with_context(local=True).write(update)
         else:
             _logger.error (rc.get('errors'))

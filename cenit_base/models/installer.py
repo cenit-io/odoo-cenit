@@ -462,6 +462,8 @@ class CollectionInstaller(models.TransientModel):
             'params': rc.get('pull_parameters', [])
         }
 
+        _logger.info("\n\nShared collection data: %s\n", data)
+
         return data
 
     @api.model
@@ -481,6 +483,9 @@ class CollectionInstaller(models.TransientModel):
             path = "%s/%s" % (path, coll_id)
 
         rc = cenit_api.get(path)
+        _logger.info("\n\nRC:: %s\n", rc)
+        if isinstance(rc, list):
+            rc = rc[0]
         data = rc.get('collection', {})
 
         if not coll_id:
