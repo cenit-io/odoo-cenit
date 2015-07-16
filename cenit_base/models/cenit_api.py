@@ -103,11 +103,14 @@ class CenitApi(models.AbstractModel):
 
         _logger.info("\n\nPosting payload: %s\n", payload)
 
-        r = requests.post(
-            config.get('cenit_url') + API_PATH + path,
-            data = payload,
-            headers = self.headers(config)
-        )
+        try:
+            r = requests.post(
+                config.get('cenit_url') + API_PATH + path,
+                data=payload,
+                headers=self.headers(config)
+            )
+        except:
+            raise exceptions.AccessError("Error trying to connecto to Cenit.")
         if 200 <= r.status_code < 300:
             return simplejson.loads(r.content)
 
@@ -121,11 +124,15 @@ class CenitApi(models.AbstractModel):
     def get(self, path, params=None):
         config = self.instance()
 
-        r = requests.get(
-            config.get('cenit_url') + API_PATH + path,
-            params = params,
-            headers = self.headers(config)
-        )
+        try:
+            r = requests.get(
+                config.get('cenit_url') + API_PATH + path,
+                params=params,
+                headers=self.headers(config)
+            )
+        except:
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
+
         if 200 <= r.status_code < 300:
             return simplejson.loads(r.content)
 
@@ -140,11 +147,15 @@ class CenitApi(models.AbstractModel):
         config = self.instance()
         payload = simplejson.dumps(vals)
 
-        r = requests.put(
-            config.get('cenit_url') + API_PATH + path,
-            data = payload,
-            headers = self.headers(config)
-        )
+        try:
+            r = requests.put(
+                config.get('cenit_url') + API_PATH + path,
+                data=payload,
+                headers=self.headers(config)
+            )
+        except:
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
+
         if 200 <= r.status_code < 300:
             return simplejson.loads(r.content)
 
@@ -158,10 +169,14 @@ class CenitApi(models.AbstractModel):
     def delete(self, path):
         config = self.instance()
 
-        r = requests.delete (
-            config.get('cenit_url') + API_PATH + path,
-            headers = self.headers(config)
-        )
+        try:
+            r = requests.delete (
+                config.get('cenit_url') + API_PATH + path,
+                headers = self.headers(config)
+            )
+        except:
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
+
         if 200 <= r.status_code < 300:
             return True
 
@@ -210,28 +225,13 @@ class CenitApi(models.AbstractModel):
             rc = obj.push_to_cenit()
         except requests.ConnectionError as e:
             _logger.exception(e)
-#             warning = {
-#                 'title': _('Error!'),
-#                 'message' :
-#                     _('Cenit refused the connection. It is probably down.')
-#             }
-            return False # {'warning': warning}
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
         except Exception as e:
             _logger.exception(e)
-#             warning = {
-#                 'title': _('Error!'),
-#                 'message' :
-#                     _('Something wicked happened.')
-#             }
-            return False # {'warning': warning}
+            raise exceptions.ValidationError("Cenit returned with errors")
 
         if not rc:
-#             warning = {
-#                 'title': _('Error!'),
-#                 'message' :
-#                     _('Something wicked happened.')
-#             }
-            return False # {'warning': warning}
+            raise exceptions.ValidationError("Cenit returned with errors")
 
         return obj
 
@@ -252,62 +252,27 @@ class CenitApi(models.AbstractModel):
             self.push_to_cenit()
         except requests.ConnectionError as e:
             _logger.exception(e)
-#             warning = {
-#                 'title': _('Error!'),
-#                 'message' :
-#                     _('Cenit refused the connection. It is probably down.')
-#             }
-            return False # {'warning': warning}
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
         except Exception as e:
             _logger.exception(e)
-#             warning = {
-#                 'title': _('Error!'),
-#                 'message' :
-#                     _('Something wicked happened.')
-#             }
-            return False # {'warning': warning}
+            raise exceptions.ValidationError("Cenit returned with errors")
 
-        #~ if not rc:
-            #~ warning = {
-                #~ 'title': _('Error!'),
-                #~ 'message' :
-                    #~ _('Something wicked happened.')
-            #~ }
-            #~ return {'warning': warning}
-            #~
         return res
 
     @api.one
-    def unlink(self):
+    def unlink(self, **kwargs):
         rc = True
         try:
             rc = self.drop_from_cenit()
-            pass
         except requests.ConnectionError as e:
             _logger.exception(e)
-#                 warning = {
-#                     'title': _('Error!'),
-#                     'message' :
-#                         _('Cenit refused the connection. It is probably down.')
-#                 }
-            return False # {'warning': warning}
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
         except Exception as e:
             _logger.exception(e)
-#                 warning = {
-#                     'title': _('Error!'),
-#                     'message' :
-#                         _('Something wicked happened.')
-#                 }
-            return False # {'warning': warning}
-
-        if rc:
-            rc = super(CenitApi, self).unlink ()
+            raise exceptions.ValidationError("Cenit returned with errors")
 
         if not rc:
-#             warning = {
-#                 'title': _('Error!'),
-#                 'message' :
-#                     _('Something wicked happened.')
-#             }
-            return False # {'warning': warning}
+            raise exceptions.ValidationError("Cenit returned with errors")
+
+        rc = super(CenitApi, self).unlink(**kwargs)
         return rc
