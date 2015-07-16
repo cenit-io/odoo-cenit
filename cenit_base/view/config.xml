@@ -16,12 +16,10 @@
                     </header>
                     <div>
                         <group string="Connection settings">
-                            <field name="cenit_url" placeholder="http://www.cenithub.com" />
+                            <!--<field name="cenit_url" placeholder="https://www.cenithub.com" />-->
                             <field name="cenit_user_key" placeholder="Your cenit's user key" />
                             <field name="cenit_user_token" placeholder="Your cenit's user token" />
-<!--
-                            <field name="odoo_endpoint" placeholder="Set a connection" />
--->
+                            <!--<field name="odoo_endpoint" placeholder="Set a connection" />-->
                         </group>
                     </div>
                     <div name="Custom Features">
@@ -115,55 +113,55 @@
         </record>
 
 
-        <record id="wizard_cenit_install_account" model="ir.ui.view">
-            <field name="name">Cenit Hub settings</field>
-            <field name="model">cenit.account.settings</field>
-            <field name="inherit_id" ref="base.res_config_installer" />
-            <field name="arch" type="xml">
-                <form position="attributes">
-                    <attribute name="string">Cenit Hub account settings</attribute>
-                </form>
-                <footer position="replace">
-                    <footer>
-                        <button string="SignUp" type="object" name="execute"
-                                class="oe_highlight" context="{'install': True}"/>
-                        or
-                        <button string="Skip" type="object" name="execute"
-                                class="oe_link" context="{'install': False}"/>
-                    </footer>
-                </footer>
-                <separator string="title" position="replace">
-                    <p class="oe_grey">
-                        Enter the email for your Cenit Account
-                    </p>
-                    <group>
-                        <field name="cenit_email" placeholder="Your Cenit's user email" />
-                    </group>
-                    <div>
-                        <img src="img_data_here" width="200" height="48" />
-                    </div>
-                    <group>
-                        <field name="cenit_captcha" placeholder="Enter the text above" />
-                    </group>
-                </separator>
-            </field>
-        </record>
+        <!--<record id="wizard_cenit_install_account" model="ir.ui.view">-->
+            <!--<field name="name">Cenit Hub settings</field>-->
+            <!--<field name="model">cenit.account.settings</field>-->
+            <!--<field name="inherit_id" ref="base.res_config_installer" />-->
+            <!--<field name="arch" type="xml">-->
+                <!--<form position="attributes">-->
+                    <!--<attribute name="string">Cenit Hub account settings</attribute>-->
+                <!--</form>-->
+                <!--<footer position="replace">-->
+                    <!--<footer>-->
+                        <!--<button string="SignUp" type="object" name="execute"-->
+                                <!--class="oe_highlight" context="{'install': True}"/>-->
+                        <!--or-->
+                        <!--<button string="Skip" type="object" name="execute"-->
+                                <!--class="oe_link" context="{'install': False}"/>-->
+                    <!--</footer>-->
+                <!--</footer>-->
+                <!--<separator string="title" position="replace">-->
+                    <!--<p class="oe_grey">-->
+                        <!--Enter the email for your Cenit Account-->
+                    <!--</p>-->
+                    <!--<group>-->
+                        <!--<field name="cenit_email" placeholder="Your Cenit's user email" />-->
+                    <!--</group>-->
+                    <!--<div>-->
+                        <!--<img src="img_data_here" width="200" height="48" />-->
+                    <!--</div>-->
+                    <!--<group>-->
+                        <!--<field name="cenit_captcha" placeholder="Enter the text above" />-->
+                    <!--</group>-->
+                <!--</separator>-->
+            <!--</field>-->
+        <!--</record>-->
 
-        <record id="action_wizard_cenit_install_account" model="ir.actions.act_window">
-            <field name="name">Configure Cenit data</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="res_model">cenit.account.settings</field>
-            <field name="view_id" ref="wizard_cenit_install_account" />
-            <field name="view_type">form</field>
-            <field name="view_mode">form</field>
-            <field name="target">new</field>
-        </record>
+        <!--<record id="action_wizard_cenit_install_account" model="ir.actions.act_window">-->
+            <!--<field name="name">Configure Cenit data</field>-->
+            <!--<field name="type">ir.actions.act_window</field>-->
+            <!--<field name="res_model">cenit.account.settings</field>-->
+            <!--<field name="view_id" ref="wizard_cenit_install_account" />-->
+            <!--<field name="view_type">form</field>-->
+            <!--<field name="view_mode">form</field>-->
+            <!--<field name="target">new</field>-->
+        <!--</record>-->
 
-        <record id="todo_wizard_cenit_install_account" model="ir.actions.todo">
-            <field name="action_id" ref="action_wizard_cenit_install_account"/>
-            <field name="sequence">0</field>
-            <field name="type">automatic</field>
-        </record>
+        <!--<record id="todo_wizard_cenit_install_account" model="ir.actions.todo">-->
+            <!--<field name="action_id" ref="action_wizard_cenit_install_account"/>-->
+            <!--<field name="sequence">0</field>-->
+            <!--<field name="type">automatic</field>-->
+        <!--</record>-->
 
     </data>
 </openerp>
