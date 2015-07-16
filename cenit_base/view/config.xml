@@ -70,47 +70,47 @@
             parent="menu_cenit_settings_alt" sequence="1" />
 
 
-        <record id="wizard_cenit_install" model="ir.ui.view">
-            <field name="name">Cenit Hub settings</field>
-            <field name="model">cenit.hub.settings</field>
-            <field name="inherit_id" ref="base.res_config_installer" />
-            <field name="arch" type="xml">
-                <form position="attributes">
-                    <attribute name="string">Cenit Hub account settings</attribute>
-                </form>
-                <footer position="replace">
-                    <footer>
-                        <button string="Apply" type="object" name="execute"
-                                class="oe_highlight" context="{'install': True}"/>
-                    </footer>
-                </footer>
-                <separator string="title" position="replace">
-                    <p class="oe_grey">
-                        Set the credentials given to your Cenit tenant.
-                    </p>
-                    <group>
-                        <field name="cenit_user_key" placeholder="Your Cenit's user key" />
-                        <field name="cenit_user_token" placeholder="Your Cenit's user token" />
-                    </group>
-                </separator>
-            </field>
-        </record>
+        <!--<record id="wizard_cenit_install" model="ir.ui.view">-->
+            <!--<field name="name">Cenit Hub settings</field>-->
+            <!--<field name="model">cenit.hub.settings</field>-->
+            <!--<field name="inherit_id" ref="base.res_config_installer" />-->
+            <!--<field name="arch" type="xml">-->
+                <!--<form position="attributes">-->
+                    <!--<attribute name="string">Cenit Hub account settings</attribute>-->
+                <!--</form>-->
+                <!--<footer position="replace">-->
+                    <!--<footer>-->
+                        <!--<button string="Apply" type="object" name="execute"-->
+                                <!--class="oe_highlight" context="{'install': True}"/>-->
+                    <!--</footer>-->
+                <!--</footer>-->
+                <!--<separator string="title" position="replace">-->
+                    <!--<p class="oe_grey">-->
+                        <!--Set the credentials given to your Cenit tenant.-->
+                    <!--</p>-->
+                    <!--<group>-->
+                        <!--<field name="cenit_user_key" placeholder="Your Cenit's user key" />-->
+                        <!--<field name="cenit_user_token" placeholder="Your Cenit's user token" />-->
+                    <!--</group>-->
+                <!--</separator>-->
+            <!--</field>-->
+        <!--</record>-->
 
-        <record id="action_wizard_cenit_install" model="ir.actions.act_window">
-            <field name="name">Configure Cenit data</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="res_model">cenit.hub.settings</field>
-            <field name="view_id" ref="wizard_cenit_install" />
-            <field name="view_type">form</field>
-            <field name="view_mode">form</field>
-            <field name="target">new</field>
-        </record>
+        <!--<record id="action_wizard_cenit_install" model="ir.actions.act_window">-->
+            <!--<field name="name">Configure Cenit data</field>-->
+            <!--<field name="type">ir.actions.act_window</field>-->
+            <!--<field name="res_model">cenit.hub.settings</field>-->
+            <!--<field name="view_id" ref="wizard_cenit_install" />-->
+            <!--<field name="view_type">form</field>-->
+            <!--<field name="view_mode">form</field>-->
+            <!--<field name="target">new</field>-->
+        <!--</record>-->
 
-        <record id="todo_wizard_cenit_install" model="ir.actions.todo">
-            <field name="action_id" ref="action_wizard_cenit_install"/>
-            <field name="sequence">1</field>
-            <field name="type">automatic</field>
-        </record>
+        <!--<record id="todo_wizard_cenit_install" model="ir.actions.todo">-->
+            <!--<field name="action_id" ref="action_wizard_cenit_install"/>-->
+            <!--<field name="sequence">1</field>-->
+            <!--<field name="type">automatic</field>-->
+        <!--</record>-->
 
 
         <!--<record id="wizard_cenit_install_account" model="ir.ui.view">-->
