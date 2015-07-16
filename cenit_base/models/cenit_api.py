@@ -110,7 +110,7 @@ class CenitApi(models.AbstractModel):
                 headers=self.headers(config)
             )
         except:
-            raise exceptions.AccessError("Error trying to connecto to Cenit.")
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
         if 200 <= r.status_code < 300:
             return simplejson.loads(r.content)
 
@@ -226,6 +226,8 @@ class CenitApi(models.AbstractModel):
         except requests.ConnectionError as e:
             _logger.exception(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
+        except exceptions.AccessError:
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
         except Exception as e:
             _logger.exception(e)
             raise exceptions.ValidationError("Cenit returned with errors")
@@ -253,6 +255,8 @@ class CenitApi(models.AbstractModel):
         except requests.ConnectionError as e:
             _logger.exception(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
+        except exceptions.AccessError:
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
         except Exception as e:
             _logger.exception(e)
             raise exceptions.ValidationError("Cenit returned with errors")
@@ -266,6 +270,8 @@ class CenitApi(models.AbstractModel):
             rc = self.drop_from_cenit()
         except requests.ConnectionError as e:
             _logger.exception(e)
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
+        except exceptions.AccessError:
             raise exceptions.AccessError("Error trying to connect to Cenit.")
         except Exception as e:
             _logger.exception(e)
