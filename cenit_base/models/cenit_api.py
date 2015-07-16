@@ -117,7 +117,6 @@ class CenitApi(models.AbstractModel):
 
         raise exceptions.ValidationError("Cenit returned with errors")
 
-
     @api.model
     def get(self, path, params=None):
         config = self.instance()
@@ -129,7 +128,6 @@ class CenitApi(models.AbstractModel):
         )
         if 200 <= r.status_code < 300:
             return simplejson.loads(r.content)
-
 
         error = simplejson.loads(r.content)
         if 400 <= error.get('code', 400) < 500:
@@ -149,7 +147,6 @@ class CenitApi(models.AbstractModel):
         )
         if 200 <= r.status_code < 300:
             return simplejson.loads(r.content)
-
 
         error = simplejson.loads(r.content)
         if 400 <= error.get('code', 400) < 500:
@@ -180,7 +177,7 @@ class CenitApi(models.AbstractModel):
 
         config = {
             'cenit_url': icp.get_param(
-                "odoo_cenit.cenit_url", default=None
+                "odoo_cenit.cenit_url", default='https://www.cenithub.com'
             ),
             'cenit_user_key': icp.get_param(
                 "odoo_cenit.cenit_user_key", default=None
