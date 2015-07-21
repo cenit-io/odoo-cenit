@@ -49,9 +49,36 @@ class CenitSettings (models.TransientModel):
              "dynamic mapper for your DataTypes and Schemas"
     )
 
+    module_cenit_desk = fields.Boolean('Desk API',
+        help=""
+    )
+
+    module_cenit_mailchimp = fields.Boolean('Mailchimp API',
+        help=""
+    )
+
+    module_cenit_mandrill = fields.Boolean('Mandrill API',
+        help=""
+    )
+
+    module_cenit_shipstation = fields.Boolean('Shipstation API',
+        help=""
+    )
+
+    module_cenit_shipwire = fields.Boolean('Shipwire API',
+        help=""
+    )
+
+    module_cenit_slack = fields.Boolean('Slack API',
+        help=""
+    )
+
     module_cenit_twilio = fields.Boolean('Twilio API',
-        help="Allow you to use Twilio Schemas and Flows to send your custom"
-             "DataTypes as SMSs through the Twilio Service"
+        help=""
+    )
+
+    module_cenit_twitter = fields.Boolean('Twitter API',
+        help=""
     )
 
     ############################################################################

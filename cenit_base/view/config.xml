@@ -2,39 +2,84 @@
 <openerp>
     <data>
 
-        <menuitem id="menu_cenit_integration" name="Cenit Integration" sequence="30" />
+        <menuitem id="menu_cenit_integration" name="Cenit Integration"
+                  sequence="30" />
 
         <record id="view_cenit_settings" model="ir.ui.view">
             <field name="name">Cenit Hub settings</field>
             <field name="model">cenit.hub.settings</field>
             <field name="arch" type="xml">
-                <form string="Configure Cenit Hub" class="oe_form_configuration">
+                <form string="Configure Cenit Hub"
+                      class="oe_form_configuration">
                     <header>
-                        <button string="Apply" type="object" name="execute" class="oe_highlight"/>
+                        <button string="Apply" type="object" name="execute"
+                                class="oe_highlight"/>
                         or
-                        <button string="Cancel" type="object" name="cancel" class="oe_link"/>
+                        <button string="Cancel" type="object" name="cancel"
+                                class="oe_link"/>
                     </header>
                     <div>
                         <group string="Connection settings">
-                            <!--<field name="cenit_url" placeholder="https://www.cenithub.com" />-->
-                            <field name="cenit_user_key" placeholder="Your cenit's user key" />
-                            <field name="cenit_user_token" placeholder="Your cenit's user token" />
-                            <!--<field name="odoo_endpoint" placeholder="Set a connection" />-->
+                            <!--<field name="cenit_url"
+                                   placeholder="https://www.cenithub.com" />-->
+                            <field name="cenit_user_key"
+                                   placeholder="Your cenit's user key" />
+                            <field name="cenit_user_token"
+                                   placeholder="Your cenit's user token" />
+                            <!--<field name="odoo_endpoint"
+                                   placeholder="Set a connection" />-->
                         </group>
                     </div>
                     <div name="Custom Features">
                         <group string="Addons">
                             <div name="module_cenit_extra">
-                                <field name="module_cenit_extra" class="oe_inline" />
+                                <field name="module_cenit_extra"
+                                       class="oe_inline" />
                                 <label for="module_cenit_extra" />
                             </div>
                         </group>
                     </div>
                     <div name="Preset Integrations">
                         <group string="Integrations">
+                            <div name="module_cenit_desk">
+                                <field name="module_cenit_desk"
+                                       class="oe_inline"/>
+                                <label for="module_cenit_desk"/>
+                            </div>
+                            <div name="module_cenit_mailchimp">
+                                <field name="module_cenit_mailchimp"
+                                       class="oe_inline"/>
+                                <label for="module_cenit_mailchimp"/>
+                            </div>
+                            <div name="module_cenit_mandrill">
+                                <field name="module_cenit_mandrill"
+                                       class="oe_inline"/>
+                                <label for="module_cenit_mandrill"/>
+                            </div>
+                            <div name="module_cenit_shipstation">
+                                <field name="module_cenit_shipstation"
+                                       class="oe_inline"/>
+                                <label for="module_cenit_shipstation"/>
+                            </div>
+                            <div name="module_cenit_shipwire">
+                                <field name="module_cenit_shipwire"
+                                       class="oe_inline"/>
+                                <label for="module_cenit_shipwire"/>
+                            </div>
+                            <div name="module_cenit_slack">
+                                <field name="module_cenit_slack"
+                                       class="oe_inline"/>
+                                <label for="module_cenit_slack"/>
+                            </div>
                             <div name="module_cenit_twilio">
-                                <field name="module_cenit_twilio" class="oe_inline" />
-                                <label for="module_cenit_twilio" />
+                                <field name="module_cenit_twilio"
+                                       class="oe_inline"/>
+                                <label for="module_cenit_twilio"/>
+                            </div>
+                            <div name="module_cenit_twitter">
+                                <field name="module_cenit_twitter"
+                                       class="oe_inline" />
+                                <label for="module_cenit_twitter" />
                             </div>
                         </group>
                     </div>
