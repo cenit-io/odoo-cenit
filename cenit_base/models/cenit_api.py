@@ -23,8 +23,7 @@ import requests
 import simplejson
 import logging
 
-from openerp import models, fields, api, exceptions
-from openerp.addons.web.http import request
+from openerp import models, api, exceptions
 
 
 _logger = logging.getLogger(__name__)
@@ -87,12 +86,7 @@ class CenitApi(models.AbstractModel):
     def drop_from_cenit (self):
         path = "/setup/%s/%s" % (self.cenit_model, self.cenitID)
 
-        rc = False
-
-        #~ try:
         rc = self.delete (path)
-        #~ except Warning as e:
-            #~ _logger.exception (e)
 
         return rc
 
@@ -109,14 +103,17 @@ class CenitApi(models.AbstractModel):
                 data=payload,
                 headers=self.headers(config)
             )
-        except:
+        except Exception as e:
+            _logger.info(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
         if 200 <= r.status_code < 300:
             return simplejson.loads(r.content)
 
         error = simplejson.loads(r.content)
+        _logger.error(error)
         if 400 <= error.get('code', 400) < 500:
             raise exceptions.AccessError("Error trying to connect to Cenit.")
+
 
         raise exceptions.ValidationError("Cenit returned with errors")
 
@@ -130,7 +127,8 @@ class CenitApi(models.AbstractModel):
                 params=params,
                 headers=self.headers(config)
             )
-        except:
+        except Exception as e:
+            _logger.info(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
 
         if 200 <= r.status_code < 300:
@@ -153,7 +151,8 @@ class CenitApi(models.AbstractModel):
                 data=payload,
                 headers=self.headers(config)
             )
-        except:
+        except Exception as e:
+            _logger.info(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
 
         if 200 <= r.status_code < 300:
@@ -174,7 +173,8 @@ class CenitApi(models.AbstractModel):
                 config.get('cenit_url') + API_PATH + path,
                 headers = self.headers(config)
             )
-        except:
+        except Exception as e:
+            _logger.info(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
 
         if 200 <= r.status_code < 300:

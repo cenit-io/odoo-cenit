@@ -23,8 +23,10 @@
 #
 
 import logging
+import requests
+import simplejson
 
-from openerp import models, fields
+from openerp import models, fields, exceptions
 
 
 _logger = logging.getLogger(__name__)
@@ -174,8 +176,9 @@ class CenitSettings (models.TransientModel):
         same = (prev.get('cenit_user_key', False) == obj.cenit_user_key) and \
                (prev.get('cenit_user_token', False) == obj.cenit_user_token)
         empty = not (obj.cenit_user_key and obj.cenit_user_token)
+        install = context.get('install', False)
 
-        if same or empty:
+        if (same or empty) and not install:
             return rc
 
         installer = self.pool.get('cenit.collection.installer')
@@ -226,10 +229,21 @@ class CenitAccountSettings(models.TransientModel):
         if not arch.startswith('<form string="Cenit Hub account settings">'):
             return rc
 
-        img_data = "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
+        try:
+            r = requests.get('https://www.cenithub.com/captcha')
+        except:
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
+
+        captcha_data = simplejson.loads(r.content)
+        token = captcha_data.get('token', False)
+        if not token:
+            raise exceptions.AccessError("Error trying to connect to Cenit.")
+
+        icp = self.pool.get("ir.config_parameter")
+        icp.set_param(cr, uid, 'cenit.captcha.token', token, context=context)
 
         arch = arch.replace(
-            'img_data_here', img_data
+            'img_data_here', 'https://www.cenithub.com/captcha/{}'.format(token)
         )
 
         rc['arch'] = arch
@@ -248,11 +262,21 @@ class CenitAccountSettings(models.TransientModel):
             return rc
         obj = objs[0]
 
+        icp = self.pool.get("ir.config_parameter")
+        token = icp.get_param(cr, uid, 'cenit.captcha.token', default=None)
+
         cenit_api = self.pool.get('cenit.api')
         path = "/setup/account"
-        vals = {'email': obj.cenit_email}
-        rc = cenit_api.put(cr, uid, path, vals, context=context)
-        _logger.info("\n\nRC: %s\n", rc)
+        vals = {
+            'email': obj.cenit_email,
+            'token': token,
+            'code': obj.cenit_captcha,
+        }
 
+        res = cenit_api.post(cr, uid, path, vals, context=context)
+        _logger.info("\n\nRES: %s\n", res)
+
+        icp.set_param(cr, uid, 'odoo_cenit.cenit_user_key', res.get('number'))
+        icp.set_param(cr, uid, 'odoo_cenit.cenit_user_token', res.get('token'))
 
         return rc
