@@ -23,10 +23,10 @@
     'name': 'Cenit Client',
     'version': '0.2',
     'application': True,
-    'author': 'OpenJAF',
-    'website': 'http://www.openjaf.com',
+    'author': 'Cenit, LLC',
+    'website': 'https://www.cenitsaas.com',
     #~ 'license': 'LGPL-3',
-    'category': 'Integration',
+    'category': 'Extra Tools',
     'description': """
         Cenit Client for Odoo
     """,
