@@ -82,8 +82,12 @@ class CenitSerializer(models.TransientModel):
                             field.name
                         )
                     ])
-                    _logger.info("\n\nKwArgs for %s: %s\n", field.value, kwargs)
-                    vals[field.value] = field.name.format(**kwargs)
+                    final = field.name.format(**kwargs)
+                    try:
+                        value = simplejson.loads(final)
+                    except:
+                        value = final
+                    vals[field.value] = value
 
             vals.update ({
                 "_reset": _reset
