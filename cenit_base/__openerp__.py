@@ -21,7 +21,7 @@
 
 {
     'name': 'Cenit Integrations Client',
-    'version': '0.2.2',
+    'version': '0.2.3',
     'application': True,
     'author': 'Cenit, LLC',
     'website': 'https://www.cenitsaas.com',
