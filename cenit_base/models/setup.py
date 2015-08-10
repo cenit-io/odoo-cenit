@@ -257,6 +257,7 @@ class CenitWebhook (models.Model):
         [
             ('get', 'HTTP GET'),
             ('put', 'HTTP PUT'),
+            ('patch', 'HTTP PATCH'),
             ('post', 'HTTP POST'),
             ('delete', 'HTTP DELETE'),
         ],

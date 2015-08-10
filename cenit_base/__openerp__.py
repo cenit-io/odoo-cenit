@@ -20,15 +20,16 @@
 ##############################################################################
 
 {
-    'name': 'Cenit Client',
-    'version': '0.2.1',
+    'name': 'Cenit Integrations Client',
+    'version': '0.2.2',
     'application': True,
     'author': 'Cenit, LLC',
     'website': 'https://www.cenitsaas.com',
     #~ 'license': 'LGPL-3',
     'category': 'Extra Tools',
+    'summary': 'Odoo, Cenit, Integrations',
     'description': """
-        Cenit Client for Odoo
+        Integrate with third party systems through the Cenit platform
     """,
     'depends': ['base', 'base_action_rule'],
     'data': [
