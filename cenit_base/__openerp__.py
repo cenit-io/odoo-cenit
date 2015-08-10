@@ -38,5 +38,8 @@
         'view/data_definitions.xml',
         'view/setup.xml',
     ],
+    'images': [
+        'static/description/cenitsaas.png'
+    ],
     'installable': True
 }
