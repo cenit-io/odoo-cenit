@@ -39,7 +39,7 @@
         'view/setup.xml',
     ],
     'images': [
-        'static/description/cenitsaas.png'
+        'static/screenshots/main.png'
     ],
     'installable': True
 }
