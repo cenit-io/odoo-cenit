@@ -6,21 +6,6 @@ Cenit Integrations Client allows you to integrate your Odoo system with many
 third party services available over the internet using the `cenitsaas`_
 platform as data integrator.
 
-Test
-++++
-
-Test
-::::
-
-Test
-^^^^
-
-Test
-****
-
-Test
-____
-
 Overview
 ========
 
