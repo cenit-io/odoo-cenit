@@ -21,9 +21,9 @@
 
 {
     'name': 'Cenit Integrations Client',
-    'version': '0.2.5',
+    'version': '0.2.6',
     'application': True,
-    'author': 'Cenit LLC',
+    'author': 'Cenit, OpenJAF',
     'website': 'https://www.cenitsaas.com',
     #~ 'license': 'LGPL-3',
     'category': 'Extra Tools',
