@@ -140,7 +140,7 @@ library: reference
         data.
 
 Contribute
-----------
+==========
 
 #. Fork `the repository`_ on Github.
 #. Create a branch off **8.0**
@@ -150,7 +150,7 @@ Contribute
 #. Send a pull request.
 
 License
--------
+=======
 
 ::
 
