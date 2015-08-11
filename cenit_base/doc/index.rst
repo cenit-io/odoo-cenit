@@ -55,7 +55,7 @@ Fields
 
   - ``uri``: string
 
-    Identifies the *Schema* and most therefore be unique for each *Library*.
+    Identifies the *Schema* and must therefore be unique for each *Library*.
 
     It is commonly formed by the name of the *Schema* followed by an extension
     describing the format used (currently supported are 'json' and 'xml').
@@ -98,8 +98,8 @@ Fields
   - ``mapping``: structure
 
     The **mapping** describes how to translate the **model** to the **schema**.
-    It consists of a series of **mapping** lines, describing what **model** data
-    should go into what **schema** property.
+    It consists of a series of **mapping** lines, describing which **model**
+    data should go into which **schema** property.
 
     - ``odoo``: represents an actual value to use.
 
@@ -109,14 +109,15 @@ Fields
     - ``type``: one of
 
       - ``field``: tells the *Data type* that the value expressed in **odoo** is
-        the name of a field in the **model** (say ``obj.name``). This does not
-        allow using nested fields (that is: ``obj.rel_id.name`` will cause
+        the name of a field in the **model** (say ``name``). This does not
+        allow using nested fields (that is: ``rel_id.name`` will cause
         breakdown).
 
       - ``model``: tells the *Data type* that the value expressed in **odoo** is
         a reference to other *Data type*. This means that when sending/receiving
         the data, the related Odoo model will also be serialized/deserialized
-        and fully processed as if it were the one that triggered the action.
+        (according to the specified *Data type*) and fully processed as if it
+        were the one that triggered the action.
 
       - ``reference``: tells the *Data type* that the value expressed in
         **odoo** is a reference to other model not mapped by any *Data type*. In
