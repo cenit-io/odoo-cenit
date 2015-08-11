@@ -7,7 +7,7 @@ third party services available over the internet using the `cenitsaas`_
 platform as data integrator.
 
 Overview
---------
+========
 
 - The `cenitsaas`_ platform provides a set of models that allow you to map your
   data once and send it transparently to any service supported by the platform.
@@ -16,114 +16,108 @@ Overview
   open source and standards so that community driven development is easier.
 
 Documentation
--------------
+=============
 
 The Cenit Integrations Client groups its provided models in two categories
 describing *what* data you want to be able to send/receive and *when* you want
 to send/receive the data.
 
 Data definitions
-~~~~~~~~~~~~~~~~
+----------------
 
 The models gathered here describe the *what*, they manipulate the Odoo data to
 shape it in a way that is consistent with supported third party services.
 
-Libraries
-+++++++++
+**Libraries**
+~~~~~~~~~~~~~
 
 *Libraries* are a mere logical organization of the data. They exist solely for
 the purpose of organizing *Schemas* and *Data types*.
 
 Fields
-......
+~~~~~~
 
 **name**: string
     The name of the *Library*.
 
-Schemas
-+++++++
+**Schemas**
+~~~~~~~~~~~
 
 *Schemas* are the fundamental stone of the `cenitsaas`_ platform models. They
 define the way data is stored and transmitted.
 
 Fields
-......
+~~~~~~
 
-**library**: reference
+library: reference
     The *Library* to which the *Schema* belongs.
 
-**uri**: string
+uri: string
     Identifies the *Schema* and most therefore be unique for each *Library*.
 
     Commonly is formed by the name of the *Schema* followed by an extension
     describing the format used (currently supported are 'json' and 'xml').
 
-schema: string
+*schema*: string
     The actual schema describing the data. It should match the extension
     provided in the **uri**.
 
     It can be blank (thought that wouldn't do much).
 
-Data types
-++++++++++
+**Data types**
+~~~~~~~~~~~~~~
 
 *Data types* represent a mapping between an existing Odoo model and a *Schema*.
 
 Fields
-......
+~~~~~~
 
-**name**: string
+name: string
     The name of the *Data type*.
 
-**model**: reference
+model: reference
     The Odoo model that will by associated with the *Data type*.
 
-**library**: reference
+library: reference
     The *Library* to which the *Data type* belongs.
 
-schema: reference
+*schema*: reference
     The *Schema* against which the **model** will be mapped.
 
-active: boolean
+*active*: boolean
     If unchecked the *Data type* will be stored but not used.
 
-mapping: structure
+*mapping*: structure
     The **mapping** describes how to translate the **model** to the **schema**.
 
     It consists of a series of **mapping** lines, describing what **model** data
     should go into what **schema** property.
 
-    **odoo**:
-        represents an actual value to use.
+    **odoo**: represents an actual value to use.
 
-    **cenit**:
-        the name of the property that will store the value expressed in
-        **odoo**.
+    **cenit**: the name of the property that will store the value expressed in
+               **odoo**.
 
-    **type**:
-        one of four:
+    **type**: one of four:
 
-        field:
-            tells the *Data type* that the value expressed in **odoo** is the
-            name of a field in the **model** (say ``obj.name``). This does not
-            allow using nested fields (that is: ``obj.rel_id.name`` will cause
-            breakdown).
+        field: tells the *Data type* that the value expressed in **odoo** is the
+            name of a field in the **model** (say ``obj.name``). This does
+            not allow using nested fields (that is: ``obj.rel_id.name`` will
+            cause breakdown).
 
-        model:
-            tells the *Data type* that the value expressed in **odoo** is a
+        model: tells the *Data type* that the value expressed in **odoo** is a
             reference to other *Data type*. This means that when
             sending/receiving the data, the related Odoo model will also be
             serialized/deserialized and fully processed as if it were the one
             that triggered the action.
 
-        reference:
-            tells the *Data type* that the value expressed in **odoo** is a
-            reference to other model not mapped by any *Data type*. In this case
-            the field ``name`` of the related model is used as an identifier.
+        reference: tells the *Data type* that the value expressed in **odoo** is
+            a reference to other model not mapped by any *Data type*. In
+            this case the field ``name`` of the related model is used as
+            an identifier.
 
-        default:
-            tells the *Data type* that the value expressed in **odoo** should
-            be treated as a string literal, which can contain replacement
+        default: tells the *Data type* that the value expressed in **odoo**
+            should be treated as a string literal, which can contain replacement
             patterns in the form of ``{field_name}`` where ``field_name`` is the
             name of a field in the **model**.
 
@@ -132,20 +126,18 @@ mapping: structure
             structure, in which case the json brackets should be doubled:
             ``{{`` and ``}}`` (e.g: ``{{client: "{client.name}"}}``).
 
-    reference:
-        used when **type** is ``Model``.
+    reference: used when **type** is ``Model``.
 
         This refers to a *Data type* against which the value of **odoo** is
         mapped.
 
-    cardinality:
-        used when **type** is ``Model``.
+    cardinality: used when **type** is ``Model``.
 
         This refers to whether the value of **odoo** represents a single object
         (``2one``) or many (``2many``).
 
-    primary:
-        if checked, the field will be used as an identifier when receiving data.
+    primary: if checked, the field will be used as an identifier when receiving
+        data.
 
 Contribute
 ----------
