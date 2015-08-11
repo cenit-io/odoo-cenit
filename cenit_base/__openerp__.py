@@ -21,13 +21,13 @@
 
 {
     'name': 'Cenit Integrations Client',
-    'version': '0.2.3',
+    'version': '0.2.4',
     'application': True,
     'author': 'Cenit, LLC',
     'website': 'https://www.cenitsaas.com',
     #~ 'license': 'LGPL-3',
     'category': 'Extra Tools',
-    'summary': 'Odoo, Cenit, Integrations',
+    'summary': 'Odoo, Cenit, Integration, Connector',
     'description': """
         Integrate with third party systems through the Cenit platform
     """,
