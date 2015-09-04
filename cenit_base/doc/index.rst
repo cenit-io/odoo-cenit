@@ -15,6 +15,25 @@ Overview
 - The `cenitsaas`_ platform is free and community friendly, and makes use of
   open source and standards so that community driven development is easier.
 
+Requirements
+============
+
+The Cenit Integrations Client requires a few additional Python packages to be
+installed on your system. These dependencies can be easily installed using
+**pip** as follows:
+
+> pip install inflect
+> pip install requests[security]
+
+If not using **pip** you should manually install the following Python packages:
+
+- inflect
+- pyOpenSSL
+- ndg-httpsclient
+- pyasn1
+
+Actual package names depend on your specific system.
+
 Documentation
 =============
 
