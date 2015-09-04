@@ -22,8 +22,9 @@ The Cenit Integrations Client requires a few additional Python packages to be
 installed on your system. These dependencies can be easily installed using
 **pip** as follows:
 
-> pip install inflect
-> pip install requests[security]
+$ pip install inflect
+
+$ pip install requests[security]
 
 If not using **pip** you should manually install the following Python packages:
 
