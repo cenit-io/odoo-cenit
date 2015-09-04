@@ -231,7 +231,8 @@ class CenitAccountSettings(models.TransientModel):
 
         try:
             r = requests.get('https://www.cenithub.com/captcha')
-        except:
+        except Exception as e:
+            _logger.info("\n\Error: %s\n", e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
 
         captcha_data = simplejson.loads(r.content)
