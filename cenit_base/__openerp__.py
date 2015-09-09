@@ -21,7 +21,7 @@
 
 {
     'name': 'Cenit Integrations Client',
-    'version': '0.2.7',
+    'version': '0.2.8',
     'application': True,
     'author': 'Cenit, OpenJAF',
     'website': 'https://www.cenitsaas.com',
