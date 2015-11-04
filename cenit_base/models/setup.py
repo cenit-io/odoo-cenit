@@ -22,12 +22,11 @@
 #
 #
 
-import logging
-import simplejson
-
 from openerp import models, fields, api
 
 from datetime import datetime
+
+import logging
 
 
 _logger = logging.getLogger(__name__)
@@ -42,6 +41,7 @@ class CenitConnection (models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
+    namespace = fields.Char('Namespace', default="Odoo")
     name = fields.Char('Name', required=True)
     url = fields.Char('URL', required=True)
 
@@ -73,6 +73,7 @@ class CenitConnection (models.Model):
         vals = {
             'name': self.name,
             'url': self.url,
+            'namespace': self.namespace,
         }
 
         if self.cenitID:
@@ -120,8 +121,8 @@ class CenitConnection (models.Model):
         rc = self.get(path)
 
         vals = {
-            'key': rc['connection']['number'],
-            'token': rc['connection']['token'],
+            'key': rc['number'],
+            'token': rc['token'],
         }
 
         self.with_context(local=True).write(vals)
@@ -146,6 +147,7 @@ class CenitConnectionRole (models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
+    namespace = fields.Char('Namespace', default="Odoo")
     name = fields.Char('Name', required=True)
 
     connections = fields.Many2many(
@@ -165,7 +167,8 @@ class CenitConnectionRole (models.Model):
     @api.one
     def _get_values(self):
         vals = {
-            'name': self.name
+            'name': self.name,
+            'namespace': self.namespace,
         }
         if self.cenitID:
             vals.update({'id': self.cenitID})
@@ -174,7 +177,10 @@ class CenitConnectionRole (models.Model):
 
         connections = []
         for conn in self.connections:
-            connections.append(conn._get_values())
+            vals_ = conn._get_values()
+            if isinstance(vals_, list):
+                vals_ = vals_[0]
+            connections.append(vals_)
 
         vals.update({
             'connections': connections
@@ -183,7 +189,10 @@ class CenitConnectionRole (models.Model):
 
         webhooks = []
         for hook in self.webhooks:
-            webhooks.append(hook._get_values())
+            vals_ = hook._get_values()
+            if isinstance(vals_, list):
+                vals_ = vals_[0]
+            webhooks.append(vals_)
 
         vals.update({
             'webhooks': webhooks
@@ -250,6 +259,7 @@ class CenitWebhook (models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
+    namespace = fields.Char('Namespace', default="Odoo")
     name = fields.Char('Name', required=True)
     path = fields.Char('Path', required=True)
     purpose = fields.Char(compute='_compute_purpose', store=True)
@@ -291,6 +301,7 @@ class CenitWebhook (models.Model):
             'path': self.path,
             'purpose': self.purpose,
             'method': self.method,
+            'namespace': self.namespace,
         }
 
         if self.cenitID:
@@ -351,7 +362,7 @@ class CenitEvent (models.Model):
     )
     schema = fields.Many2one(
         'cenit.schema',
-        string = 'Schema'
+        string='Schema'
     )
 
 
@@ -382,6 +393,7 @@ class CenitFlow (models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
+    namespace = fields.Char('Namespace', default="Odoo")
     name = fields.Char('Name', size=64, required=True, unique=True)
     active = fields.Boolean('Active', default=True)
     event = fields.Many2one("cenit.event", string='Event')
@@ -417,12 +429,12 @@ class CenitFlow (models.Model):
 
     method = fields.Selection(related="webhook.method")
 
-    #~ cenit_response_translator = fields.Selection(
-        #~ [], string="Response translator"
-    #~ )
-    #~ response_data_type = fields.Many2one(
-        #~ 'cenit.data_type', string='Response data type'
-    #~ )
+    # cenit_response_translator = fields.Selection(
+    #    #~ [], string="Response translator"
+    # )
+    # response_data_type = fields.Many2one(
+    #    #~ 'cenit.data_type', string='Response data type'
+    # )
 
     _sql_constraints = [
         ('name_uniq', 'UNIQUE(name)', 'The name must be unique!'),
@@ -431,6 +443,7 @@ class CenitFlow (models.Model):
     @api.one
     def _get_values(self):
         vals = {
+            'namespace': self.namespace,
             'name': self.name,
             'active': self.active,
             'discard_events': False,
@@ -468,7 +481,7 @@ class CenitFlow (models.Model):
                     self.execution,
                     datetime.now().ctime()
                 ),
-                'data_type': {'id': self.data_type.schema.datatype_cenitID},
+                'data_type': {'id': self.data_type.schema.cenitID},
                 'triggers': {
                     'on_create': cr,
                     'on_write': wr,
@@ -488,10 +501,10 @@ class CenitFlow (models.Model):
                 }
             })
 
-        if self.schema.datatype_cenitID:
+        if self.schema.cenitID:
             vals.update({
                 'custom_data_type': {
-                    'id': self.schema.datatype_cenitID
+                    'id': self.schema.cenitID
                 }
             })
 
@@ -515,16 +528,16 @@ class CenitFlow (models.Model):
     def _calculate_update(self, values):
         update = {}
         for k, v in values.items():
-            if k == "%s" % (self.cenit_models):
+            if k == "%s" % (self.cenit_models,):
                 update = {
                     'cenitID': v[0]['id'],
 
                 }
                 if v[0].get('event', False):
                     _logger.info("\n\nCalculating FLOW update from: %s\n", v[0])
-                    #~ update.update({
-                        #~ 'event': v[0]['event']['id']
-                    #~ })
+                    # update.update({
+                    #    'event': v[0]['event']['id']
+                    # })
 
         return update
 
@@ -567,10 +580,8 @@ class CenitFlow (models.Model):
             'domain': {
                 'cenit_translator': [
                     ('schema', 'in', (self.schema.id, False)),
-                    ('type_', '=', {
-                            'get': 'Import',
-                        }.get(self.webhook.method, 'Export')
-                    )
+                    ('type_', '=',
+                     {'get': 'Import', }.get(self.webhook.method, 'Export'))
                 ]
             }
         }
@@ -613,10 +624,10 @@ class CenitFlow (models.Model):
         res = super(CenitFlow, self).write(vals)
         new_purpose = self._get_direction()[0]
 
-        if ((new_purpose != prev_purpose) or \
-             (vals.get('event', False)) or \
-             (prev_sch != self.schema) or \
-             (prev_dt != self.data_type)):
+        if ((new_purpose != prev_purpose) or
+            (vals.get('event', False)) or
+            (prev_sch != self.schema) or
+            (prev_dt != self.data_type)):
 
             method = 'set_%s_execution' % new_purpose
             getattr(self, method)()
@@ -698,7 +709,7 @@ class CenitFlow (models.Model):
 
             for data_type in dts:
                 if self.cron:
-                    _logger.info ("\n\nCronID\n")
+                    _logger.info("\n\nCronID\n")
 
                 else:
                     vals_ic = {
@@ -732,7 +743,7 @@ class CenitFlow (models.Model):
                 )
                 vals_ias = {
                     'name': 'send_one_%s_as_%s' % (
-                        data_type.model.model, self.schema.uri
+                        data_type.model.model, self.schema.slug
                     ),
                     'model_id': data_type.model.id,
                     'state': 'code',
@@ -741,7 +752,7 @@ class CenitFlow (models.Model):
                 ias = ias_obj.create(vals_ias)
                 vals_bar = {
                     'name': 'send_one_%s_as_%s' % (
-                        data_type.model.model, self.schema.uri
+                        data_type.model.model, self.schema.slug
                     ),
                     'active': True,
                     'kind': execution,
@@ -757,7 +768,7 @@ class CenitFlow (models.Model):
 
             if self.cron:
                 self.cron.unlink()
-        _logger.info("\n\n[FINALLY] BAR: %s\n", self.base_action_rules)
+
         return True
 
     @api.model
@@ -800,7 +811,7 @@ class CenitFlow (models.Model):
                 for x in objs:
                     data.append(ws.serialize(x, flow.data_type))
             elif flow.format_ == 'application/EDI-X12' and \
-                 hasattr(mo, 'edi_export'):
+                    hasattr(mo, 'edi_export'):
                 data = mo.edi_export(objs)
             if data:
                 return flow._send(data)
@@ -815,9 +826,9 @@ class CenitFlow (models.Model):
 
     @api.one
     def http_post(self, data):
-        path = "/%s/push" % (self.schema.library.slug)
+        path = "/%s/push" % (self.schema.library.slug,)
 
-        root = self.schema.cenit_root()
+        root = self.schema.slug
         if isinstance(root, list):
             root = root[0]
         values = {root: data}
