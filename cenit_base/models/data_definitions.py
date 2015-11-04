@@ -35,46 +35,42 @@ class CenitSchema(models.Model):
 
     @api.one
     def cenit_root(self):
-        schema = simplejson.loads(self.schema)
-        root = schema.get('title', False)
-
-        if not root:
-            root = schema.get('name', False)
-
-        if not root:
-            root = ".".join(self.uri.split(".")[:-1])
-
-        return "_".join(root.lower().split())
+        # schema = simplejson.loads(self.schema)
+        # root = schema.get('title', False)
+        #
+        # if not root:
+        #     root = schema.get('name', False)
+        #
+        # if not root:
+        #     root = ".".join(self.uri.split(".")[:-1])
+        #
+        # return "_".join(root.lower().split())
+        return "%s/%s" % (self.library.slug, self.slug)
 
     _name = 'cenit.schema'
     _inherit = 'cenit.api'
 
-    cenit_model = 'schema'
-    cenit_models = 'schemas'
+    cenit_model = 'data_type'
+    cenit_models = 'data_types'
 
     cenitID = fields.Char('Cenit ID')
-    datatype_cenitID = fields.Char ('Cenit DT ID')
+    # datatype_cenitID = fields.Char('Cenit DT ID')
 
     library = fields.Many2one(
         'cenit.library',
-        string = 'Library',
-        required = True,
-        ondelete = 'cascade'
+        string='Library',
+        required=True,
+        ondelete='cascade'
     )
-    uri = fields.Char('Uri', required=True)
+    slug = fields.Char('Slug', required=True)
     schema = fields.Text('Schema')
 
-    name = fields.Char('Name', compute='_compute_name')
+    name = fields.Char('Name')
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE(library,uri)',
-        'The uri must be unique for each library!'),
+        ('name_uniq', 'UNIQUE(library,slug)',
+         'The slug must be unique for each library!'),
     ]
-
-    @api.depends('library', 'uri')
-    @api.one
-    def _compute_name(self):
-        self.name = "%s | %s" % (self.library.name, self.uri)
 
     @api.one
     def _get_values(self):
@@ -82,7 +78,8 @@ class CenitSchema(models.Model):
             'library': {
                 'id': self.library.cenitID
             },
-            'uri': self.uri,
+            'name': self.name,
+            'slug': self.slug,
             'schema': self.schema,
         }
 
@@ -95,15 +92,15 @@ class CenitSchema(models.Model):
     def _calculate_update(self, values):
         update = {}
 
-        for k,v in values.items():
-            if k == "%s" % (self.cenit_models):
+        for k, v in values.items():
+            if k == "%s" % (self.cenit_models,):
                 update = {
                     'cenitID': v[0]['id'],
                 }
-                if v[0].get('data_types', False):
-                    update.update({
-                        'datatype_cenitID': v[0]['data_types'][0]['id'],
-                    })
+                # if v[0].get('data_types', False):
+                #     update.update({
+                #         'datatype_cenitID': v[0]['data_types'][0]['id'],
+                #     })
 
         return update
 

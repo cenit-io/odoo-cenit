@@ -39,7 +39,6 @@ class CollectionInstaller(models.TransientModel):
         schema_pool = self.env['cenit.schema']
 
         for library in values:
-            schemas = library.get('schemas', [])
             lib_data = {
                 'cenitID': library.get('id'),
                 'name': library.get('name'),
@@ -55,20 +54,22 @@ class CollectionInstaller(models.TransientModel):
                 lib = candidates[0]
                 lib.with_context(local=True).write(lib_data)
 
-
+            schemas = library.get('data_types', [])
             for schema in schemas:
-                dt_data = schema.get('data_types', [{}])[0]
+                # dt_data = schema.get('data_types', [{}])[0]
+                _logger.info("\n\nSchema: %s\n", schema)
                 sch_data = {
                     'cenitID': schema.get('id'),
-                    'datatype_cenitID': dt_data.get('id', False),
-                    'uri': schema.get('uri'),
-                    'schema': schema.get('schema'),
+                    # 'datatype_cenitID': dt_data.get('id', False),
+                    'name': schema.get('name'),
+                    'slug': schema.get('slug'),
+                    'schema': simplejson.dumps(schema.get('schema')),
                     'library': lib.id,
                 }
 
                 domain = [
                     ('library', '=', sch_data.get('library')),
-                    ('uri', '=', sch_data.get('uri')),
+                    ('slug', '=', sch_data.get('slug')),
                 ]
                 candidates = schema_pool.search(domain)
 
@@ -256,6 +257,8 @@ class CollectionInstaller(models.TransientModel):
         trans_pool = self.env['cenit.translator']
 
         for flow in values:
+            _logger.info("\n\n[Flow DATA] %s\n", flow)
+
             flow_data = {
                 'cenitID': flow.get('id'),
                 'name': flow.get('name'),
@@ -274,7 +277,7 @@ class CollectionInstaller(models.TransientModel):
 
             if not dt_deferred:
                 domain = [
-                    ('uri', '=', schema.get('uri', '')),
+                    ('name', '=', schema.get('name', '')),
                     ('library', '=', rc[0].id)
                 ]
                 rc = sch_pool.search(domain)
@@ -305,7 +308,6 @@ class CollectionInstaller(models.TransientModel):
                 flow_data.update({
                     'schema': rc[0].schema.id
                 })
-
 
             flow_data.update({
                 'cenit_translator': rc[0].id
@@ -348,6 +350,7 @@ class CollectionInstaller(models.TransientModel):
         sch_pool = self.env['cenit.schema']
 
         for translator in values:
+            _logger.info("\n\n[TRANS DATA] %s\n", translator)
             if translator.get('type') not in ('Import', 'Export'):
                 continue
             trans_data = {
@@ -360,13 +363,14 @@ class CollectionInstaller(models.TransientModel):
             schema = translator.get({
                 'Import': 'target_data_type',
                 'Export': 'source_data_type',
-            }.get(translator.get('type')), {}).get('schema', False)
+            }.get(translator.get('type')), {}) # .get('schema', False)
+            _logger.info("\n\n[TRANS SCH] %s\n", schema)
 
             schema_id = False
             if schema:
                 domain = [
-                    ('uri', '=', schema.get('uri')),
-                    ('library.slug', '=', schema.get('library').get('slug'))
+                    ('name', '=', schema.get('name')),
+                    ('library.name', '=', schema.get('library').get('name'))
                 ]
                 candidates = sch_pool.search(domain)
                 if candidates:
@@ -395,12 +399,12 @@ class CollectionInstaller(models.TransientModel):
                 'type_': event.get('_type'),
             }
 
-            schema = event.get('data_type', {}).get('schema', False)
+            schema = event.get('data_type', {}) #.get('schema', False)
 
             schema_id = False
             if schema:
                 domain = [
-                    ('uri', '=', schema.get('uri')),
+                    ('name', '=', schema.get('name')),
                     ('library.name', '=', schema.get('library').get('name'))
                 ]
                 candidates = sch_pool.search(domain)
@@ -422,7 +426,6 @@ class CollectionInstaller(models.TransientModel):
     def _install_dummy(self, values):
         pass
 
-
     @api.model
     def get_collection_data(self, name, version=None):
         cenit_api = self.env['cenit.api']
@@ -441,9 +444,7 @@ class CollectionInstaller(models.TransientModel):
             })
 
         path = "/setup/shared_collection"
-        rc = cenit_api.get(path, params=args)
-
-        _logger.info("\n\nRC: %s\n", rc)
+        rc = cenit_api.get(path, params=args).get("shared_collection", False)
 
         if not isinstance(rc, list):
             raise exceptions.ValidationError(
@@ -456,7 +457,7 @@ class CollectionInstaller(models.TransientModel):
                 )
             )
 
-        rc = rc[0].get('shared_collection', {})
+        rc = rc[0]  # .get('shared_collection', {})
         data = {
             'id': rc.get('id'),
             'params': rc.get('pull_parameters', [])
@@ -467,14 +468,14 @@ class CollectionInstaller(models.TransientModel):
         return data
 
     @api.model
-    def install_collection(self, cenitID, params=None):
+    def install_collection(self, cenit_id, params=None):
         cenit_api = self.env['cenit.api']
 
-        path = "/setup/shared_collection/%s/pull" % (cenitID,)
+        path = "/setup/shared_collection/%s/pull" % (cenit_id,)
 
         data = {}
         if params:
-            data.update({'pull_parameters':params})
+            data.update({'pull_parameters': params})
         rc = cenit_api.post(path, data)
 
         coll_id = rc.get('collection', {}).get('id', False)
@@ -483,10 +484,10 @@ class CollectionInstaller(models.TransientModel):
             path = "%s/%s" % (path, coll_id)
 
         rc = cenit_api.get(path)
-        _logger.info("\n\nRC:: %s\n", rc)
+        # _logger.info("\n\nRC:: %s\n", rc)
         if isinstance(rc, list):
             rc = rc[0]
-        data = rc.get('collection', {})
+        data = rc #.get('collection', {})
 
         if not coll_id:
             for entry in rc:
@@ -501,6 +502,7 @@ class CollectionInstaller(models.TransientModel):
         )
 
         for key in keys:
+            _logger.info("\n\nProcessing %s\n", key)
             values = data.get(key, {})
             {
                 'connections':      self._install_connections,

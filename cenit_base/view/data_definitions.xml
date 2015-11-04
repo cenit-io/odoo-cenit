@@ -12,7 +12,8 @@
             <field name="arch" type="xml">
                 <tree string="Schemas" >
                     <field name="library" />
-                    <field name="uri" />
+                    <field name="name"/>
+                    <field name="slug" />
                 </tree>
             </field>
         </record>
@@ -24,7 +25,8 @@
                 <form string="Schema">
                     <group>
                         <field name="library"/>
-                        <field name="uri"/>
+                        <field name="name"/>
+                        <field name="slug"/>
                     </group>
                     <group>
                         <field name="schema" />
