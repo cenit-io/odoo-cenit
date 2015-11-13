@@ -25,7 +25,7 @@
 import logging
 import simplejson
 
-from openerp import models, fields, api, exceptions
+from openerp import models, api, exceptions
 
 
 _logger = logging.getLogger(__name__)
@@ -56,11 +56,8 @@ class CollectionInstaller(models.TransientModel):
 
             schemas = library.get('data_types', [])
             for schema in schemas:
-                # dt_data = schema.get('data_types', [{}])[0]
-                _logger.info("\n\nSchema: %s\n", schema)
                 sch_data = {
                     'cenitID': schema.get('id'),
-                    # 'datatype_cenitID': dt_data.get('id', False),
                     'name': schema.get('name'),
                     'slug': schema.get('slug'),
                     'schema': simplejson.dumps(schema.get('schema')),
@@ -154,6 +151,7 @@ class CollectionInstaller(models.TransientModel):
             conn_data = {
                 'cenitID': connection.get('id'),
                 'name': connection.get('name'),
+                'namespace': connection.get('namespace'),
                 'url': connection.get('url'),
                 'key': connection.get('number'),
                 'token': connection.get('token'),
@@ -181,6 +179,7 @@ class CollectionInstaller(models.TransientModel):
             hook_data = {
                 'cenitID': webhook.get('id'),
                 'name': webhook.get('name'),
+                'namespace': webhook.get('namespace'),
                 'path': webhook.get('path'),
                 'method': webhook.get('method'),
                 'purpose': webhook.get('purpose'),
@@ -210,6 +209,7 @@ class CollectionInstaller(models.TransientModel):
             role_data = {
                 'cenitID': role.get('id'),
                 'name': role.get('name'),
+                'namespace': role.get('namespace'),
             }
 
             domain = [('name', '=', role_data.get('name'))]
@@ -257,17 +257,17 @@ class CollectionInstaller(models.TransientModel):
         trans_pool = self.env['cenit.translator']
 
         for flow in values:
-            _logger.info("\n\n[Flow DATA] %s\n", flow)
-
             flow_data = {
                 'cenitID': flow.get('id'),
                 'name': flow.get('name'),
+                'namespace': flow.get('namespace'),
+                'enabled': flow.get('active', False),
                 'format_': 'application/json',
             }
 
             dt = flow.get('custom_data_type', {})
-            schema = dt.get('schema', {})
-            library = schema.get('library', {})
+            schema = dt.get('name', '')
+            library = dt.get('library', {})
 
             domain = [('name', '=', library.get('name', ''))]
             rc = lib_pool.search(domain)
@@ -277,7 +277,7 @@ class CollectionInstaller(models.TransientModel):
 
             if not dt_deferred:
                 domain = [
-                    ('name', '=', schema.get('name', '')),
+                    ('name', '=', schema),
                     ('library', '=', rc[0].id)
                 ]
                 rc = sch_pool.search(domain)
@@ -288,7 +288,8 @@ class CollectionInstaller(models.TransientModel):
                 })
 
             ev = flow.get('event', {})
-            domain = [('name', '=', ev.get('name'))]
+            domain = [('name', '=', ev.get('name')),
+                      ('namespace', '=', ev.get('namespace'))]
             rc = ev_pool.search(domain)
             if not rc:
                 continue
@@ -297,7 +298,8 @@ class CollectionInstaller(models.TransientModel):
             })
 
             trans = flow.get('translator', {})
-            domain = [('name', '=', trans.get('name'))]
+            domain = [('name', '=', trans.get('name')),
+                      ('namespace', '=', trans.get('namespace'))]
             rc = trans_pool.search(domain)
             if not rc:
                 continue
@@ -314,7 +316,8 @@ class CollectionInstaller(models.TransientModel):
             })
 
             hook = flow.get('webhook', {})
-            domain = [('name', '=', hook.get('name', ''))]
+            domain = [('name', '=', hook.get('name')),
+                      ('namespace', '=', hook.get('namespace'))]
             rc = hook_pool.search(domain)
             if not rc:
                 continue
@@ -323,7 +326,8 @@ class CollectionInstaller(models.TransientModel):
             })
 
             role = flow.get('connection_role', {})
-            domain = [('name', '=', role.get('name', ''))]
+            domain = [('name', '=', role.get('name')),
+                      ('namespace', '=', role.get('namespace'))]
             rc = role_pool.search(domain)
             if rc:
                 flow_data.update({
@@ -332,9 +336,10 @@ class CollectionInstaller(models.TransientModel):
 
             domain = [
                 ('name', '=', flow_data.get('name')),
+                ('namespace', '=', flow_data.get('namespace')),
                 '|',
-                    ('active', '=', True),
-                    ('active', '=', False),
+                    ('enabled', '=', True),
+                    ('enabled', '=', False),
             ]
             candidates = flow_pool.search(domain)
 
@@ -350,12 +355,12 @@ class CollectionInstaller(models.TransientModel):
         sch_pool = self.env['cenit.schema']
 
         for translator in values:
-            _logger.info("\n\n[TRANS DATA] %s\n", translator)
             if translator.get('type') not in ('Import', 'Export'):
                 continue
             trans_data = {
                 'cenitID': translator.get('id'),
                 'name': translator.get('name'),
+                'namespace': translator.get('namespace'),
                 'type_': translator.get('type'),
                 'mime_type': translator.get('mime_type', False)
             }
@@ -363,8 +368,7 @@ class CollectionInstaller(models.TransientModel):
             schema = translator.get({
                 'Import': 'target_data_type',
                 'Export': 'source_data_type',
-            }.get(translator.get('type')), {}) # .get('schema', False)
-            _logger.info("\n\n[TRANS SCH] %s\n", schema)
+            }.get(translator.get('type')), {})
 
             schema_id = False
             if schema:
@@ -396,11 +400,11 @@ class CollectionInstaller(models.TransientModel):
             ev_data = {
                 'cenitID': event.get('id'),
                 'name': event.get('name'),
+                'namespace': event.get('namespace'),
                 'type_': event.get('_type'),
             }
 
-            schema = event.get('data_type', {}) #.get('schema', False)
-
+            schema = event.get('data_type', {})
             schema_id = False
             if schema:
                 domain = [
@@ -457,13 +461,11 @@ class CollectionInstaller(models.TransientModel):
                 )
             )
 
-        rc = rc[0]  # .get('shared_collection', {})
+        rc = rc[0]
         data = {
             'id': rc.get('id'),
             'params': rc.get('pull_parameters', [])
         }
-
-        _logger.info("\n\nShared collection data: %s\n", data)
 
         return data
 
@@ -484,16 +486,15 @@ class CollectionInstaller(models.TransientModel):
             path = "%s/%s" % (path, coll_id)
 
         rc = cenit_api.get(path)
-        # _logger.info("\n\nRC:: %s\n", rc)
         if isinstance(rc, list):
             rc = rc[0]
-        data = rc #.get('collection', {})
+        data = rc  # .get('collection', {})
 
         if not coll_id:
-            for entry in rc:
-                collection = entry.get('collection', {})
-                if collection.get('name', False) == self.name:
-                    data = collection
+            for entry in rc.get('collection', []):
+                if entry.get('name', False) == self.env.context.get("coll_name",
+                                                                    None):
+                    data = entry
                     break
 
         keys = (
@@ -502,7 +503,6 @@ class CollectionInstaller(models.TransientModel):
         )
 
         for key in keys:
-            _logger.info("\n\nProcessing %s\n", key)
             values = data.get(key, {})
             {
                 'connections':      self._install_connections,

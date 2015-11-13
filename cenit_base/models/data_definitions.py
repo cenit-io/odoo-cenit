@@ -35,17 +35,7 @@ class CenitSchema(models.Model):
 
     @api.one
     def cenit_root(self):
-        # schema = simplejson.loads(self.schema)
-        # root = schema.get('title', False)
-        #
-        # if not root:
-        #     root = schema.get('name', False)
-        #
-        # if not root:
-        #     root = ".".join(self.uri.split(".")[:-1])
-        #
-        # return "_".join(root.lower().split())
-        return "%s/%s" % (self.library.slug, self.slug)
+        return "%s/%s" % (self.library.slug or "odoo", self.slug)
 
     _name = 'cenit.schema'
     _inherit = 'cenit.api'
@@ -54,14 +44,9 @@ class CenitSchema(models.Model):
     cenit_models = 'data_types'
 
     cenitID = fields.Char('Cenit ID')
-    # datatype_cenitID = fields.Char('Cenit DT ID')
 
-    library = fields.Many2one(
-        'cenit.library',
-        string='Library',
-        required=True,
-        ondelete='cascade'
-    )
+    library = fields.Many2one('cenit.library', string='Library', required=True,
+                              ondelete='cascade')
     slug = fields.Char('Slug', required=True)
     schema = fields.Text('Schema')
 
@@ -76,11 +61,13 @@ class CenitSchema(models.Model):
     def _get_values(self):
         vals = {
             'library': {
+                '_reference': True,
                 'id': self.library.cenitID
             },
             'name': self.name,
             'slug': self.slug,
             'schema': self.schema,
+            '_type': 'Setup::SchemaDataType',
         }
 
         if self.cenitID:
@@ -97,10 +84,6 @@ class CenitSchema(models.Model):
                 update = {
                     'cenitID': v[0]['id'],
                 }
-                # if v[0].get('data_types', False):
-                #     update.update({
-                #         'datatype_cenitID': v[0]['data_types'][0]['id'],
-                #     })
 
         return update
 
@@ -118,11 +101,7 @@ class CenitLibrary(models.Model):
     name = fields.Char('Name', required=True)
     slug = fields.Char('Slug')
 
-    schemas = fields.One2many(
-        'cenit.schema',
-        'library',
-        string = 'Schemas'
-    )
+    schemas = fields.One2many('cenit.schema', 'library', string='Schemas')
 
     _sql_constraints = [
         ('name_uniq', 'UNIQUE(name)', 'The name must be unique!'),
@@ -142,8 +121,8 @@ class CenitLibrary(models.Model):
     def _calculate_update(self, values):
         update = {}
 
-        for k,v in values.items():
-            if k == "%s" % (self.cenit_models):
+        for k, v in values.items():
+            if k == "%s" % (self.cenit_models,):
                 update = {
                     'cenitID': v[0]['id'],
                 }
@@ -154,6 +133,130 @@ class CenitLibrary(models.Model):
                     update.update({'slug': slug})
 
         return update
+
+    @api.model
+    def create(self, vals):
+        slug = vals.get("slug", False)
+        if not slug:
+            name = vals.get("name")
+            vals.update({"slug": name.lower().replace(" ", "_")})
+
+        return super(CenitLibrary, self).create(vals)
+
+    @api.one
+    def write(self, vals):
+        slug = vals.get("slug", None)
+        if not slug and slug is False:
+            name = vals.get("name", False)
+            if not name:
+                name = self.name
+            vals.update({"slug": name.lower().replace(" ", "_")})
+
+        return super(CenitLibrary, self).write(vals)
+
+class CenitDataTypeTrigger(models.Model):
+    _name = "cenit.data_type.trigger"
+
+    data_type = fields.Many2one("cenit.data_type", "Data Type")
+    name = fields.Selection([
+        ("on_create", "On creation"),
+        ("on_write", "On update"),
+        ("on_create_or_write", "On creation or update"),
+        ("interval", "On interval"),
+        ("only_manual", "Only manually"),
+    ], required=True)
+
+    cron = fields.Many2one('ir.cron', string='Cron rules')
+    base_action_rules = fields.Many2many(
+        'base.action.rule', string='Action Rules'
+    )
+
+    @api.one
+    def sync(self):
+        if not self.data_type.enabled:
+            if self.cron:
+                self.cron.unlink()
+            if self.base_action_rules:
+                for bar in self.base_action_rules:
+                    bar.server_action_ids.unlink()
+                self.base_action_rules.unlink()
+
+        if self.name == 'only_manual':
+
+            if self.base_action_rules:
+                for bar in self.base_action_rules:
+                    bar.server_action_ids.unlink()
+                self.base_action_rules.unlink()
+
+            elif self.cron:
+                self.cron.unlink()
+
+        if self.name == 'interval':
+            ic_obj = self.env['ir.cron']
+
+            if self.cron:
+                _logger.info("\n\nCronID\n")
+
+            else:
+                vals_ic = {
+                    'name': 'send_all_%s' % self.data_type.model.model,
+                    'interval_number': 10,
+                    'interval_type': 'minutes',
+                    'numbercall': -1,
+                    'model': 'cenit.flow',
+                    'function': 'send_all',
+                    'args': '(%s)' % str(self.id)
+                }
+                ic = ic_obj.create(vals_ic)
+                self.with_context(local=True).write({'cron': ic.id})
+
+            if self.base_action_rules:
+                for bar in self.base_action_rules:
+                    bar.server_action_ids.unlink()
+                self.base_action_rules.unlink()
+
+        elif self.name in ('on_create', 'on_write', 'on_create_or_write'):
+            ias_obj = self.env['ir.actions.server']
+            bar_obj = self.env['base.action.rule']
+
+            if self.base_action_rules:
+                for bar in self.base_action_rules:
+                    bar.server_action_ids.unlink()
+                self.base_action_rules.unlink()
+
+            rules = []
+            action_name = 'send_one_%s_as_%s' % (
+                self.data_type.model.model, self.data_type.cenit_root
+            )
+            cd = "self.pool.get('{}').browse(cr, uid, {}).trigger_flows(obj)".format(
+                self.data_type._name,
+                self.data_type.id
+            )
+            vals_ias = {
+                'name': action_name,
+                'model_id': self.data_type.model.id,
+                'state': 'code',
+                'code': cd
+            }
+            ias = ias_obj.create(vals_ias)
+            vals_bar = {
+                'name': action_name,
+                'active': True,
+                'kind': self.name,
+                'model_id': self.data_type.model.id,
+                'server_action_ids': [(6, False, [ias.id])]
+            }
+            bar = bar_obj.create(vals_bar)
+            rules.append((4, bar.id, False))
+
+            self.with_context(local=True).write(
+                {'base_action_rules': rules}
+            )
+
+            if self.cron:
+                self.cron.unlink()
+
+        return True
 
 
 class CenitDataType(models.Model):
@@ -173,25 +276,26 @@ class CenitDataType(models.Model):
 
     @api.depends('schema')
     def _compute_root(self):
-        self.cenit_root = self.schema.cenit_root()
+        self.cenit_root = self.schema.cenit_root()[0]
 
     _name = 'cenit.data_type'
 
     cenit_root = fields.Char(compute='_compute_root', store=True)
 
     name = fields.Char('Name', size=128, required=True)
-    active = fields.Boolean('Active', default=True)
-    library = fields.Many2one(
-        'cenit.library',
-        string = 'Library',
-        required = True,
-        ondelete = 'cascade'
-    )
+    enabled = fields.Boolean('Enabled', default=True)
+    library = fields.Many2one('cenit.library', string='Library', required=True,
+                              ondelete='cascade')
 
     model = fields.Many2one('ir.model', 'Model', required=True)
     schema = fields.Many2one('cenit.schema', 'Schema')
 
     lines = fields.One2many('cenit.data_type.line', 'data_type', 'Mapping')
+    domain = fields.One2many('cenit.data_type.domain_line', 'data_type',
+                             'Conditions')
+
+    triggers = fields.One2many("cenit.data_type.trigger", "data_type",
+                               "Trigger on")
 
     _sql_constraints = [
         ('name_uniq', 'UNIQUE(name)', 'The name must be unique!'),
@@ -208,15 +312,30 @@ class CenitDataType(models.Model):
         return flow_pool.search(domain) or []
 
     @api.one
-    def sync_rules(self, flows=None):
-        if not flows:
-            flows = self._get_flows()[0]
+    def sync_rules(self):
+        for trigger in self.triggers:
+            trigger.sync()
 
+    @api.one
+    def trigger_flows(self, obj):
+        flow_pool = self.env["cenit.flow"]
+        flows = self._get_flows()[0]
+
+        to_trigger = {
+            "cenit": None,
+            "other": []
+        }
         for flow in flows:
-            purpose = flow._get_direction()[0]
-            if purpose != 'send':
-                continue
-            flow.set_send_execution()
+            if flow.enabled and not flow.local and not to_trigger["cenit"]:
+                to_trigger["cenit"] = flow.id
+            if flow.enabled and flow.local:
+                to_trigger["other"].append(flow.id)
+
+        if to_trigger["cenit"]:
+            flow_pool.send(obj, to_trigger["cenit"])
+
+        for id_ in to_trigger["other"]:
+            flow_pool.send(obj, id_)
 
     @api.model
     def create(self, vals):
@@ -245,23 +364,68 @@ class CenitDataType(models.Model):
 
         return res
 
+    @api.one
+    def get_search_domain(self):
+        return [x.as_search_domain() for x in self.domain]
+
+    @api.one
+    def ensure_object(self, obj):
+        rc = self.model.model == obj._name
+        if not rc or not self.enabled:
+            return False
+
+        domain = self.get_search_domain()[0]
+        if domain and isinstance(domain[0], list):
+            domain = domain[0]
+        domain.append(("id", "=", obj.id))
+        match = obj.search(domain) or False
+
+        return match
+
+
+class CenitDataTypeDomainLine(models.Model):
+    _name = 'cenit.data_type.domain_line'
+
+    data_type = fields.Many2one('cenit.data_type', 'Data Type')
+
+    field = fields.Char('Field', required=True)
+    value = fields.Char('Value', required=True)
+
+    op = fields.Selection(
+        [
+            ('=', 'Equal'),
+            ('!=', 'Different'),
+            ('in', 'In'),
+            ('not in', 'Not in'),
+        ],
+        'Condition', required=True
+    )
+
+    @api.one
+    def as_search_domain(self):
+        value = self.value
+        if self.op in ("in", "not in"):
+            value = value.split(",")
+        return self.field, self.op, value
+
 
 class CenitDataTypeLine(models.Model):
     _name = 'cenit.data_type.line'
 
     data_type = fields.Many2one('cenit.data_type', 'Data Type')
 
-    name = fields.Char('Name')
-    value = fields.Char('Value')
+    name = fields.Char('Name', required=True)
+    value = fields.Char('Value', required=True)
 
     line_type = fields.Selection(
         [
             ('field', 'Field'),
             ('model', 'Model'),
+            ('reference', 'Reference'),
             ('default', 'Default'),
-            ('reference', 'Reference')
+            ('code', 'Python code'),
         ],
-        'Type'
+        'Type', required=True
     )
     reference = fields.Many2one('cenit.data_type', 'Reference')
     line_cardinality = fields.Selection(
