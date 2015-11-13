@@ -71,24 +71,42 @@
                                 <field name="name"/>
                                 <field name="model"/>
                                 <field name="library"/>
-                                <field name="schema"/>
+                                <field name="schema"
+                                        attrs="{'required': True}"/>
                             </group>
                             <group>
-                                <field name="active"/>
+                                <field name="enabled"/>
                             </group>
                         </group>
                         <notebook>
                             <page string="Mapping">
                                 <field name="lines">
                                     <tree string="Lines" editable="bottom">
-                                        <field name="name" string="Odoo" />
-                                        <field name="value" string="Cenit" />
+                                        <field name="value" string="Schema property"/>
+                                        <field name="name" string="Model value" />
                                         <field name="line_type" />
                                         <field name="reference"
-                                                attrs="{'required':[('line_type', '=', 'model')]}" />
+                                                attrs="{'required':[('line_type', '=', 'model')], 'invisible':[('line_type', '!=', 'model')]}" />
                                         <field name="line_cardinality"
-                                                attrs="{'required':[('line_type', 'in', ['model', 'reference'])]}" />
-                                        <field name="primary" />
+                                                attrs="{'required':[('line_type', 'in', ['model', 'reference'])], 'readonly':[('line_type', 'not in', ['model', 'reference'])]}" />
+                                        <field name="primary"
+                                                attrs="{'invisible': [('line_type', '!=', 'field')]}"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Triggers">
+                                <field name="triggers">
+                                    <tree string="Triggers" editable="bottom">
+                                        <field name="name" string="Event"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Conditions">
+                                <field name="domain">
+                                    <tree string="Conditions" editable="bottom">
+                                        <field name="field"/>
+                                        <field name="op"/>
+                                        <field name="value"/>
                                     </tree>
                                 </field>
                             </page>
@@ -130,6 +148,7 @@
                 <form string="Library">
                     <group>
                         <field name="name" />
+                        <field name="slug" />
                         <field name="schemas" />
                     </group>
                 </form>

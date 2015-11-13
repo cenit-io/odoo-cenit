@@ -103,6 +103,8 @@ class CenitConnection (models.Model):
             })
         vals.update({'template_parameters': template})
 
+        vals.update({"_primary": ["namespace", "name"]})
+
         return vals
 
     def _calculate_update(self, values):
@@ -183,7 +185,7 @@ class CenitConnectionRole (models.Model):
             connections.append(vals_)
 
         vals.update({
-            'connections': connections
+            'connections': connections,
         })
         _reset.append('connections')
 
@@ -200,7 +202,8 @@ class CenitConnectionRole (models.Model):
         _reset.append('webhooks')
 
         vals.update({
-            '_reset': _reset
+            '_reset': _reset,
+            '_primary': ['namespace', 'name'],
         })
 
         return vals
@@ -331,6 +334,8 @@ class CenitWebhook (models.Model):
             })
         vals.update({'template_parameters': template})
 
+        vals.update({'_primary': ['namespace', 'name']})
+
         return vals
 
     @api.model
@@ -346,24 +351,21 @@ class CenitEvent (models.Model):
     cenit_models = 'events'
 
     cenitID = fields.Char('CenitID')
+    namespace = fields.Char('Namespace', default="Odoo")
     name = fields.Char('Name', required=True, unique=True)
     type_ = fields.Selection(
         [
             ('Setup::Observer', 'Observer'),
             ('Setup::Scheduler', 'Scheduler'),
-            ('on_create', 'On Create'),
-            ('on_write', 'On Update'),
-            ('on_create_or_update', 'On Create or Update'),
-            ('on_create_or_update', 'On Create or Update'),
-            ('interval', 'Interval'),
-            ('only_manual', 'Only Manual'),
+            # ('on_create', 'On Create'),
+            # ('on_write', 'On Update'),
+            # ('on_create_or_update', 'On Create or Update'),
+            # ('interval', 'Interval'),
+            # ('only_manual', 'Only Manual'),
         ],
         string="Type"
     )
-    schema = fields.Many2one(
-        'cenit.schema',
-        string='Schema'
-    )
+    schema = fields.Many2one('cenit.schema', string='Schema')
 
 
 class CenitTranslator (models.Model):
@@ -374,13 +376,11 @@ class CenitTranslator (models.Model):
     cenit_models = 'translators'
 
     cenitID = fields.Char('CenitID')
+    namespace = fields.Char('Namespace', default="Odoo")
     name = fields.Char('Name', required=True, unique=True)
     type_ = fields.Char("Type")
     mime_type = fields.Char('MIME Type')
-    schema = fields.Many2one(
-        'cenit.schema',
-        string = 'Schema'
-    )
+    schema = fields.Many2one('cenit.schema', string='Schema')
 
 
 class CenitFlow (models.Model):
@@ -395,7 +395,7 @@ class CenitFlow (models.Model):
 
     namespace = fields.Char('Namespace', default="Odoo")
     name = fields.Char('Name', size=64, required=True, unique=True)
-    active = fields.Boolean('Active', default=True)
+    enabled = fields.Boolean('Enabled', default=True)
     event = fields.Many2one("cenit.event", string='Event')
 
     cron = fields.Many2one('ir.cron', string='Cron rules')
@@ -445,7 +445,7 @@ class CenitFlow (models.Model):
         vals = {
             'namespace': self.namespace,
             'name': self.name,
-            'active': self.active,
+            'active': self.enabled,
             'discard_events': False,
             'data_type_scope': 'All',
         }
@@ -453,57 +453,60 @@ class CenitFlow (models.Model):
         if self.cenitID:
             vals.update({'id': self.cenitID})
 
-        odoo_events = (
-            'only_manual',
-            'interval',
-            'on_create',
-            'on_write',
-            'on_create_or_write'
-        )
+        # odoo_events = (
+        #     'only_manual',
+        #     'interval',
+        #     'on_create',
+        #     'on_write',
+        #     'on_create_or_write'
+        # )
 
-        if self.event not in odoo_events:
-            event = {
-                "id": self.event.cenitID
-            }
-            vals.update({
-                'event': event,
-                'data_type_scope': 'Event',
-            })
-        elif self.event not in ('only_manual', 'interval'):
-            cr = '{"created_at":{"0":{"o":"_not_null","v":["","",""]}}}'
-            wr = '{"updated_at":{"0":{"o":"_presence_change","v":["","",""]}}}'
-            cr_wr = '{"updated_at":{"0":{"o":"_change","v":["","",""]}}}'
-            event = {
-                '_type': "Setup::Observer",
-                'name': "%s::%s > %s @ %s" % (
-                    self.data_type.library.name,
-                    self.data_type.name,
-                    self.execution,
-                    datetime.now().ctime()
-                ),
-                'data_type': {'id': self.data_type.schema.cenitID},
-                'triggers': {
-                    'on_create': cr,
-                    'on_write': wr,
-                    'on_create_or_write': cr_wr,
-                }[self.event]
-            }
-
-            vals.update({
-                'event': event,
-                'data_type_scope': 'Event',
-            })
+        # if self.event not in odoo_events:
+        event = {
+            "_reference": True,
+            "id": self.event.cenitID,
+        }
+        vals.update({
+            'event': event,
+            'data_type_scope': 'Event',
+        })
+        # elif self.event not in ('only_manual', 'interval'):
+        #     cr = '{"created_at":{"0":{"o":"_not_null","v":["","",""]}}}'
+        #     wr = '{"updated_at":{"0":{"o":"_presence_change","v":["","",""]}}}'
+        #     cr_wr = '{"updated_at":{"0":{"o":"_change","v":["","",""]}}}'
+        #     event = {
+        #         '_type': "Setup::Observer",
+        #         'name': "%s::%s > %s @ %s" % (
+        #             self.data_type.library.name,
+        #             self.data_type.name,
+        #             self.execution,
+        #             datetime.now().ctime()
+        #         ),
+        #         'data_type': {'id': self.data_type.schema.cenitID},
+        #         'triggers': {
+        #             'on_create': cr,
+        #             'on_write': wr,
+        #             'on_create_or_write': cr_wr,
+        #         }[self.event]
+        #     }
+        #
+        #     vals.update({
+        #         'event': event,
+        #         'data_type_scope': 'Event',
+        #     })
 
         if self.cenit_translator:
             vals.update({
                 'translator': {
-                    'id': self.cenit_translator.cenitID
+                    '_reference': True,
+                    'id': self.cenit_translator.cenitID,
                 }
             })
 
         if self.schema.cenitID:
             vals.update({
                 'custom_data_type': {
+                    '_reference': True,
                     'id': self.schema.cenitID
                 }
             })
@@ -511,6 +514,7 @@ class CenitFlow (models.Model):
         if self.connection_role:
             vals.update({
                 'connection_role': {
+                    '_reference': True,
                     'id': self.connection_role.cenitID
                 }
             })
@@ -518,6 +522,7 @@ class CenitFlow (models.Model):
         if self.webhook:
             vals.update({
                 'webhook': {
+                    '_reference': True,
                     'id': self.webhook.cenitID
                 }
             })
@@ -533,11 +538,11 @@ class CenitFlow (models.Model):
                     'cenitID': v[0]['id'],
 
                 }
-                if v[0].get('event', False):
-                    _logger.info("\n\nCalculating FLOW update from: %s\n", v[0])
-                    # update.update({
-                    #    'event': v[0]['event']['id']
-                    # })
+                # if v[0].get('event', False):
+                #     _logger.info("\n\nCalculating FLOW update from: %s\n", v[0])
+                #     update.update({
+                #        'event': v[0]['event']['id']
+                #     })
 
         return update
 
@@ -605,42 +610,39 @@ class CenitFlow (models.Model):
 
     @api.model
     def create(self, vals):
-        local = (vals.get('cenitID', False) == False) or \
+        local = (vals.get('cenitID', False) is False) or \
                 (self.env.context.get('local'), False)
 
         obj = super(CenitFlow, self).create(vals)
-        if not local:
-            purpose = obj._get_direction()[0]
-            method = 'set_%s_execution' % (purpose, )
-            getattr(obj, method)()
+        # if not local:
+        #     purpose = obj._get_direction()[0]
+        #     method = 'set_%s_execution' % (purpose, )
+        #     getattr(obj, method)()
 
         return obj
 
     @api.one
     def write(self, vals):
-        prev_purpose = self._get_direction()[0]
-        prev_sch = self.schema
-        prev_dt = self.data_type
+        # prev_purpose = self._get_direction()[0]
+        # prev_sch = self.schema
+        # prev_dt = self.data_type
         res = super(CenitFlow, self).write(vals)
-        new_purpose = self._get_direction()[0]
+        # new_purpose = self._get_direction()[0]
 
-        if ((new_purpose != prev_purpose) or
-            (vals.get('event', False)) or
-            (prev_sch != self.schema) or
-            (prev_dt != self.data_type)):
-
-            method = 'set_%s_execution' % new_purpose
-            getattr(self, method)()
+        # if (new_purpose != prev_purpose) or (vals.get('event', False)) or \
+        #    (prev_sch != self.schema) or (prev_dt != self.data_type):
+        #     method = 'set_%s_execution' % new_purpose
+        #     getattr(self, method)()
 
         return res
 
     @api.one
     def unlink(self):
 
-        if self.base_action_rules:
-            self.base_action_rules.unlink()
-        if self.cron:
-            self.cron.unlink()
+        # if self.base_action_rules:
+        #     self.base_action_rules.unlink()
+        # if self.cron:
+        #     self.cron.unlink()
 
         return super(CenitFlow, self).unlink()
 
@@ -659,22 +661,22 @@ class CenitFlow (models.Model):
     def receive(self, model, data):
         res = False
         context = self.env.context.copy() or {}
-        obj = self.find(model.lower(), 'receive')
+        flow = self.find(model.lower(), 'receive')
 
-        if obj:
-            klass = self.env[obj.data_type.model.model]
+        if flow and flow.enabled:
+            klass = self.env[flow.data_type.model.model]
 
-            if obj.format_ == 'application/json':
+            if flow.format_ == 'application/json':
                 action = context.get('action', 'push')
                 wh = self.env['cenit.handler']
                 context.update({'receive_object': True})
 
                 action = getattr(wh, action, False)
                 if action:
-                    root = obj.data_type.cenit_root
-                    res = action (data, root)
+                    root = flow.data_type.cenit_root
+                    res = action(data, root)
 
-            elif obj.format_ == 'application/EDI-X12':
+            elif flow.format_ == 'application/EDI-X12':
                 for edi_document in data:
                     klass.edi_import(edi_document)
                 res = True
@@ -682,122 +684,130 @@ class CenitFlow (models.Model):
 
     @api.one
     def set_send_execution(self):
-        if self.data_type:
-            dts = [self.data_type]
-        else:
-            dt_pool = self.env['cenit.data_type']
-            domain = [('schema', '=', self.schema.id)]
-            dts = dt_pool.search(domain)
-
-        execution = {
-            'only_manual': 'only_manual',
-            'interval': 'interval',
-            'on_create': 'on_create',
-            'on_write': 'on_write'
-        }.get(self.event.type_, 'on_create_or_write')
-
-        if execution == 'only_manual':
-
-            if self.base_action_rules:
-                self.base_action_rules.unlink()
-
-            elif self.cron:
-                self.cron.unlink()
-
-        if execution == 'interval':
-            ic_obj = self.env['ir.cron']
-
-            for data_type in dts:
-                if self.cron:
-                    _logger.info("\n\nCronID\n")
-
-                else:
-                    vals_ic = {
-                        'name': 'send_all_%s' % data_type.model.model,
-                        'interval_number': 10,
-                        'interval_type': 'minutes',
-                        'numbercall': -1,
-                        'model': 'cenit.flow',
-                        'function': 'send_all',
-                        'args': '(%s)' % str(self.id)
-                    }
-                    ic = ic_obj.create(vals_ic)
-                    self.with_context(local=True).write({'cron': ic.id})
-
-            if self.base_action_rules:
-                self.base_action_rules.unlink()
-
-        elif execution in ('on_create', 'on_write', 'on_create_or_write'):
-            ias_obj = self.env['ir.actions.server']
-            bar_obj = self.env['base.action.rule']
-
-            if self.base_action_rules:
-                for bar in self.base_action_rules:
-                    bar.server_action_ids.unlink()
-                self.base_action_rules.unlink()
-
-            rules = []
-            for data_type in dts:
-                cd = "self.pool.get('cenit.flow').send(cr, uid, obj, %s)" % (
-                    self.id,
-                )
-                vals_ias = {
-                    'name': 'send_one_%s_as_%s' % (
-                        data_type.model.model, self.schema.slug
-                    ),
-                    'model_id': data_type.model.id,
-                    'state': 'code',
-                    'code': cd
-                }
-                ias = ias_obj.create(vals_ias)
-                vals_bar = {
-                    'name': 'send_one_%s_as_%s' % (
-                        data_type.model.model, self.schema.slug
-                    ),
-                    'active': True,
-                    'kind': execution,
-                    'model_id': data_type.model.id,
-                    'server_action_ids': [(6, False, [ias.id])]
-                }
-                bar = bar_obj.create(vals_bar)
-                rules.append((4, bar.id, False))
-
-            self.with_context(local=True).write(
-                {'base_action_rules': rules}
-            )
-
-            if self.cron:
-                self.cron.unlink()
-
+        # if self.data_type:
+        #     dts = [self.data_type]
+        # else:
+        #     dt_pool = self.env['cenit.data_type']
+        #     domain = [('schema', '=', self.schema.id)]
+        #     dts = dt_pool.search(domain)
+        #
+        # execution = {
+        #     'only_manual': 'only_manual',
+        #     'interval': 'interval',
+        #     'on_create': 'on_create',
+        #     'on_write': 'on_write'
+        # }.get(self.event.type_, 'on_create_or_write')
+        #
+        # if execution == 'only_manual':
+        #
+        #     if self.base_action_rules:
+        #         self.base_action_rules.unlink()
+        #
+        #     elif self.cron:
+        #         self.cron.unlink()
+        #
+        # if execution == 'interval':
+        #     ic_obj = self.env['ir.cron']
+        #
+        #     for data_type in dts:
+        #         if self.cron:
+        #             _logger.info("\n\nCronID\n")
+        #
+        #         else:
+        #             vals_ic = {
+        #                 'name': 'send_all_%s' % data_type.model.model,
+        #                 'interval_number': 10,
+        #                 'interval_type': 'minutes',
+        #                 'numbercall': -1,
+        #                 'model': 'cenit.flow',
+        #                 'function': 'send_all',
+        #                 'args': '(%s)' % str(self.id)
+        #             }
+        #             ic = ic_obj.create(vals_ic)
+        #             self.with_context(local=True).write({'cron': ic.id})
+        #
+        #     if self.base_action_rules:
+        #         self.base_action_rules.unlink()
+        #
+        # elif execution in ('on_create', 'on_write', 'on_create_or_write'):
+        #     ias_obj = self.env['ir.actions.server']
+        #     bar_obj = self.env['base.action.rule']
+        #
+        #     if self.base_action_rules:
+        #         for bar in self.base_action_rules:
+        #             bar.server_action_ids.unlink()
+        #         self.base_action_rules.unlink()
+        #
+        #     rules = []
+        #     for data_type in dts:
+        #         action_name = 'send_one_%s_as_%s' % (
+        #             data_type.model.model, data_type.cenit_root
+        #         )
+        #         cd = "self.pool.get('cenit.flow').send(cr, uid, obj, %s)" % (
+        #             self.id,
+        #         )
+        #         vals_ias = {
+        #             'name': action_name,
+        #             'model_id': data_type.model.id,
+        #             'state': 'code',
+        #             'code': cd
+        #         }
+        #         ias = ias_obj.create(vals_ias)
+        #         vals_bar = {
+        #             'name': action_name,
+        #             'active': True,
+        #             'kind': execution,
+        #             'model_id': data_type.model.id,
+        #             'server_action_ids': [(6, False, [ias.id])]
+        #         }
+        #         bar = bar_obj.create(vals_bar)
+        #         rules.append((4, bar.id, False))
+        #
+        #     self.with_context(local=True).write(
+        #         {'base_action_rules': rules}
+        #     )
+        #
+        #     if self.cron:
+        #         self.cron.unlink()
+        #
         return True
 
     @api.model
     def send(self, obj, flow_id):
+        flow = self.browse(flow_id)
+        if not (flow and flow.enabled):
+            return False
+
         dt_pool = self.env['cenit.data_type']
         ws = self.env['cenit.serializer']
 
-        flow = self.browse(flow_id)
+        data_types = [flow.data_type]
+        if not data_types[0]:
+            domain = [('schema', '=', flow.schema.id)]
+            data_types = dt_pool.search(domain)
+            if not data_types:
+                return False
 
-        if flow:
-            data = None
+        data = None
+        if flow.format_ == 'application/json':
+            data = []
+            for dt in data_types:
+                match = dt.ensure_object(obj)
+                if isinstance(match, list):
+                    match = match[0]
+                if match:
+                    data.append(ws.serialize(obj, dt))
+        elif flow.format_ == 'application/EDI-X12':
+            dt = data_types[0]
+            if dt.ensure_object(obj):
+                data = dt.model.edi_export([obj])
 
-            if flow.format_ == 'application/json':
+        rc = False
+        if data:
+            _logger.info("\n\nPushing: %s\n", data)
+            rc = flow._send(data)
 
-                data_types = [flow.data_type]
-                if not data_types[0]:
-                    domain = [('schema', '=', flow.schema.id)]
-                    data_types = dt_pool.search(domain)
-                    if not data_types:
-                        return False
-
-                data = [ws.serialize(obj, dt) for dt in data_types]
-
-            elif flow.format_ == 'application/EDI-X12':
-                data = self.env[obj._name].edi_export([obj])
-
-            return flow._send(data)
-
-        return False
+        return rc
 
     @api.model
     def send_all(self, id_):
@@ -809,10 +819,13 @@ class CenitFlow (models.Model):
             if flow.format_ == 'application/json':
                 ws = self.env['cenit.serializer']
                 for x in objs:
-                    data.append(ws.serialize(x, flow.data_type))
+                    if flow.data_type.ensure_object(x):
+                        data.append(ws.serialize(x, flow.data_type))
             elif flow.format_ == 'application/EDI-X12' and \
                     hasattr(mo, 'edi_export'):
-                data = mo.edi_export(objs)
+                for x in objs:
+                    if flow.data_type.ensure_object(x):
+                        data.append(mo.edi_export(x))
             if data:
                 return flow._send(data)
         return False

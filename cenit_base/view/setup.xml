@@ -256,7 +256,7 @@
                     <group>
                         <group>
                             <field name="name" />
-                            <field name="active" />
+                            <field name="enabled" />
                             <field name="schema" />
                             <field name="data_type"
                                    attrs="{'invisible':[('schema','=',False)]}"
