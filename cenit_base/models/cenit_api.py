@@ -103,20 +103,22 @@ class CenitApi(models.AbstractModel):
         url = config.get('cenit_url') + API_PATH + path
         headers = self.headers(config)
 
-        _logger.info("\n\nPosting payload: %s to %s with headers %s\n", payload,
-                     url, headers)
-
         try:
+            _logger.info("[POST] %s ? %s {%s}", url, payload, headers)
             r = requests.post(url, data=payload, headers=headers)
-            _logger.info("\n\n[POST] RC: %s\n", r.content)
         except Exception as e:
             _logger.error(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
         if 200 <= r.status_code < 300:
             return r.json()
 
-        error = r.json()
-        _logger.error(error)
+        try:
+            error = r.json()
+            _logger.error(error)
+        except Exception as e:
+            _logger.error(e)
+            raise exceptions.ValidationError("Cenit returned with errors")
+
         if 400 <= error.get('code', 400) < 500:
             raise exceptions.AccessError("Error trying to connect to Cenit.")
 
@@ -126,22 +128,26 @@ class CenitApi(models.AbstractModel):
     def get(self, path, params=None):
         config = self.instance()
 
+        url = config.get('cenit_url') + API_PATH + path
+        headers = self.headers(config)
         try:
-            r = requests.get(
-                config.get('cenit_url') + API_PATH + path,
-                params=params,
-                headers=self.headers(config)
-            )
+            _logger.info("[GET] %s ? %s {%s}", url, params, headers)
+            r = requests.get(url, params=params, headers=self.headers(config))
         except Exception as e:
             _logger.error(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
 
         if 200 <= r.status_code < 300:
             return r.json()
-            # return simplejson.loads(r.content)
 
-        error = r.json()
-        # error = simplejson.loads(r.content)
+        try:
+            error = r.json()
+            _logger.error(error)
+        except Exception as e:
+            _logger.error(e)
+            _logger.info("\n\n%s\n", r.content)
+            raise exceptions.ValidationError("Cenit returned with errors")
+
         if 400 <= error.get('code', 400) < 500:
             raise exceptions.AccessError("Error trying to connect to Cenit.")
 
@@ -150,24 +156,28 @@ class CenitApi(models.AbstractModel):
     @api.model
     def put(self, path, vals):
         config = self.instance()
+
         payload = simplejson.dumps(vals)
+        url = config.get('cenit_url') + API_PATH + path
+        headers = self.headers(config)
 
         try:
-            r = requests.put(
-                config.get('cenit_url') + API_PATH + path,
-                data=payload,
-                headers=self.headers(config)
-            )
+            _logger.info("[PUT] %s ? %s {%s}", url, payload, headers)
+            r = requests.put(url, data=payload, headers=headers)
         except Exception as e:
             _logger.error(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
 
         if 200 <= r.status_code < 300:
             return r.json()
-            # return simplejson.loads(r.content)
 
-        error = r.json()
-        # error = simplejson.loads(r.content)
+        try:
+            error = r.json()
+            _logger.error(error)
+        except Exception as e:
+            _logger.error(e)
+            raise exceptions.ValidationError("Cenit returned with errors")
+
         if 400 <= error.get('code', 400) < 500:
             raise exceptions.AccessError("Error trying to connect to Cenit.")
 
@@ -177,11 +187,12 @@ class CenitApi(models.AbstractModel):
     def delete(self, path):
         config = self.instance()
 
+        url = config.get('cenit_url') + API_PATH + path
+        headers = self.headers(config)
+
         try:
-            r = requests.delete(
-                config.get('cenit_url') + API_PATH + path,
-                headers=self.headers(config)
-            )
+            _logger.info("[DEL] %s ? {%s}", url, headers)
+            r = requests.delete(url, headers=headers)
         except Exception as e:
             _logger.error(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
@@ -189,8 +200,13 @@ class CenitApi(models.AbstractModel):
         if 200 <= r.status_code < 300:
             return True
 
-        error = r.json()
-        # error = simplejson.loads(r.content)
+        try:
+            error = r.json()
+            _logger.error(error)
+        except Exception as e:
+            _logger.error(e)
+            raise exceptions.ValidationError("Cenit returned with errors")
+
         if 400 <= error.get('code', 400) < 500:
             raise exceptions.AccessError("Error trying to connect to Cenit.")
 
