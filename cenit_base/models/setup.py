@@ -65,7 +65,8 @@ class CenitConnection (models.Model):
     )
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE(name)', 'The name must be unique!'),
+        ('name_uniq', 'UNIQUE(namespace, name)',
+         'The name must be unique for each namespace!'),
     ]
 
     @api.one
@@ -163,7 +164,8 @@ class CenitConnectionRole (models.Model):
     )
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE(name)', 'The name must be unique!'),
+        ('name_uniq', 'UNIQUE(namespace, name)',
+         'The name must be unique for each namespace!'),
     ]
 
     @api.one
@@ -294,7 +296,8 @@ class CenitWebhook (models.Model):
     )
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE(name)', 'The name must be unique!'),
+        ('name_uniq', 'UNIQUE(namespace, name)',
+         'The name must be unique for each namespace!'),
     ]
 
     @api.one
@@ -397,6 +400,7 @@ class CenitFlow (models.Model):
     name = fields.Char('Name', size=64, required=True, unique=True)
     enabled = fields.Boolean('Enabled', default=True)
     event = fields.Many2one("cenit.event", string='Event')
+    discard_events = fields.Boolean("Discard events", default=False)
 
     cron = fields.Many2one('ir.cron', string='Cron rules')
     base_action_rules = fields.Many2many(
@@ -437,7 +441,8 @@ class CenitFlow (models.Model):
     # )
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE(name)', 'The name must be unique!'),
+        ('name_uniq', 'UNIQUE(namespace, name)',
+         'The name must be unique for each namespace!'),
     ]
 
     @api.one
