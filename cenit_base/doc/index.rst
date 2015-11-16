@@ -121,30 +121,30 @@ Fields
     It consists of a series of **mapping** lines, describing which **model**
     data should go into which **schema** property.
 
-    - ``odoo``: represents an actual value to use.
+    - ``name``: the name of the property that will store the value expressed in
+      **value**.
 
-    - ``cenit``: the name of the property that will store the value expressed in
-      **odoo**.
+    - ``value``: represents an actual value to use.
 
     - ``type``: one of
 
-      - ``field``: tells the *Data type* that the value expressed in **odoo** is
+      - ``field``: tells the *Data type* that the value expressed in **value** is
         the name of a field in the **model** (say ``name``). This does not
         allow using nested fields (that is: ``rel_id.name`` will cause
         breakdown).
 
-      - ``model``: tells the *Data type* that the value expressed in **odoo** is
+      - ``model``: tells the *Data type* that the value expressed in **value** is
         a reference to other *Data type*. This means that when sending/receiving
         the data, the related Odoo model will also be serialized/deserialized
         (according to the specified *Data type*) and fully processed as if it
         were the one that triggered the action.
 
       - ``reference``: tells the *Data type* that the value expressed in
-        **odoo** is a reference to other model not mapped by any *Data type*. In
+        **value** is a reference to other model not mapped by any *Data type*. In
         this case the field ``name`` of the related model is used as an
         identifier.
 
-      - ``default``: tells the *Data type* that the value expressed in **odoo**
+      - ``default``: tells the *Data type* that the value expressed in **value**
         should be treated as a string literal, which can contain replacement
         patterns in the form of ``{field_name}`` where ``field_name`` is the
         name of a field in the **model**.
@@ -153,6 +153,11 @@ Fields
         Also the value of a default field can be a json structure, in which case
         the json brackets should be doubled: ``{{`` and ``}}`` (e.g:
         ``{{client: "{client.name}"}}``).
+
+      - ``python code``: tells the *Data type* that te value expressed in **value**
+        should be evaluated (it is actually processed by a call to Python's **eval**
+        builtin function). The special variable **obj** refers to the object being
+        transformed.
 
     - ``reference``: used when **type** is ``Model``.
 

@@ -279,6 +279,7 @@
                                    attrs="{'invisible':[('local','=',True),('webhook','=',False)],'required':[('local','=',False)]}"
                                    options="{'no_quick_create':True,'no_create_edit':True}"/>
                             <field name="local" invisible="True" />
+                            <field name="discard_events" />
                         </group>
                     </group>
                 </form>
