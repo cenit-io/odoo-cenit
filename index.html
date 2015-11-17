@@ -1,0 +1,327 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Cenit Integrations Client by dhbahr</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Cenit Integrations Client</h1>
+        <p>Integrate your Odoo with third party systems</p>
+
+        <p class="view"><a href="https://github.com/dhbahr/odoo-cenit">View the Project on GitHub <small>dhbahr/odoo-cenit</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/dhbahr/odoo-cenit/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/dhbahr/odoo-cenit/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/dhbahr/odoo-cenit">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="cenit-integrations-client" class="anchor" href="#cenit-integrations-client" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cenit Integrations Client</h1>
+
+<p>Cenit Integrations Client allows you to integrate your Odoo system with many
+third party services available over the internet using the <a href="https://cenit.io">Cenit.io</a>
+platform as data integrator.</p>
+
+<h2>
+<a id="overview" class="anchor" href="#overview" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overview</h2>
+
+<ul>
+<li>The <a href="https://cenit.io">Cenit.io</a> platform provides a set of models that allow you to map your
+data once and send it transparently to any service supported by the platform.</li>
+<li>The <a href="https://cenit.io">Cenit.io</a> platform is free and community friendly, and makes use of
+open source and standards so that community driven development is easier.</li>
+</ul>
+
+<h2>
+<a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Requirements</h2>
+
+<p>The Cenit Integrations Client requires a few additional Python packages to be
+installed on your system. These dependencies can be easily installed using
+<strong>pip</strong> as follows:</p>
+
+<p>$ pip install inflect
+  $ pip install requests[security]</p>
+
+<p>If not using <strong>pip</strong> you should manually install the following Python packages:</p>
+
+<ul>
+<li><code>inflect</code></li>
+<li><code>pyOpenSSL</code></li>
+<li><code>ndg-httpsclient</code></li>
+<li><code>pyasn1</code></li>
+</ul>
+
+<p>Actual package names depend on your specific system.</p>
+
+<h2>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h2>
+
+<p>The Cenit Integrations Client groups its provided models in two categories
+describing <em>what</em> data you want to be able to send/receive and <em>when</em> you want
+to send/receive the data.</p>
+
+<h3>
+<a id="data-definitions" class="anchor" href="#data-definitions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data definitions</h3>
+
+<p>The models gathered here describe the <em>what</em>, they manipulate the Odoo data to
+shape it in a way that is consistent with supported third party services.</p>
+
+<h4>
+<a id="libraries" class="anchor" href="#libraries" aria-hidden="true"><span class="octicon octicon-link"></span></a>Libraries</h4>
+
+<p><em>Libraries</em> are a mere logical organization of the data. They exist solely for
+the purpose of organizing <em>Schemas</em> and <em>Data types</em>.</p>
+
+<h5>
+<a id="fields" class="anchor" href="#fields" aria-hidden="true"><span class="octicon octicon-link"></span></a>Fields</h5>
+
+<ul>
+<li>
+<p><code>name</code>: string</p>
+
+<p>The name of the <em>Library</em>. </p>
+
+<p>Must be unique.</p>
+</li>
+<li>
+<p><code>slug</code>: string</p>
+
+<p>A sanitized string containing only lower case alphanumeric characters and underscores.</p>
+
+<p>It identifies the <em>Library</em> and must therefore be unique.</p>
+</li>
+</ul>
+
+<h4>
+<a id="schemas" class="anchor" href="#schemas" aria-hidden="true"><span class="octicon octicon-link"></span></a>Schemas</h4>
+
+<p><em>Schemas</em> are the fundamental stone of the <code>cenitsaas</code>_ platform models. They
+define the way data is stored and transmitted.</p>
+
+<h5>
+<a id="fields-1" class="anchor" href="#fields-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Fields</h5>
+
+<ul>
+<li>
+<p><code>library</code>: reference</p>
+
+<p>The <em>Library</em> to which the <em>Schema</em> belongs.</p>
+</li>
+<li>
+<p><code>name</code>: string</p>
+
+<p>The name of the <em>Schema</em>. </p>
+
+<p>Must be unique for each <em>Library</em>.</p>
+</li>
+<li>
+<p><code>slug</code>: string</p>
+
+<p>A sanitized string containing only lowercase alphanumeric characters and underscores.</p>
+
+<p>Must be unique for each <em>Library</em>.</p>
+</li>
+<li>
+<p><code>schema</code>: string</p>
+
+<p>The actual JSON schema describing the data.</p>
+</li>
+</ul>
+
+<h3>
+<a id="data-types" class="anchor" href="#data-types" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data types</h3>
+
+<p><em>Data types</em> represent a mapping between an existing Odoo model and a <em>Schema</em>.</p>
+
+<h4>
+<a id="fields-2" class="anchor" href="#fields-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>Fields</h4>
+
+<ul>
+<li>
+<p><code>name</code>: string</p>
+
+<p>The name of the <em>Data type</em>.</p>
+</li>
+<li>
+<p><code>model</code>: reference</p>
+
+<p>The Odoo model that will by associated with the <em>Data type</em>.</p>
+</li>
+<li>
+<p><code>library</code>: reference</p>
+
+<p>The <em>Library</em> to which the <em>Data type</em> belongs.</p>
+</li>
+<li>
+<p><code>schema</code>: reference</p>
+
+<p>The <em>Schema</em> against which the <code>model</code> will be mapped.</p>
+</li>
+<li>
+<p><code>enabled</code>: boolean</p>
+
+<p>If unchecked the <em>Data type</em> will be stored but won't trigger any event. 
+This is most useful when the mapping is intended to be used embedded from another <em>Data type</em>.</p>
+</li>
+<li>
+<p><code>mapping</code>: structure</p>
+
+<p>Describes how to translate the <code>model</code> to the <code>schema</code>.
+It consists of a series of <strong>mapping lines</strong>, describing which <code>model</code>
+data should go into which <code>schema</code> property.</p>
+
+<ul>
+<li>
+<p><code>name</code>: string</p>
+
+<p>the name of the <code>schema</code> property that will store the value expressed in <code>value</code>.</p>
+</li>
+<li>
+<p><code>value</code>: string</p>
+
+<p>represents an actual value to use, depending on the <code>type</code>.</p>
+</li>
+<li>
+<p><code>type</code>: one of</p>
+
+<ul>
+<li><p><code>Field</code>: tells the <em>Data type</em> that the value expressed in <code>value</code> is
+the name of a field in the <code>model</code> (say <strong>name</strong>). This does not
+allow using nested fields (that is: <strong>rel_id.name</strong> will cause breakdown).</p></li>
+<li><p><code>Model</code>: tells the <em>Data type</em> that the value expressed in <code>value</code> is
+a reference to other <em>Data type</em>. This means that when sending/receiving
+the data, the related Odoo model will also be serialized/deserialized
+(according to the specified <code>reference</code>) and fully processed as if it
+were the one that triggered the action.</p></li>
+<li><p><code>Reference</code>: tells the <em>Data type</em> that the value expressed in
+<code>value</code> is a reference to other model not mapped by any <em>Data type</em>. In
+this case the field <strong>name</strong> of the related model is used as an identifier.</p></li>
+<li>
+<p><code>Default</code>: tells the <em>Data type</em> that the value expressed in <code>value</code>
+should be treated as a string literal, which can contain replacement
+patterns in the form of <strong>{field_name}</strong> where <strong>field_name</strong> is the
+name of a field in the <code>model</code>.</p>
+
+<p>This form does allow the use of nested fields (e.g: <strong>{rel_id.name}</strong>),
+and also can be a json structure, in which case the JSON brackets should 
+be doubled: <strong>{{</strong> and <strong>}}</strong> (e.g: <strong>{{client: "{client.name}"}}</strong>).</p>
+</li>
+<li><p><code>Python code</code>: tells the <em>Data type</em> that the value expressed in <code>value</code>
+should be evaluated (it is actually processed by a call to Python's <strong>eval</strong>
+builtin function). The special variable <strong>obj</strong> refers to the object being
+mapped.</p></li>
+</ul>
+</li>
+<li>
+<p><code>reference</code>: reference</p>
+
+<p>used when <code>type</code> is <strong>Model</strong>.</p>
+
+<p>This refers to a <em>Data type</em> against which the <code>value</code> is mapped.</p>
+</li>
+<li>
+<p><code>cardinality</code>: one of</p>
+
+<ul>
+<li><p><code>2one</code>: the <code>value</code> represents a single object.</p></li>
+<li><p><code>2many</code>: the <code>value</code> represents a list of objects.</p></li>
+</ul>
+
+<p>used when <code>type</code> is <strong>Model</strong> or <strong>Reference</strong>.</p>
+</li>
+<li><p><code>primary</code>: if checked, the field will be used as an identifier when receiving data.</p></li>
+</ul>
+</li>
+<li>
+<p><code>triggers</code>: one of</p>
+
+<ul>
+<li><p><code>On creation</code>: every time an instance of <code>model</code> is created on Odoo, a serialization 
+to <code>schema</code> will be performed.</p></li>
+<li><p><code>On update</code>: every time an existing instance of <code>model</code> is modified in Odoo, a serialization
+to <code>schema</code> will be performed.</p></li>
+<li><p><code>On creation or update</code>: every time instance of <code>model</code> is created or modified,
+a serialization to <code>schema</code> will be performed.</p></li>
+<li><p><code>On interval</code>: every 10 minutes all instances of <code>model</code> will be serialized to <code>schema</code>.</p></li>
+<li><p><code>Only manually</code>: serialization will only be performed when specifically requested to Odoo.</p></li>
+</ul>
+</li>
+<li>
+<p><code>Conditions</code>: structure</p>
+
+<ul>
+<li>
+<p><code>field</code>: string</p>
+
+<p>The name of a field in <code>model</code>.</p>
+</li>
+<li>
+<p><code>condition</code>: one of</p>
+
+<ul>
+<li><p><code>Equal</code>: the value of <code>field</code> for the instance of <code>model</code> being serialized must be 
+equal to <code>value</code>.</p></li>
+<li><p><code>Different</code>: the value of <code>field</code> for the instance of <code>model</code> being serialized must be 
+different than <code>value</code>.</p></li>
+<li><p><code>In</code>: the value of <code>field</code> for the instance of <code>model</code> being serialized must be 
+present in <code>value</code>.</p></li>
+<li><p><code>Not in</code>: the value of <code>field</code> for the instance of <code>model</code> being serialized must not be 
+present in <code>value</code>.</p></li>
+</ul>
+</li>
+<li>
+<p><code>value</code>: string</p>
+
+<p>If <code>condition</code> is one of <code>In</code> or <code>Not in</code>, <code>value</code> will be splitted by <strong>commas</strong> to 
+form a list  </p>
+</li>
+</ul>
+</li>
+</ul>
+
+<h2>
+<a id="contribute" class="anchor" href="#contribute" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contribute</h2>
+
+<ul>
+<li>Fork <a href="https://github.com/openjaf/odoo-cenit">the repository</a> on Github.</li>
+<li>Create a branch off <strong>8.0</strong>
+</li>
+<li>Make your changes</li>
+<li>Write a test which shows that the bug was fixed or that the feature works as expected.</li>
+<li>Send a pull request.</li>
+</ul>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+
+<pre><code>Copyright (C) 2014-2015 by CenitSaas Team &lt;support [at] cenit [dot] io&gt;
+
+All rights reserved.
+
+Cenit Integrations Client is licensed under the LGPL license.  You can
+redistribute and/or modify the Cenit Integrations Client according to the
+terms of the license.
+</code></pre>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/dhbahr">dhbahr</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
