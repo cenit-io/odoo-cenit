@@ -53,7 +53,9 @@ class CenitSchema(models.Model):
     name = fields.Char('Name')
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE(library,slug)',
+        ('name_uniq', 'UNIQUE(library,name)',
+         'The name must be unique for each library!'),
+        ('slug_uniq', 'UNIQUE(library,slug)',
          'The slug must be unique for each library!'),
     ]
 
@@ -105,6 +107,7 @@ class CenitLibrary(models.Model):
 
     _sql_constraints = [
         ('name_uniq', 'UNIQUE(name)', 'The name must be unique!'),
+        ('slug_uniq', 'UNIQUE(slug)', 'The slug must be unique!'),
     ]
 
     @api.one
