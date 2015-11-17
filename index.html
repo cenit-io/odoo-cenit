@@ -55,8 +55,9 @@ open source and standards so that community driven development is easier.</li>
 installed on your system. These dependencies can be easily installed using
 <strong>pip</strong> as follows:</p>
 
-<p>$ pip install inflect
-  $ pip install requests[security]</p>
+<pre><code>$ pip install inflect
+$ pip install requests[security]
+</code></pre>
 
 <p>If not using <strong>pip</strong> you should manually install the following Python packages:</p>
 
@@ -95,7 +96,7 @@ the purpose of organizing <em>Schemas</em> and <em>Data types</em>.</p>
 <li>
 <p><code>name</code>: string</p>
 
-<p>The name of the <em>Library</em>. </p>
+<p>The name of the <em>Library</em>.</p>
 
 <p>Must be unique.</p>
 </li>
@@ -126,7 +127,7 @@ define the way data is stored and transmitted.</p>
 <li>
 <p><code>name</code>: string</p>
 
-<p>The name of the <em>Schema</em>. </p>
+<p>The name of the <em>Schema</em>.</p>
 
 <p>Must be unique for each <em>Library</em>.</p>
 </li>
@@ -176,7 +177,7 @@ define the way data is stored and transmitted.</p>
 <li>
 <p><code>enabled</code>: boolean</p>
 
-<p>If unchecked the <em>Data type</em> will be stored but won't trigger any event. 
+<p>If unchecked the <em>Data type</em> will be stored but won't trigger any event.
 This is most useful when the mapping is intended to be used embedded from another <em>Data type</em>.</p>
 </li>
 <li>
@@ -219,7 +220,7 @@ patterns in the form of <strong>{field_name}</strong> where <strong>field_name</
 name of a field in the <code>model</code>.</p>
 
 <p>This form does allow the use of nested fields (e.g: <strong>{rel_id.name}</strong>),
-and also can be a json structure, in which case the JSON brackets should 
+and also can be a json structure, in which case the JSON brackets should
 be doubled: <strong>{{</strong> and <strong>}}</strong> (e.g: <strong>{{client: "{client.name}"}}</strong>).</p>
 </li>
 <li><p><code>Python code</code>: tells the <em>Data type</em> that the value expressed in <code>value</code>
@@ -252,7 +253,7 @@ mapped.</p></li>
 <p><code>triggers</code>: one of</p>
 
 <ul>
-<li><p><code>On creation</code>: every time an instance of <code>model</code> is created on Odoo, a serialization 
+<li><p><code>On creation</code>: every time an instance of <code>model</code> is created on Odoo, a serialization
 to <code>schema</code> will be performed.</p></li>
 <li><p><code>On update</code>: every time an existing instance of <code>model</code> is modified in Odoo, a serialization
 to <code>schema</code> will be performed.</p></li>
@@ -275,21 +276,21 @@ a serialization to <code>schema</code> will be performed.</p></li>
 <p><code>condition</code>: one of</p>
 
 <ul>
-<li><p><code>Equal</code>: the value of <code>field</code> for the instance of <code>model</code> being serialized must be 
+<li><p><code>Equal</code>: the value of <code>field</code> for the instance of <code>model</code> being serialized must be
 equal to <code>value</code>.</p></li>
-<li><p><code>Different</code>: the value of <code>field</code> for the instance of <code>model</code> being serialized must be 
+<li><p><code>Different</code>: the value of <code>field</code> for the instance of <code>model</code> being serialized must be
 different than <code>value</code>.</p></li>
-<li><p><code>In</code>: the value of <code>field</code> for the instance of <code>model</code> being serialized must be 
+<li><p><code>In</code>: the value of <code>field</code> for the instance of <code>model</code> being serialized must be
 present in <code>value</code>.</p></li>
-<li><p><code>Not in</code>: the value of <code>field</code> for the instance of <code>model</code> being serialized must not be 
+<li><p><code>Not in</code>: the value of <code>field</code> for the instance of <code>model</code> being serialized must not be
 present in <code>value</code>.</p></li>
 </ul>
 </li>
 <li>
 <p><code>value</code>: string</p>
 
-<p>If <code>condition</code> is one of <code>In</code> or <code>Not in</code>, <code>value</code> will be splitted by <strong>commas</strong> to 
-form a list  </p>
+<p>If <code>condition</code> is one of <code>In</code> or <code>Not in</code>, <code>value</code> will be splitted by <strong>commas</strong> to
+form a list</p>
 </li>
 </ul>
 </li>
