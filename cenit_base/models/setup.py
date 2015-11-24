@@ -22,7 +22,7 @@
 #
 #
 
-from openerp import models, fields, api
+from openerp import models, fields, api, exceptions
 
 from datetime import datetime
 
@@ -360,15 +360,54 @@ class CenitEvent (models.Model):
         [
             ('Setup::Observer', 'Observer'),
             ('Setup::Scheduler', 'Scheduler'),
-            # ('on_create', 'On Create'),
-            # ('on_write', 'On Update'),
-            # ('on_create_or_update', 'On Create or Update'),
+        ],
+        string="Type"
+    )
+    cenit_type = fields.Selection(
+        [
+            ('on_create', 'On Create'),
+            ('on_write', 'On Update'),
+            ('on_create_or_write', 'On Create or Update'),
             # ('interval', 'Interval'),
-            # ('only_manual', 'Only Manual'),
         ],
         string="Type"
     )
     schema = fields.Many2one('cenit.schema', string='Schema')
+
+    @api.one
+    def _get_values(self):
+        vals = {
+            'namespace': self.namespace,
+            'name': self.name,
+            '_type': "Setup::Observer",
+            'data_type': {
+                "_reference": True,
+                "id": self.schema.cenitID
+            },
+            'triggers': {
+                'on_create':
+                    '{"created_at":{"0":{"o":"_not_null","v":["","",""]}}}',
+                'on_write':
+                    '{"updated_at":{"0":'
+                    '{"o":"_presence_change","v":["","",""]}}}',
+                'on_create_or_write':
+                    '{"updated_at":{"0":{"o":"_change","v":["","",""]}}}',
+            }[self.cenit_type]
+        }
+
+        return vals
+
+    @api.one
+    def _calculate_update(self, values):
+        update = {}
+        for k, v in values.items():
+            if k == self.cenit_models:
+                update = {
+                    'cenitID': v[0]['id'],
+                    'type_': v[0]['_type']
+                }
+
+        return update
 
 
 class CenitTranslator (models.Model):
