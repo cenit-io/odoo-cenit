@@ -27,6 +27,8 @@ import simplejson
 
 from openerp import models, fields, api
 
+from datetime import datetime
+
 
 _logger = logging.getLogger(__name__)
 
@@ -157,6 +159,7 @@ class CenitLibrary(models.Model):
 
         return super(CenitLibrary, self).write(vals)
 
+
 class CenitDataTypeTrigger(models.Model):
     _name = "cenit.data_type.trigger"
 
@@ -170,9 +173,30 @@ class CenitDataTypeTrigger(models.Model):
     ], required=True)
 
     cron = fields.Many2one('ir.cron', string='Cron rules')
+    cron_lapse = fields.Integer("Interval number", default=10)
+    cron_units = fields.Selection([
+        ('minutes', 'Minutes'), ('hours', 'Hours'), ('work_days', 'Work Days'),
+        ('days', 'Days'), ('weeks', 'Weeks'), ('months', 'Months')
+    ], string="Interval units", default='minutes')
+    cron_restrictions = fields.Selection([
+        ("create", "Newly created"), ("update", "Newly updated"), ("all", "All")
+    ], string="Restrictions", default="all")
     base_action_rules = fields.Many2many(
         'base.action.rule', string='Action Rules'
     )
+
+    last_execution = fields.Datetime()
+    
+    @api.one
+    def unlink(self):
+        if self.cron:
+            self.cron.unlink()
+        if self.base_action_rules:
+            for bar in self.base_action_rules:
+                bar.server_action_ids.unlink()
+            self.base_action_rules.unlink()
+        
+        return super(CenitDataTypeTrigger, self).unlink()
 
     @api.one
     def sync(self):
@@ -198,18 +222,26 @@ class CenitDataTypeTrigger(models.Model):
             ic_obj = self.env['ir.cron']
 
             if self.cron:
-                _logger.info("\n\nCronID\n")
-
+                vals_ic = {
+                    'name': 'send_%s_%s' % (
+                        self.cron_restrictions, self.data_type.model.model),
+                    'interval_number': self.cron_lapse,
+                    'interval_type': self.cron_units,
+                }
+                _logger.info("\n\nWRITE IC: %s\n", vals_ic)
+                self.cron.write(vals_ic)
             else:
                 vals_ic = {
-                    'name': 'send_all_%s' % self.data_type.model.model,
-                    'interval_number': 10,
-                    'interval_type': 'minutes',
+                    'name': 'send_%s_%s' % (
+                        self.cron_restrictions, self.data_type.model.model),
+                    'interval_number': self.cron_lapse,
+                    'interval_type': self.cron_units,
                     'numbercall': -1,
-                    'model': 'cenit.flow',
-                    'function': 'send_all',
-                    'args': '(%s)' % str(self.id)
+                    'model': 'cenit.data_type',
+                    'function': 'perform_scheduled_action',
+                    'args': '(%s,)' % str(self.data_type.id)
                 }
+                _logger.info("\n\nCREATE IC: %s\n", vals_ic)
                 ic = ic_obj.create(vals_ic)
                 self.with_context(local=True).write({'cron': ic.id})
 
@@ -319,10 +351,54 @@ class CenitDataType(models.Model):
         for trigger in self.triggers:
             trigger.sync()
 
+    @api.model
+    def perform_scheduled_action(self, dt_id):
+        _logger.info("Performing scheduled trigger")
+        dt = self.browse(dt_id)
+
+        flow_pool = self.env["cenit.flow"]
+        flows = dt._get_flows()
+        if isinstance(flows, list) and len(flows) == 1:
+            flows = flows[0]
+
+        to_trigger = {
+            "cenit": None,
+            "other": []
+        }
+        for flow in flows:
+            if flow.enabled and not flow.local and not to_trigger["cenit"]:
+                to_trigger["cenit"] = flow.id
+            if flow.enabled and flow.local:
+                to_trigger["other"].append(flow.id)
+
+        for trigger in dt.triggers:
+            if trigger.name != 'interval':
+                continue
+
+            domain = []
+
+            if trigger.last_execution and (
+               trigger.cron_restrictions == "create"):
+                domain.append(("create_date", '>', trigger.last_execution))
+            elif trigger.last_execution and (
+               trigger.cron_restrictions == "update"):
+                domain.append(("write_date", '>', trigger.last_execution))
+
+            trigger.last_execution = fields.Datetime.now()
+
+            if to_trigger["cenit"]:
+                flow_pool.send_all(to_trigger["cenit"], dt, domain)
+
+            for id_ in to_trigger["other"]:
+                flow_pool.send_all(id_, dt, domain)
+
+
     @api.one
     def trigger_flows(self, obj):
         flow_pool = self.env["cenit.flow"]
-        flows = self._get_flows()[0]
+        flows = self._get_flows()
+        if isinstance(flows, list) and len(flows) == 1:
+            flows = flows[0]
 
         to_trigger = {
             "cenit": None,
@@ -381,8 +457,8 @@ class CenitDataType(models.Model):
         if domain and isinstance(domain[0], list):
             domain = domain[0]
         domain.append(("id", "=", obj.id))
-        match = obj.search(domain) or False
 
+        match = obj.search(domain) or False
         return match
 
 
