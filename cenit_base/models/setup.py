@@ -854,24 +854,34 @@ class CenitFlow (models.Model):
         return rc
 
     @api.model
-    def send_all(self, id_):
+    def send_all(self, id_, dt, domain=list()):
         flow = self.browse(id_)
-        mo = self.env[flow.data_type.model.model]
-        if mo:
-            data = []
-            objs = mo.search([])
-            if flow.format_ == 'application/json':
-                ws = self.env['cenit.serializer']
-                for x in objs:
-                    if flow.data_type.ensure_object(x):
-                        data.append(ws.serialize(x, flow.data_type))
-            elif flow.format_ == 'application/EDI-X12' and \
-                    hasattr(mo, 'edi_export'):
-                for x in objs:
-                    if flow.data_type.ensure_object(x):
-                        data.append(mo.edi_export(x))
-            if data:
-                return flow._send(data)
+        dt_ = flow.data_type or dt
+        mo = self.env[dt_.model.model]
+        _logger.info("Performing search on %s with %s", mo, domain)
+        data = []
+
+        query = "SELECT id from %s" % dt.model.model.replace(".", "_")
+        for entry in domain:
+            query += " WHERE %s%s'%s'" % (entry[0], entry[1], entry[2])
+
+        self.env.cr.execute(query)
+        rc = self.env.cr.fetchall()
+        objs = mo.browse([x[0] for x in rc])
+
+        if flow.format_ == 'application/json':
+            ws = self.env['cenit.serializer']
+            for x in objs:
+                if dt_.ensure_object(x):
+                    data.append(ws.serialize(x, dt_))
+        elif flow.format_ == 'application/EDI-X12' and \
+                hasattr(mo, 'edi_export'):
+            for x in objs:
+                if dt_.ensure_object(x):
+                    data.append(mo.edi_export(x))
+
+        if data:
+            return flow._send(data)
         return False
 
     @api.one

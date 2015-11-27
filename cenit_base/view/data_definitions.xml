@@ -98,6 +98,12 @@
                                 <field name="triggers">
                                     <tree string="Triggers" editable="bottom">
                                         <field name="name" string="Event"/>
+                                        <field name="cron_lapse"
+                                               attrs="{'invisible': [('name','!=','interval')]}"/>
+                                        <field name="cron_units"
+                                               attrs="{'invisible': [('name','!=','interval')]}"/>
+                                        <field name="cron_restrictions"
+                                               attrs="{'invisible': [('name','!=','interval')]}"/>
                                     </tree>
                                 </field>
                             </page>
