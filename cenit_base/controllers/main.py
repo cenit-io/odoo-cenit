@@ -32,34 +32,33 @@ class WebhookController(http.Controller):
             host = environ.get('HTTP_HOST', "")
             db_name = host.replace(".", "_")
 
-        if db_name in http.db_list():
-            registry = RegistryManager.get(db_name)
+        # if db_name in http.db_list():
+        registry = RegistryManager.get(db_name)
+        with registry.cursor() as cr:
+            connection_model = registry['cenit.connection']
+            domain = [('key', '=', key), ('token', '=', token)]
+            rc = connection_model.search(cr, SUPERUSER_ID, domain)
 
-            with registry.cursor() as cr:
-                connection_model = registry['cenit.connection']
-                domain = [('key', '=', key), ('token', '=', token)]
-                rc = connection_model.search(cr, SUPERUSER_ID, domain)
+            if rc:
+                p = inflect.engine()
+                flow_model = registry['cenit.flow']
+                context = {'sender': 'client', 'action': action}
 
-                if rc:
-                    p = inflect.engine()
-                    flow_model = registry['cenit.flow']
-                    context = {'sender': 'client', 'action': action}
-
-                    if root is None:
-                        for root, data in request.jsonrequest.items():
-                            root = p.singular_noun(root) or root
-                            rc = flow_model.receive(cr, SUPERUSER_ID, root,
-                                                    data, context)
-                            if rc:
-                                status_code = 200
-                    else:
+                if root is None:
+                    for root, data in request.jsonrequest.items():
                         root = p.singular_noun(root) or root
                         rc = flow_model.receive(cr, SUPERUSER_ID, root,
-                                                request.jsonrequest, context)
+                                                data, context)
                         if rc:
                             status_code = 200
                 else:
-                    status_code = 404
+                    root = p.singular_noun(root) or root
+                    rc = flow_model.receive(cr, SUPERUSER_ID, root,
+                                            request.jsonrequest, context)
+                    if rc:
+                        status_code = 200
+            else:
+                status_code = 404
 
         return {'status': status_code}
 
