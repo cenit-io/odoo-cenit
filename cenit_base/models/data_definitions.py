@@ -37,7 +37,8 @@ class CenitSchema(models.Model):
 
     @api.one
     def cenit_root(self):
-        return "%s/%s" % (self.library.slug or "odoo", self.slug)
+        # return "%s/%s" % (self.library.slug or "odoo", self.slug)
+        return self.slug
 
     _name = 'cenit.schema'
     _inherit = 'cenit.api'
