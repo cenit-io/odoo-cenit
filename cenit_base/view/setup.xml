@@ -292,8 +292,8 @@
                             <field name="event"
                                    attrs="{'required':[('method','!=','get')],'invisible':[('method','=','get')]}"
                                    options="{'no_quick_create':True,'no_create_edit':True}"/>
-                            <field name="cron"
-                                   attrs="{'required':[('event','=','interval')],'invisible':[('event','!=','interval')]}" />
+                            <!--<field name="cron"-->
+                                   <!--attrs="{'required':[('event','=','interval')],'invisible':[('event','!=','interval')]}" />-->
                             <field name="format_"
                                    attrs="{'required':[('local','=','True')],'invisible':[('local','!=','True')]}"/>
                             <field name="cenit_translator"

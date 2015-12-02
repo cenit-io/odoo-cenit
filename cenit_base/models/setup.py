@@ -612,7 +612,8 @@ class CenitFlow (models.Model):
             },
             "domain": {
                 "data_type": [
-                    ('schema', '=', self.schema.id)
+                    ('schema', '=', self.schema.id),
+                    ('enabled', '=', True)
                 ],
                 'event': [
                     ('schema', '=', self.schema.id)
@@ -636,7 +637,7 @@ class CenitFlow (models.Model):
         }
 
     @api.one
-    def _get_direction (self):
+    def _get_direction(self):
         my_url = self.env['ir.config_parameter'].get_param(
             'web.base.url', default=''
         )
@@ -645,12 +646,24 @@ class CenitFlow (models.Model):
             self.connection_role.connections[0]
         my_conn = conn.url == my_url
 
-        return {
+        rc = {
             ('get', True): 'send',
             ('put', False): 'send',
             ('post', False): 'send',
             ('delete', False): 'send',
         }.get((self.webhook.method, my_conn), 'receive')
+
+        return rc
+
+    @api.one
+    def _get_data_types(self):
+        dt_pool = self.env['cenit.data_type']
+
+        if self.data_type:
+            return self.data_type
+        else:
+            domain = [('schema', '=', self.schema.id), ('enabled', '=', True)]
+            return dt_pool.search(domain)
 
     @api.model
     def create(self, vals):
@@ -692,23 +705,36 @@ class CenitFlow (models.Model):
 
     @api.model
     def find(self, model, purpose):
-        domain = [('data_type.cenit_root', '=', model)]
+        rc = []
+        domain = [("schema.slug", "=", model)]
         objs = self.search(domain)
+        if objs:
+            rc = [x for x in objs if
+                  ((x._get_direction()[0] == purpose) and x.enabled)]
 
-        return objs and objs[0] or False
+        return rc
 
     @api.one
     def set_receive_execution(self):
-        pass
+        return True
 
     @api.model
     def receive(self, model, data):
         res = False
         context = self.env.context.copy() or {}
-        flow = self.find(model.lower(), 'receive')
+        flows = self.find(model.lower(), 'receive')
 
-        if flow and flow.enabled:
-            klass = self.env[flow.data_type.model.model]
+        if not flows:
+            return res
+
+
+        data_types = set()
+        for flow in flows:
+            dts = flow._get_data_types()
+            for dt in dts:
+                data_types.add(dt)
+        for dt in data_types:
+            klass = self.env[dt.model.model]
 
             if flow.format_ == 'application/json':
                 action = context.get('action', 'push')
@@ -717,7 +743,7 @@ class CenitFlow (models.Model):
 
                 action = getattr(wh, action, False)
                 if action:
-                    root = flow.data_type.cenit_root
+                    root = dt.cenit_root
                     res = action(data, root)
 
             elif flow.format_ == 'application/EDI-X12':
@@ -822,15 +848,11 @@ class CenitFlow (models.Model):
         if not (flow and flow.enabled):
             return False
 
-        dt_pool = self.env['cenit.data_type']
         ws = self.env['cenit.serializer']
 
-        data_types = [flow.data_type]
-        if not data_types[0]:
-            domain = [('schema', '=', flow.schema.id)]
-            data_types = dt_pool.search(domain)
-            if not data_types:
-                return False
+        data_types = flow._get_data_types()
+        if isinstance(data_types, list) and len(data_types) == 1:
+            data_types = data_types[0]
 
         data = None
         if flow.format_ == 'application/json':
