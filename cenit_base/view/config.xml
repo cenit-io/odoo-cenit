@@ -139,7 +139,7 @@
                                 class="oe_highlight" context="{'install': True}"/>
                     </footer>
                 </footer>
-                <separator string="title" position="replace">
+                <separator position="replace">
                     <p class="oe_grey">
                         Set the credentials given to your Cenit tenant.
                     </p>
@@ -185,7 +185,7 @@
                                 class="oe_link" context="{'install': False}"/>
                     </footer>
                 </footer>
-                <separator string="title" position="replace">
+                <separator position="replace">
                     <p class="oe_grey">
                         Enter the email for your Cenit Account
                     </p>
