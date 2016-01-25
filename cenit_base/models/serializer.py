@@ -14,7 +14,7 @@ class CenitSerializer(models.TransientModel):
     _name = 'cenit.serializer'
 
     @api.model
-    def _get_checker(self, schema_type):
+    def _get_checker(self, schema_type, inlined=False):
         def get_checker(checker):
             def _do_check(obj):
                 if not obj:
@@ -25,14 +25,20 @@ class CenitSerializer(models.TransientModel):
         def _dummy(obj):
             return obj
 
-        return get_checker({
+        _checkers = {
             'integer': int,
             'number': float,
             'boolean': bool,
             'array': list,
             'string': str,
             'object': dict,
-        }.get(schema_type.get('type', 'other'), _dummy))
+        }
+        type_ = schema_type.get('type', 'other')
+        if type_ == 'object' and inlined:
+            type_ = schema_type.get('properties', {'type': 'other'}).values()[
+                0].get('type', 'other')
+
+        return get_checker(_checkers.get(type_, _dummy))
 
     @api.model
     def find_reference(self, field, obj):
@@ -78,7 +84,7 @@ class CenitSerializer(models.TransientModel):
 
             for field in data_type.lines:
                 schema_data = schema.get(field.value, {"type": "string"})
-                checker = self._get_checker(schema_data)
+                checker = self._get_checker(schema_data, field.inlined)
 
                 if field.primary:
                     _primary.append(field.value)

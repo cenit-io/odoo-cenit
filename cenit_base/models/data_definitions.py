@@ -516,3 +516,4 @@ class CenitDataTypeLine(models.Model):
         'Cardinality'
     )
     primary = fields.Boolean('Primary')
+    inlined = fields.Boolean('Inlined')
