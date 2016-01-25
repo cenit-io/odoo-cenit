@@ -157,7 +157,8 @@ class CollectionInstaller(models.TransientModel):
                 'token': connection.get('token'),
             }
 
-            domain = [('name', '=', conn_data.get('name'))]
+            domain = [('name', '=', conn_data.get('name')),
+                      ('namespace', '=', conn_data.get('namespace'))]
             candidates = connection_pool.search(domain)
 
             if not candidates:
@@ -185,7 +186,8 @@ class CollectionInstaller(models.TransientModel):
                 'purpose': webhook.get('purpose'),
             }
 
-            domain = [('name', '=', hook_data.get('name'))]
+            domain = [('name', '=', hook_data.get('name')),
+                      ('namespace', '=', hook_data.get('namespace'))]
             candidates = webhook_pool.search(domain)
 
             if not candidates:
@@ -212,7 +214,8 @@ class CollectionInstaller(models.TransientModel):
                 'namespace': role.get('namespace'),
             }
 
-            domain = [('name', '=', role_data.get('name'))]
+            domain = [('name', '=', role_data.get('name')),
+                      ('namespace', '=', role_data.get('namespace'))]
             candidates = role_pool.search(domain)
 
             if not candidates:
@@ -225,7 +228,8 @@ class CollectionInstaller(models.TransientModel):
             webhooks = []
 
             for connection in role.get('connections', []):
-                domain = [('name', '=', connection.get('name'))]
+                domain = [('name', '=', connection.get('name')),
+                          ('namespace', '=', connection.get('namespace'))]
                 candidates = conn_pool.search(domain)
 
                 if candidates:
@@ -233,7 +237,8 @@ class CollectionInstaller(models.TransientModel):
                     connections.append(conn.id)
 
             for webhook in role.get('webhooks', []):
-                domain = [('name', '=', webhook.get('name'))]
+                domain = [('name', '=', webhook.get('name')),
+                          ('namespace', '=', webhook.get('namespace'))]
                 candidates = hook_pool.search(domain)
 
                 if candidates:
@@ -384,7 +389,8 @@ class CollectionInstaller(models.TransientModel):
                 'schema': schema_id
             })
 
-            domain = [('cenitID', '=', trans_data.get('cenitID'))]
+            domain = [('name', '=', trans_data.get('name')),
+                      ('namespace', '=', trans_data.get('namespace'))]
             candidates = trans_pool.search(domain)
             if not candidates:
                 trans_pool.with_context(local=True).create(trans_data)
@@ -419,7 +425,8 @@ class CollectionInstaller(models.TransientModel):
                 'schema': schema_id
             })
 
-            domain = [('cenitID', '=', ev_data.get('cenitID'))]
+            domain = [('name', '=', ev_data.get('name')),
+                      ('namespace', '=', ev_data.get('namespace'))]
             candidates = ev_pool.search(domain)
             if not candidates:
                 ev_pool.with_context(local=True).create(ev_data)
