@@ -91,6 +91,7 @@
                                                 attrs="{'required':[('line_type', 'in', ['model', 'reference'])], 'readonly':[('line_type', 'not in', ['model', 'reference'])]}" />
                                         <field name="primary"
                                                 attrs="{'invisible': [('line_type', '!=', 'field')]}"/>
+                                        <field name="inlined"/>
                                     </tree>
                                 </field>
                             </page>
