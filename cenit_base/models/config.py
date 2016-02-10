@@ -83,6 +83,14 @@ class CenitSettings (models.TransientModel):
         help=""
     )
 
+    module_cenit_asana = fields.Boolean('Asana API',
+        help=""
+    )
+
+    module_cenit_messagebird = fields.Boolean('MessageBird API',
+        help=""
+    )
+
     ############################################################################
     # Default values getters
     ############################################################################
