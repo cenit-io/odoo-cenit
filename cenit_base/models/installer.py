@@ -1,12 +1,12 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 #
-#  collection.py
+# collection.py
 #
-#  Copyright 2015 D.H. Bahr <dhbahr@gmail.com>
+# Copyright 2015 D.H. Bahr <dhbahr@gmail.com>
 #
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
 #
@@ -24,54 +24,53 @@
 
 import logging
 import simplejson
+import json
 
 from openerp import models, api, exceptions
-
 
 _logger = logging.getLogger(__name__)
 
 
 class CollectionInstaller(models.TransientModel):
+    _name = "cenit.collection.installer"
 
     @api.model
-    def _install_libraries(self, values):
-        library_pool = self.env['cenit.library']
+    def _install_namespaces(self, values, data_types_list):
+        namespace_pool = self.env['cenit.namespace']
         schema_pool = self.env['cenit.schema']
 
-        for library in values:
-            lib_data = {
-                'cenitID': library.get('id'),
-                'name': library.get('name'),
-                'slug': library.get('slug'),
+        for namespace in values:
+            namespace_data = {
+                'cenitID': namespace.get('id'),
+                'name': namespace.get('name'),
+                'slug': namespace.get('slug'),
             }
 
-            domain = [('name', '=', lib_data.get('name'))]
-            candidates = library_pool.search(domain)
-
+            domain = [('name', '=', namespace_data.get('name'))]
+            candidates = namespace_pool.search(domain)
             if not candidates:
-                lib = library_pool.with_context(local=True).create(lib_data)
+                nam = namespace_pool.with_context(local=True).create(namespace_data)
             else:
-                lib = candidates[0]
-                lib.with_context(local=True).write(lib_data)
+                nam = candidates[0]
+                nam.with_context(local=True).write(namespace_data)
 
-            schemas = library.get('data_types', [])
-            for schema in schemas:
+            values = (x for x in data_types_list if (x['namespace'] == nam.name))
+            for schema in values:
                 sch_data = {
                     'cenitID': schema.get('id'),
                     'name': schema.get('name'),
                     'slug': schema.get('slug'),
                     'schema': simplejson.dumps(schema.get('schema')),
-                    'library': lib.id,
+                    'namespace': nam.id
                 }
 
-                domain = [
-                    ('library', '=', sch_data.get('library')),
-                    ('slug', '=', sch_data.get('slug')),
-                ]
+                domain = [('name', '=', sch_data.get('name')),
+                          ('namespace', '=', sch_data.get('namespace'))]
+
                 candidates = schema_pool.search(domain)
 
                 if not candidates:
-                    sch = schema_pool.with_context(local=True).create(sch_data)
+                    schema_pool.with_context(local=True).create(sch_data)
                 else:
                     sch = candidates[0]
                     sch.with_context(local=True).write(sch_data)
@@ -91,9 +90,9 @@ class CollectionInstaller(models.TransientModel):
         }
 
         fields = {
-            'parameters': '%s_url_id' %(prefix,),
-            'headers': '%s_header_id' %(prefix,),
-            'template_parameters': '%s_template_id' %(prefix,),
+            'parameters': '%s_url_id' % (prefix,),
+            'headers': '%s_header_id' % (prefix,),
+            'template_parameters': '%s_template_id' % (prefix,),
         }
 
         for key in ('parameters', 'headers', 'template_parameters'):
@@ -146,19 +145,26 @@ class CollectionInstaller(models.TransientModel):
     @api.model
     def _install_connections(self, values):
         connection_pool = self.env['cenit.connection']
+        names_pool = self.env['cenit.namespace']
 
         for connection in values:
             conn_data = {
                 'cenitID': connection.get('id'),
                 'name': connection.get('name'),
-                'namespace': connection.get('namespace'),
+                # 'namespace': connection.get('namespace'),
                 'url': connection.get('url'),
                 'key': connection.get('number'),
                 'token': connection.get('token'),
             }
 
-            domain = [('name', '=', conn_data.get('name')),
-                      ('namespace', '=', conn_data.get('namespace'))]
+            #domain = [('name', '=', conn_data.get('namespace'))]
+            # rc = names_pool.search(domain)
+            # conn_data.update({
+            #     'namespace': rc[0].id
+            # })
+
+            domain = [('name', '=', conn_data.get('name'))]
+            #          ('namespace', '=', conn_data.get('namespace'))]
             candidates = connection_pool.search(domain)
 
             if not candidates:
@@ -175,19 +181,26 @@ class CollectionInstaller(models.TransientModel):
     @api.model
     def _install_webhooks(self, values):
         webhook_pool = self.env['cenit.webhook']
+        names_pool = self.env['cenit.namespace']
 
         for webhook in values:
             hook_data = {
                 'cenitID': webhook.get('id'),
                 'name': webhook.get('name'),
-                'namespace': webhook.get('namespace'),
+                # 'namespace': webhook.get('namespace'),
                 'path': webhook.get('path'),
                 'method': webhook.get('method'),
                 'purpose': webhook.get('purpose'),
             }
 
-            domain = [('name', '=', hook_data.get('name')),
-                      ('namespace', '=', hook_data.get('namespace'))]
+            # domain = [('name', '=', hook_data.get('namespace'))]
+            # rc = names_pool.search(domain)
+            ## hook_data.update({
+            #     'namespace': rc[0].id
+            # })
+
+            domain = [('name', '=', hook_data.get('name'))]
+            #  ('namespace', '=', hook_data.get('namespace'))]
             candidates = webhook_pool.search(domain)
 
             if not candidates:
@@ -206,16 +219,23 @@ class CollectionInstaller(models.TransientModel):
         role_pool = self.env['cenit.connection.role']
         conn_pool = self.env['cenit.connection']
         hook_pool = self.env['cenit.webhook']
+        names_pool = self.env['cenit.namespace']
 
         for role in values:
             role_data = {
                 'cenitID': role.get('id'),
-                'name': role.get('name'),
-                'namespace': role.get('namespace'),
+                'name': role.get('name')
+                # 'namespace': role.get('namespace'),
             }
 
-            domain = [('name', '=', role_data.get('name')),
-                      ('namespace', '=', role_data.get('namespace'))]
+            # domain = [('name', '=', role_data.get('namespace'))]
+            # rc = names_pool.search(domain)
+            # role_data.update({
+            #     'namespace': rc[0].id
+            # })
+
+            domain = [('name', '=', role_data.get('name'))]
+            # ('namespace', '=', role_data.get('namespace'))]
             candidates = role_pool.search(domain)
 
             if not candidates:
@@ -228,8 +248,8 @@ class CollectionInstaller(models.TransientModel):
             webhooks = []
 
             for connection in role.get('connections', []):
-                domain = [('name', '=', connection.get('name')),
-                          ('namespace', '=', connection.get('namespace'))]
+                domain = [('name', '=', connection.get('name'))]
+                #  ('namespace', '=', connection.get('namespace'))]
                 candidates = conn_pool.search(domain)
 
                 if candidates:
@@ -237,8 +257,8 @@ class CollectionInstaller(models.TransientModel):
                     connections.append(conn.id)
 
             for webhook in role.get('webhooks', []):
-                domain = [('name', '=', webhook.get('name')),
-                          ('namespace', '=', webhook.get('namespace'))]
+                domain = [('name', '=', webhook.get('name'))]
+                #    ('namespace', '=', webhook.get('namespace'))]
                 candidates = hook_pool.search(domain)
 
                 if candidates:
@@ -254,7 +274,8 @@ class CollectionInstaller(models.TransientModel):
     @api.model
     def _install_flows(self, values):
         flow_pool = self.env['cenit.flow']
-        lib_pool = self.env['cenit.library']
+        #lib_pool = self.env['cenit.library']
+        names_pool = self.env['cenit.namespace']
         sch_pool = self.env['cenit.schema']
         hook_pool = self.env['cenit.webhook']
         role_pool = self.env['cenit.connection.role']
@@ -265,25 +286,30 @@ class CollectionInstaller(models.TransientModel):
             flow_data = {
                 'cenitID': flow.get('id'),
                 'name': flow.get('name'),
-                'namespace': flow.get('namespace'),
+                # 'namespace': flow.get('namespace'),
                 'enabled': flow.get('active', False),
                 'format_': 'application/json',
             }
 
+            #domain = [('name', '=', flow_data.get('namespace'))]
+            # rc = names_pool.search(domain)
+            #  flow_data.update({
+            #      'namespace': rc[0].id
+            #  })
+
             dt = flow.get('custom_data_type', {})
             schema = dt.get('name', '')
-            library = dt.get('library', {})
+            #library = dt.get('library', {})
+            #namespace = dt.get('namespace', {})
 
-            domain = [('name', '=', library.get('name', ''))]
-            rc = lib_pool.search(domain)
             dt_deferred = False
-            if not rc:
-                dt_deferred = True
+            # if not rc:
+            #dt_deferred = True
 
             if not dt_deferred:
                 domain = [
-                    ('name', '=', schema),
-                    ('library', '=', rc[0].id)
+                    ('name', '=', schema)
+                    #  ('namespace', '=', rc[0].id)
                 ]
                 rc = sch_pool.search(domain)
                 if not rc:
@@ -293,8 +319,8 @@ class CollectionInstaller(models.TransientModel):
                 })
 
             ev = flow.get('event', {})
-            domain = [('name', '=', ev.get('name')),
-                      ('namespace', '=', ev.get('namespace'))]
+            domain = [('name', '=', ev.get('name'))]
+            #  ('namespace', '=', ev.get('namespace'))]
             rc = ev_pool.search(domain)
             if not rc:
                 continue
@@ -303,8 +329,8 @@ class CollectionInstaller(models.TransientModel):
             })
 
             trans = flow.get('translator', {})
-            domain = [('name', '=', trans.get('name')),
-                      ('namespace', '=', trans.get('namespace'))]
+            domain = [('name', '=', trans.get('name'))]
+            # ('namespace', '=', trans.get('namespace'))]
             rc = trans_pool.search(domain)
             if not rc:
                 continue
@@ -321,8 +347,8 @@ class CollectionInstaller(models.TransientModel):
             })
 
             hook = flow.get('webhook', {})
-            domain = [('name', '=', hook.get('name')),
-                      ('namespace', '=', hook.get('namespace'))]
+            domain = [('name', '=', hook.get('name'))]
+            #  ('namespace', '=', hook.get('namespace'))]
             rc = hook_pool.search(domain)
             if not rc:
                 continue
@@ -331,8 +357,8 @@ class CollectionInstaller(models.TransientModel):
             })
 
             role = flow.get('connection_role', {})
-            domain = [('name', '=', role.get('name')),
-                      ('namespace', '=', role.get('namespace'))]
+            domain = [('name', '=', role.get('name'))]
+            #  ('namespace', '=', role.get('namespace'))]
             rc = role_pool.search(domain)
             if rc:
                 flow_data.update({
@@ -341,10 +367,10 @@ class CollectionInstaller(models.TransientModel):
 
             domain = [
                 ('name', '=', flow_data.get('name')),
-                ('namespace', '=', flow_data.get('namespace')),
+                # ('namespace', '=', flow_data.get('namespace')),
                 '|',
-                    ('enabled', '=', True),
-                    ('enabled', '=', False),
+                ('enabled', '=', True),
+                ('enabled', '=', False),
             ]
             candidates = flow_pool.search(domain)
 
@@ -358,6 +384,7 @@ class CollectionInstaller(models.TransientModel):
     def _install_translators(self, values):
         trans_pool = self.env['cenit.translator']
         sch_pool = self.env['cenit.schema']
+        names_pool = self.env['cenit.namespace']
 
         for translator in values:
             if translator.get('type') not in ('Import', 'Export'):
@@ -365,21 +392,21 @@ class CollectionInstaller(models.TransientModel):
             trans_data = {
                 'cenitID': translator.get('id'),
                 'name': translator.get('name'),
-                'namespace': translator.get('namespace'),
+                #  'namespace': translator.get('namespace'),
                 'type_': translator.get('type'),
                 'mime_type': translator.get('mime_type', False)
             }
 
             schema = translator.get({
-                'Import': 'target_data_type',
-                'Export': 'source_data_type',
-            }.get(translator.get('type')), {})
+                                        'Import': 'target_data_type',
+                                        'Export': 'source_data_type',
+                                    }.get(translator.get('type')), {})
 
             schema_id = False
             if schema:
                 domain = [
-                    ('name', '=', schema.get('name')),
-                    ('library.name', '=', schema.get('library').get('name'))
+                    ('name', '=', schema.get('name'))
+                    #   ('namespace', '=', schema.get('namespace'))
                 ]
                 candidates = sch_pool.search(domain)
                 if candidates:
@@ -389,8 +416,14 @@ class CollectionInstaller(models.TransientModel):
                 'schema': schema_id
             })
 
-            domain = [('name', '=', trans_data.get('name')),
-                      ('namespace', '=', trans_data.get('namespace'))]
+            # domain = [('name', '=', trans_data.get('namespace'))]
+            # rc = names_pool.search(domain)
+            # trans_data.update({
+            #     'namespace': rc[0].id
+            # })
+
+            domain = [('name', '=', trans_data.get('name'))]
+            #('namespace', '=', trans_data.get('namespace'))]
             candidates = trans_pool.search(domain)
             if not candidates:
                 trans_pool.with_context(local=True).create(trans_data)
@@ -401,21 +434,28 @@ class CollectionInstaller(models.TransientModel):
     def _install_events(self, values):
         ev_pool = self.env['cenit.event']
         sch_pool = self.env['cenit.schema']
+        names_pool = self.env['cenit.namespace']
 
         for event in values:
             ev_data = {
                 'cenitID': event.get('id'),
                 'name': event.get('name'),
-                'namespace': event.get('namespace'),
+                # 'namespace': event.get('namespace'),
                 'type_': event.get('_type'),
             }
+
+            # domain = [('name', '=', ev_data.get('namespace'))]
+            # rc = names_pool.search(domain)
+            # ev_data.update({
+            #     'namespace': rc[0].id
+            # })
 
             schema = event.get('data_type', {})
             schema_id = False
             if schema:
                 domain = [
-                    ('name', '=', schema.get('name')),
-                    ('library.name', '=', schema.get('library').get('name'))
+                    ('name', '=', schema.get('name'))
+                    # ('library.name', '=', schema.get('library').get('name'))
                 ]
                 candidates = sch_pool.search(domain)
                 if candidates:
@@ -425,8 +465,8 @@ class CollectionInstaller(models.TransientModel):
                 'schema': schema_id
             })
 
-            domain = [('name', '=', ev_data.get('name')),
-                      ('namespace', '=', ev_data.get('namespace'))]
+            domain = [('name', '=', ev_data.get('name'))]
+            #          ('namespace', '=', ev_data.get('namespace'))]
             candidates = ev_pool.search(domain)
             if not candidates:
                 ev_pool.with_context(local=True).create(ev_data)
@@ -469,6 +509,7 @@ class CollectionInstaller(models.TransientModel):
             )
 
         rc = rc[0]
+
         data = {
             'id': rc.get('id'),
             'params': rc.get('pull_parameters', [])
@@ -495,7 +536,7 @@ class CollectionInstaller(models.TransientModel):
         rc = cenit_api.get(path)
         if isinstance(rc, list):
             rc = rc[0]
-        data = rc  # .get('collection', {})
+        data = rc  #.get('collection', {})[0]
 
         if not coll_id:
             for entry in rc.get('collection', []):
@@ -505,19 +546,20 @@ class CollectionInstaller(models.TransientModel):
                     break
 
         keys = (
-            'libraries', 'translators', 'events',
+            'translators', 'events',
             'connections', 'webhooks', 'connection_roles'
         )
+
+        self._install_namespaces(data.get('namespaces'), data.get('data_types', []))
 
         for key in keys:
             values = data.get(key, {})
             {
-                'connections':      self._install_connections,
+                'connections': self._install_connections,
                 'connection_roles': self._install_connection_roles,
-                'events':           self._install_events,
-                'libraries':        self._install_libraries,
-                'translators':      self._install_translators,
-                'webhooks':         self._install_webhooks,
+                'events': self._install_events,
+                'translators': self._install_translators,
+                'webhooks': self._install_webhooks,
             }.get(key, self._install_dummy)(values)
 
         if data.get('flows', False):
@@ -525,4 +567,4 @@ class CollectionInstaller(models.TransientModel):
 
         return True
 
-    _name = "cenit.collection.installer"
+
