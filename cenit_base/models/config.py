@@ -100,7 +100,7 @@ class CenitSettings (models.TransientModel):
             cr, uid, "odoo_cenit.cenit_url", default=None, context=context
         )
 
-        return {'cenit_url': cenit_url or 'https://www.cenithub.com'}
+        return {'cenit_url': cenit_url or 'https://cenit.io'}
 
     def get_default_cenit_user_key (self, cr, uid, ids, context=None):
         cenit_user_key = self.pool.get ("ir.config_parameter").get_param (
@@ -275,7 +275,7 @@ class CenitAccountSettings(models.TransientModel):
 
         icp = self.pool.get("ir.config_parameter")
         hub_host = icp.get_param(cr, uid, "odoo_cenit.cenit_url",
-                                 default='https://www.cenithub.com')
+                                 default='https://cenit.io')
         if hub_host.endswith("/"):
             hub_host = hub_host[:-1]
         hub_hook = "captcha"
