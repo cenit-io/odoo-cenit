@@ -121,6 +121,24 @@
             </field>
         </record>
 
+        <record id="view_export_data_types" model="ir.ui.view">
+            <field name="name">view.cenit.data_type.export</field>
+            <field name="model">cenit.import_export</field>
+            <field name="arch" type="xml">
+               <form string="Export data types">
+					<label for="folder" string="Select the folder:" class="oe_inline"/>
+                    <field name="folder" />
+					<footer>
+                        <button string="Save" name="export_data_types" context="{'folder': folder}"
+                                type="object" class="oe_highlight"/>
+					 </footer>
+                </form>
+            </field>
+        </record>
+
+        <act_window name="Export data types" res_model="cenit.import_export"  view_id="view_export_data_types"
+                    src_model="cenit.data_type"
+             key2="client_action_multi" view_mode="form" target="new" view_type="form" id="act_new_sub_menu" />
 
         <record id="action_cenit_data_type" model="ir.actions.act_window">
             <field name="name">Data types</field>
@@ -169,5 +187,29 @@
         <menuitem id="menu_cenit_namespace" name="Namespaces"
             parent="menu_cenit_data_definitions" sequence="2"
             action="action_cenit_namespace" />
+
+        <record id="view_import_data_types" model="ir.ui.view">
+            <field name="name">view.cenit.data_type.import</field>
+            <field name="model">cenit.import_export</field>
+            <field name="arch" type="xml">
+                <form class="oe_import" >
+                    <label for="attachment" string="Import a JSON File: " class="oe_inline" />
+                    <field name="attachment" />
+                    <footer>
+                      <button type="object" name="import_data_types" context="{'attachment': attachment}"
+                              string="Import"  class="oe_highlight" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <act_window name="Import data types" res_model="cenit.import_export"
+                    view_id="view_import_data_types" src_model="cenit.data_type"
+                    view_mode="form" target="new" view_type="form" id="action_cenit_import_datatype"/>
+
+        <menuitem id="menu_cenit_datatype_import" name="Import Data types"
+            parent="menu_cenit_data_definitions" sequence="2"
+            action="action_cenit_import_datatype" />
+
     </data>
 </openerp>
