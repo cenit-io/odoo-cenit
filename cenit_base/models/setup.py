@@ -41,7 +41,7 @@ class CenitConnection (models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-    namespace = fields.Char('Namespace', default="Odoo")
+    #namespace = fields.Char('Namespace', default="Odoo")
     name = fields.Char('Name', required=True)
     url = fields.Char('URL', required=True)
 
@@ -65,16 +65,16 @@ class CenitConnection (models.Model):
     )
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE(namespace, name)',
-         'The name must be unique for each namespace!'),
+        ('name_uniq', 'UNIQUE(name)',
+         'The name must be unique!'),
     ]
 
     @api.one
     def _get_values(self):
         vals = {
             'name': self.name,
-            'url': self.url,
-            'namespace': self.namespace,
+            'url': self.url
+            #'namespace': self.namespace,
         }
 
         if self.cenitID:
@@ -104,7 +104,7 @@ class CenitConnection (models.Model):
             })
         vals.update({'template_parameters': template})
 
-        vals.update({"_primary": ["namespace", "name"]})
+       # vals.update({"_primary": ["namespace", "name"]})
 
         return vals
 
@@ -150,7 +150,7 @@ class CenitConnectionRole (models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-    namespace = fields.Char('Namespace', default="Odoo")
+    #namespace = fields.Char('Namespace', default="Odoo")
     name = fields.Char('Name', required=True)
 
     connections = fields.Many2many(
@@ -164,15 +164,15 @@ class CenitConnectionRole (models.Model):
     )
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE(namespace, name)',
+        ('name_uniq', 'UNIQUE( name)',
          'The name must be unique for each namespace!'),
     ]
 
     @api.one
     def _get_values(self):
         vals = {
-            'name': self.name,
-            'namespace': self.namespace,
+            'name': self.name
+          #  'namespace': self.namespace,
         }
         if self.cenitID:
             vals.update({'id': self.cenitID})
@@ -205,7 +205,7 @@ class CenitConnectionRole (models.Model):
 
         vals.update({
             '_reset': _reset,
-            '_primary': ['namespace', 'name'],
+            '_primary': ['name']
         })
 
         return vals
@@ -264,7 +264,8 @@ class CenitWebhook (models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-    namespace = fields.Char('Namespace', default="Odoo")
+   # namespace = fields.Many2one('cenit.namespace', string='Namespace',
+                            #  ondelete='cascade')
     name = fields.Char('Name', required=True)
     path = fields.Char('Path', required=True)
     purpose = fields.Char(compute='_compute_purpose', store=True)
@@ -296,8 +297,8 @@ class CenitWebhook (models.Model):
     )
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE(namespace, name)',
-         'The name must be unique for each namespace!'),
+        ('name_uniq', 'UNIQUE( name)',
+         'The name must be unique for each namespace!')
     ]
 
     @api.one
@@ -306,8 +307,8 @@ class CenitWebhook (models.Model):
             'name': self.name,
             'path': self.path,
             'purpose': self.purpose,
-            'method': self.method,
-            'namespace': self.namespace,
+            'method': self.method
+            #'namespace': self.namespace,
         }
 
         if self.cenitID:
@@ -337,7 +338,7 @@ class CenitWebhook (models.Model):
             })
         vals.update({'template_parameters': template})
 
-        vals.update({'_primary': ['namespace', 'name']})
+        vals.update({'_primary': ['name']})
 
         return vals
 
@@ -354,7 +355,7 @@ class CenitEvent (models.Model):
     cenit_models = 'events'
 
     cenitID = fields.Char('CenitID')
-    namespace = fields.Char('Namespace', default="Odoo")
+    #namespace = fields.Char('Namespace', default="Odoo")
     name = fields.Char('Name', required=True, unique=True)
     type_ = fields.Selection(
         [
@@ -377,7 +378,7 @@ class CenitEvent (models.Model):
     @api.one
     def _get_values(self):
         vals = {
-            'namespace': self.namespace,
+            #'namespace': self.namespace,
             'name': self.name,
             '_type': "Setup::Observer",
             'data_type': {
@@ -418,7 +419,7 @@ class CenitTranslator (models.Model):
     cenit_models = 'translators'
 
     cenitID = fields.Char('CenitID')
-    namespace = fields.Char('Namespace', default="Odoo")
+    #namespace = fields.Char('Namespace', default="Odoo")
     name = fields.Char('Name', required=True, unique=True)
     type_ = fields.Char("Type")
     mime_type = fields.Char('MIME Type')
@@ -435,7 +436,7 @@ class CenitFlow (models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-    namespace = fields.Char('Namespace', default="Odoo")
+    #namespace = fields.Char('Namespace', default="Odoo")
     name = fields.Char('Name', size=64, required=True, unique=True)
     enabled = fields.Boolean('Enabled', default=True)
     event = fields.Many2one("cenit.event", string='Event')
@@ -480,14 +481,14 @@ class CenitFlow (models.Model):
     # )
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE(namespace, name)',
-         'The name must be unique for each namespace!'),
+        ('name_uniq', 'UNIQUE(name)',
+       'The name must be unique for each namespace!')
     ]
 
     @api.one
     def _get_values(self):
         vals = {
-            'namespace': self.namespace,
+            #'namespace': self.namespace,
             'name': self.name,
             'active': self.enabled,
             'discard_events': False,
@@ -930,7 +931,7 @@ class CenitFlow (models.Model):
 
         return rc
 
-#     def local_post(self, cr, uid, obj, data, context=None):
+#     def local_post(self,00 cr, uid, obj, data, context=None):
 #         db = context.get('partner_db')
 #         if db:
 #             registry = openerp.modules.registry.RegistryManager.get(db)
