@@ -10,3 +10,4 @@ access_cenit_connection_role_system,cenit.connection.role.system,model_cenit_con
 access_cenit_event_system,cenit.event.system,model_cenit_event,base.group_user,1,1,1,1
 access_cenit_translator_system,cenit.translator.system,model_cenit_translator,base.group_user,1,1,1,1
 access_cenit_flow_system,cenit.flow.system,model_cenit_flow,base.group_user,1,1,1,1
+access_cenit_namespace_system,cenit.namespace.system,model_cenit_namespace,base.group_user,1,1,1,1
