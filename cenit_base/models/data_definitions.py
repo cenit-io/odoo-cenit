@@ -413,6 +413,8 @@ class CenitDataType(models.Model):
     @api.one
     def _get_flows(self):
         flow_pool = self.env['cenit.flow']
+        if not self.search([('id', '=', self.id)]):
+            return []
 
         domain = [
             ('schema', '=', self.schema.id),
@@ -425,46 +427,46 @@ class CenitDataType(models.Model):
         for trigger in self.triggers:
             trigger.sync()
 
-    @api.model
-    def perform_scheduled_action(self, dt_id):
-        _logger.info("Performing scheduled trigger")
-        dt = self.browse(dt_id)
-
-        flow_pool = self.env["cenit.flow"]
-        flows = dt._get_flows()
-        if isinstance(flows, list) and len(flows) == 1:
-            flows = flows[0]
-
-        to_trigger = {
-            "cenit": None,
-            "other": []
-        }
-        for flow in flows:
-            if flow.enabled and not flow.local and not to_trigger["cenit"]:
-                to_trigger["cenit"] = flow.id
-            if flow.enabled and flow.local:
-                to_trigger["other"].append(flow.id)
-
-        for trigger in dt.triggers:
-            if trigger.name != 'interval':
-                continue
-
-            domain = []
-
-            if trigger.last_execution and (
-               trigger.cron_restrictions == "create"):
-                domain.append(("create_date", '>', trigger.last_execution))
-            elif trigger.last_execution and (
-               trigger.cron_restrictions == "update"):
-                domain.append(("write_date", '>', trigger.last_execution))
-
-            trigger.last_execution = fields.Datetime.now()
-
-            if to_trigger["cenit"]:
-                flow_pool.send_all(to_trigger["cenit"], dt, domain)
-
-            for id_ in to_trigger["other"]:
-                flow_pool.send_all(id_, dt, domain)
+    # @api.model
+    # def perform_scheduled_action(self, dt_id):
+    #     _logger.info("Performing scheduled trigger")
+    #     dt = self.browse(dt_id)
+    #
+    #     flow_pool = self.env["cenit.flow"]
+    #     flows = dt._get_flows()
+    #     if isinstance(flows, list) and len(flows) == 1:
+    #         flows = flows[0]
+    #
+    #     to_trigger = {
+    #         "cenit": None,
+    #         "other": []
+    #     }
+    #     for flow in flows:
+    #         if flow.enabled and not flow.local and not to_trigger["cenit"]:
+    #             to_trigger["cenit"] = flow.id
+    #         if flow.enabled and flow.local:
+    #             to_trigger["other"].append(flow.id)
+    #
+    #     for trigger in dt.triggers:
+    #         if trigger.name != 'interval':
+    #             continue
+    #
+    #         domain = []
+    #
+    #         if trigger.last_execution and (
+    #            trigger.cron_restrictions == "create"):
+    #             domain.append(("create_date", '>', trigger.last_execution))
+    #         elif trigger.last_execution and (
+    #            trigger.cron_restrictions == "update"):
+    #             domain.append(("write_date", '>', trigger.last_execution))
+    #
+    #         trigger.last_execution = fields.Datetime.now()
+    #
+    #         if to_trigger["cenit"]:
+    #             flow_pool.send_all(to_trigger["cenit"], dt, domain)
+    #
+    #         for id_ in to_trigger["other"]:
+    #             flow_pool.send_all(id_, dt, domain)
 
     @api.one
     def trigger_flows(self, obj):

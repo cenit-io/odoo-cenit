@@ -213,9 +213,17 @@ class CenitSettings (models.TransientModel):
         conn_pool = self.pool.get("cenit.connection")
         hook_pool = self.pool.get("cenit.webhook")
         role_pool = self.pool.get("cenit.connection.role")
+        names_pool = self.pool.get("cenit.namespace")
+
+        names_data = {
+            "name": "MyOdoo",
+            "slug": "my_odoo",
+        }
+        namesp = names_pool.create(cr, uid, names_data, context=context)
 
         conn_data = {
             "name": "My Odoo host",
+            "namespace": namesp,
             "url": icp.get_param(cr, uid, 'web.base.url', default=None)
         }
         conn = conn_pool.create(cr, uid, conn_data, context=context)
@@ -223,11 +231,13 @@ class CenitSettings (models.TransientModel):
         hook_data = {
             "name": "Cenit webhook",
             "path": "cenit/push",
+            "namespace": namesp,
             "method": "post",
         }
         hook = hook_pool.create(cr, uid, hook_data, context=context)
 
         role_data = {
+            "namespace": namesp,
             "name": "My Odoo role",
             "connections": [(6, False, [conn])],
             "webhooks": [(6, False, [hook])],
