@@ -5,13 +5,12 @@
         <menuitem id="menu_cenit_data_definitions" name="Data Definitions"
             parent="menu_cenit_integration" sequence="1" />
 
-
         <record id="view_cenit_schema_tree" model="ir.ui.view">
             <field name="name">view.cenit.schema.tree</field>
             <field name="model">cenit.schema</field>
             <field name="arch" type="xml">
                 <tree string="Schemas" >
-                    <field name="library" />
+                    <field name="namespace" />
                     <field name="name"/>
                     <field name="slug" />
                 </tree>
@@ -24,7 +23,7 @@
             <field name="arch" type="xml">
                 <form string="Schema">
                     <group>
-                        <field name="library"/>
+                        <field name="namespace"/>
                         <field name="name"/>
                         <field name="slug"/>
                     </group>
@@ -47,7 +46,6 @@
             parent="menu_cenit_data_definitions" sequence="0"
             action="action_cenit_schema" />
 
-
         <record id="view_cenit_data_type_tree" model="ir.ui.view">
             <field name="name">view.cenit.data_type.tree</field>
             <field name="model">cenit.data_type</field>
@@ -55,7 +53,7 @@
                 <tree string="data_types" >
                     <field name="name"/>
                     <field name="model"/>
-                    <field name="library"/>
+                    <field name="namespace"/>
                 </tree>
             </field>
         </record>
@@ -70,7 +68,7 @@
                             <group>
                                 <field name="name"/>
                                 <field name="model"/>
-                                <field name="library"/>
+                                <field name="namespace"/>
                                 <field name="schema"
                                         attrs="{'required': True}"/>
                             </group>
@@ -91,6 +89,7 @@
                                                 attrs="{'required':[('line_type', 'in', ['model', 'reference'])], 'readonly':[('line_type', 'not in', ['model', 'reference'])]}" />
                                         <field name="primary"
                                                 attrs="{'invisible': [('line_type', '!=', 'field')]}"/>
+                                        <field name="inlined"/>
                                     </tree>
                                 </field>
                             </page>
@@ -122,6 +121,7 @@
             </field>
         </record>
 
+
         <record id="action_cenit_data_type" model="ir.actions.act_window">
             <field name="name">Data types</field>
             <field name="res_model">cenit.data_type</field>
@@ -134,43 +134,40 @@
             parent="menu_cenit_data_definitions" sequence="1"
             action="action_cenit_data_type"/>
 
-
-        <record id="view_cenit_library_tree" model="ir.ui.view">
-            <field name="name">view.cenit.library.tree</field>
-            <field name="model">cenit.library</field>
+        <record id="view_cenit_namespace_tree" model="ir.ui.view">
+            <field name="name">view.cenit.namespace.tree</field>
+            <field name="model">cenit.namespace</field>
             <field name="arch" type="xml">
-                <tree string="Libraries" >
+                <tree string="Namespaces" >
                     <field name="name" />
                     <field name="slug" />
-                    <field name="schemas" />
                 </tree>
             </field>
         </record>
 
-        <record id="view_cenit_library_form" model="ir.ui.view">
-            <field name="name">view.cenit.library.form</field>
-            <field name="model">cenit.library</field>
+        <record id="view_cenit_namespace_form" model="ir.ui.view">
+            <field name="name">view.cenit.namespace.form</field>
+            <field name="model">cenit.namespace</field>
             <field name="arch" type="xml">
-                <form string="Library">
+                <form string="Namespace">
                     <group>
                         <field name="name" />
                         <field name="slug" />
-                        <field name="schemas" />
                     </group>
                 </form>
             </field>
         </record>
 
-        <record id="action_cenit_library" model="ir.actions.act_window">
-            <field name="name">Libraries</field>
+        <record id="action_cenit_namespace" model="ir.actions.act_window">
+            <field name="name">Namespaces</field>
             <field name="type">ir.actions.act_window</field>
-            <field name="res_model">cenit.library</field>
+            <field name="res_model">cenit.namespace</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="menu_cenit_library" name="Libraries"
+        <menuitem id="menu_cenit_namespace" name="Namespaces"
             parent="menu_cenit_data_definitions" sequence="2"
-            action="action_cenit_library" />
+            action="action_cenit_namespace" />
     </data>
 </openerp>
