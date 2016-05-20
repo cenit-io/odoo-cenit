@@ -41,7 +41,9 @@ class CenitConnection (models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-    #namespace = fields.Char('Namespace', default="Odoo")
+    namespace = fields.Many2one('cenit.namespace', string='Namespace',
+                               ondelete='cascade')
+
     name = fields.Char('Name', required=True)
     url = fields.Char('URL', required=True)
 
@@ -73,8 +75,8 @@ class CenitConnection (models.Model):
     def _get_values(self):
         vals = {
             'name': self.name,
-            'url': self.url
-            #'namespace': self.namespace,
+            'url': self.url,
+            'namespace': self.namespace.id,
         }
 
         if self.cenitID:
@@ -104,7 +106,7 @@ class CenitConnection (models.Model):
             })
         vals.update({'template_parameters': template})
 
-       # vals.update({"_primary": ["namespace", "name"]})
+        vals.update({"_primary": ["namespace", "name"]})
 
         return vals
 
@@ -150,7 +152,9 @@ class CenitConnectionRole (models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-    #namespace = fields.Char('Namespace', default="Odoo")
+    namespace = fields.Many2one('cenit.namespace', string='Namespace',
+                              ondelete='cascade')
+
     name = fields.Char('Name', required=True)
 
     connections = fields.Many2many(
@@ -171,8 +175,8 @@ class CenitConnectionRole (models.Model):
     @api.one
     def _get_values(self):
         vals = {
-            'name': self.name
-          #  'namespace': self.namespace,
+            'name': self.name,
+            'namespace': self.namespace.id,
         }
         if self.cenitID:
             vals.update({'id': self.cenitID})
@@ -215,7 +219,7 @@ class CenitParameter (models.Model):
     _name = 'cenit.parameter'
 
     key = fields.Char('Key', required=True)
-    value = fields.Char('Value', required=True)
+    value = fields.Char('Value')
 
     conn_url_id = fields.Many2one(
         'cenit.connection',
@@ -264,8 +268,8 @@ class CenitWebhook (models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-   # namespace = fields.Many2one('cenit.namespace', string='Namespace',
-                            #  ondelete='cascade')
+    namespace = fields.Many2one('cenit.namespace', string='Namespace',
+                              ondelete='cascade')
     name = fields.Char('Name', required=True)
     path = fields.Char('Path', required=True)
     purpose = fields.Char(compute='_compute_purpose', store=True)
@@ -307,8 +311,8 @@ class CenitWebhook (models.Model):
             'name': self.name,
             'path': self.path,
             'purpose': self.purpose,
-            'method': self.method
-            #'namespace': self.namespace,
+            'method': self.method,
+            'namespace': self.namespace.id,
         }
 
         if self.cenitID:
@@ -338,7 +342,7 @@ class CenitWebhook (models.Model):
             })
         vals.update({'template_parameters': template})
 
-        vals.update({'_primary': ['name']})
+        vals.update({'_primary': ['name', 'namespace']})
 
         return vals
 
@@ -355,7 +359,9 @@ class CenitEvent (models.Model):
     cenit_models = 'events'
 
     cenitID = fields.Char('CenitID')
-    #namespace = fields.Char('Namespace', default="Odoo")
+    namespace = fields.Many2one('cenit.namespace', string='Namespace',
+                              ondelete='cascade')
+
     name = fields.Char('Name', required=True, unique=True)
     type_ = fields.Selection(
         [
@@ -378,7 +384,7 @@ class CenitEvent (models.Model):
     @api.one
     def _get_values(self):
         vals = {
-            #'namespace': self.namespace,
+            'namespace': self.namespace.id,
             'name': self.name,
             '_type': "Setup::Observer",
             'data_type': {
@@ -419,7 +425,8 @@ class CenitTranslator (models.Model):
     cenit_models = 'translators'
 
     cenitID = fields.Char('CenitID')
-    #namespace = fields.Char('Namespace', default="Odoo")
+    namespace = fields.Many2one('cenit.namespace', string='Namespace',
+                              ondelete='cascade')
     name = fields.Char('Name', required=True, unique=True)
     type_ = fields.Char("Type")
     mime_type = fields.Char('MIME Type')
@@ -436,7 +443,9 @@ class CenitFlow (models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-    #namespace = fields.Char('Namespace', default="Odoo")
+    namespace = fields.Many2one('cenit.namespace', string='Namespace',
+                              ondelete='cascade')
+
     name = fields.Char('Name', size=64, required=True, unique=True)
     enabled = fields.Boolean('Enabled', default=True)
     event = fields.Many2one("cenit.event", string='Event')
@@ -488,7 +497,7 @@ class CenitFlow (models.Model):
     @api.one
     def _get_values(self):
         vals = {
-            #'namespace': self.namespace,
+            'namespace': self.namespace.id,
             'name': self.name,
             'active': self.enabled,
             'discard_events': False,

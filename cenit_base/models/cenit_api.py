@@ -45,7 +45,6 @@ class CenitApi(models.AbstractModel):
         vals.pop('write_date')
         vals.pop('display_name')
         vals.pop('id')
-
         return vals
 
     @api.one
@@ -241,7 +240,6 @@ class CenitApi(models.AbstractModel):
     @api.model
     def create(self, vals):
         obj = super(CenitApi, self).create(vals)
-
         local = self.env.context.get('local', False)
         if local:
             return obj
