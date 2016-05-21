@@ -32,7 +32,6 @@ API_PATH = "/api/v1"
 
 
 class CenitApi(models.AbstractModel):
-
     _name = "cenit.api"
 
     @api.one
@@ -109,7 +108,14 @@ class CenitApi(models.AbstractModel):
             _logger.error(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
         if 200 <= r.status_code < 300:
-            return r.json()
+            response = r.json()
+            if 'errors' in response:
+                msg = "Cenit returned with the following errors: "
+                for error in response['errors']['message']['errors']:
+                    msg = msg + ', ' + error
+                _logger.error(msg)
+                raise exceptions.ValidationError(msg)
+            return response
 
         try:
             error = r.json()
