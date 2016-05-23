@@ -2,19 +2,16 @@ import base64
 import logging
 import json
 
-from openerp import api, exceptions
-from openerp.osv import orm, fields
+from openerp import api, exceptions, models
+from openerp.osv import fields
 
 _logger = logging.getLogger(__name__)
 
 
-class ImportExport(orm.TransientModel):
+class ImportExport(models.TransientModel):
     _name = "cenit.import_export"
 
-    _columns = {
-        'file': fields.binary('File')
-    }
-
+    file = fields.Binary('File')
 
     @api.model
     def export_data_types(self, cr, uid, context={}):
