@@ -44,6 +44,7 @@ class CenitApi(models.AbstractModel):
         vals.pop('write_date')
         vals.pop('display_name')
         vals.pop('id')
+
         return vals
 
     @api.one
@@ -108,14 +109,7 @@ class CenitApi(models.AbstractModel):
             _logger.error(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
         if 200 <= r.status_code < 300:
-            response = r.json()
-            if 'errors' in response:
-                msg = "Cenit returned with the following errors: "
-                for error in response['errors']['message']['errors']:
-                    msg = msg + ', ' + error
-                _logger.error(msg)
-                raise exceptions.ValidationError(msg)
-            return response
+            return r.json()
 
         try:
             error = r.json()
@@ -246,6 +240,7 @@ class CenitApi(models.AbstractModel):
     @api.model
     def create(self, vals):
         obj = super(CenitApi, self).create(vals)
+
         local = self.env.context.get('local', False)
         if local:
             return obj
