@@ -11,7 +11,7 @@ _logger = logging.getLogger(__name__)
 class ImportExport(models.TransientModel):
     _name = "cenit.import_export"
 
-    file = fields.Binary('File')
+    file_import = fields.Binary('File')
 
     @api.model
     def export_data_types(self, cr, uid, context={}):

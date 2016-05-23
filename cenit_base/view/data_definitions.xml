@@ -193,9 +193,9 @@
             <field name="model">cenit.import_export</field>
             <field name="arch" type="xml">
                 <form class="oe_import" enctype="multipart/form-data">
-                   <field name="file" />
+                   <field name="file_import" />
                     <footer>
-                      <button type="object" name="import_data_types" id="btn_import" context="{'attachment': file}"
+                      <button type="object" name="import_data_types" id="btn_import" context="{'attachment': file_import}"
                               string="Import"  class="oe_highlight"  />
                     </footer>
                 </form>
