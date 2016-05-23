@@ -2,15 +2,16 @@ import base64
 import logging
 import json
 
-from openerp import models, api, exceptions, fields
+from openerp import api, exceptions, models
+from openerp.osv import fields
 
 _logger = logging.getLogger(__name__)
 
 
 class ImportExport(models.TransientModel):
     _name = "cenit.import_export"
-    attachment = fields.Char()
-    folder = fields.Char()
+
+    file_import = fields.Binary('File')
 
     @api.model
     def export_data_types(self, cr, uid, context={}):
@@ -60,8 +61,8 @@ class ImportExport(models.TransientModel):
         domain_pool = self.env['cenit.data_type.domain_line']
         trigger_pool = self.env['cenit.data_type.trigger']
 
-        with open(data_file) as json_file:
-            json_data = json.load(json_file)
+        data_file =base64.decodestring(data_file)
+        json_data = json.loads(data_file)
 
         for data in json_data:
             odoo_model = data['model']
@@ -115,5 +116,4 @@ class ImportExport(models.TransientModel):
                     'primary': line['primary'], 'inlined': line['inlined'], 'reference': candidate.id
                 }
                 line_pool.create(vals)
-        json_file.close()
         return True

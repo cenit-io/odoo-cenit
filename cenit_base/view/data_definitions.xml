@@ -126,10 +126,10 @@
             <field name="model">cenit.import_export</field>
             <field name="arch" type="xml">
                <form string="Export data types">
-					<label for="folder" string="Select the folder:" class="oe_inline"/>
-                    <field name="folder" />
+					<!--  <label for="folder" string="Select the folder:" class="oe_inline"/>
+                    <field name="folder" /> -->
 					<footer>
-                        <button string="Save" name="export_data_types" context="{'folder': folder}"
+                        <button string="Save" name="export_data_types"
                                 type="object" class="oe_highlight"/>
 					 </footer>
                 </form>
@@ -192,12 +192,11 @@
             <field name="name">view.cenit.data_type.import</field>
             <field name="model">cenit.import_export</field>
             <field name="arch" type="xml">
-                <form class="oe_import" >
-                    <label for="attachment" string="Import a JSON File: " class="oe_inline" />
-                    <field name="attachment" />
+                <form class="oe_import" enctype="multipart/form-data">
+                   <field name="file_import" />
                     <footer>
-                      <button type="object" name="import_data_types" context="{'attachment': attachment}"
-                              string="Import"  class="oe_highlight" />
+                      <button type="object" name="import_data_types" id="btn_import" context="{'attachment': file_import}"
+                              string="Import"  class="oe_highlight"  />
                     </footer>
                 </form>
             </field>

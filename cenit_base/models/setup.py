@@ -925,12 +925,12 @@ class CenitFlow (models.Model):
 
     @api.one
     def http_post(self, data):
-        path = "/%s/push" % (self.schema.library.slug,)
+        path = "/%s/%s" % (self.schema.namespace.slug, self.schema.slug,)
 
-        root = self.schema.slug
-        if isinstance(root, list):
-            root = root[0]
-        values = {root: data}
+        #root = self.schema.slug
+        # if isinstance(root, list):
+        #     root = root[0]
+        values = data[0]
 
         rc = False
         try:

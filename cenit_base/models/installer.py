@@ -195,11 +195,11 @@ class CollectionInstaller(models.TransientModel):
             domain = [('name', '=', webhook.get('namespace'))]
             candidates = names_pool.search(domain)
             if not candidates:
-                 raise exceptions.ValidationError(
-                     "There's no namespace named %s" % (webhook.get('namespace'),))
+                raise exceptions.ValidationError(
+                    "There's no namespace named %s" % (webhook.get('namespace'),))
 
             hook_data.update({
-                 'namespace': candidates[0].id
+                'namespace': candidates[0].id
             })
 
             domain = [('name', '=', hook_data.get('name')),
@@ -234,15 +234,15 @@ class CollectionInstaller(models.TransientModel):
             domain = [('name', '=', role.get('namespace'))]
             candidates = names_pool.search(domain)
             if not candidates:
-                 raise exceptions.ValidationError(
-                     "There's no namespace named %s" %(role.get('namespace'),))
+                raise exceptions.ValidationError(
+                    "There's no namespace named %s" % (role.get('namespace'),))
 
             role_data.update({
                 'namespace': candidates[0].id
             })
 
             domain = [('name', '=', role_data.get('name')),
-                    ('namespace', '=', role_data.get('namespace'))]
+                      ('namespace', '=', role_data.get('namespace'))]
             candidates = role_pool.search(domain)
 
             if not candidates:
@@ -292,72 +292,78 @@ class CollectionInstaller(models.TransientModel):
             flow_data = {
                 'cenitID': flow.get('id'),
                 'name': flow.get('name'),
-                # 'namespace': flow.get('namespace'),
                 'enabled': flow.get('active', False),
                 'format_': 'application/json',
             }
 
+            # Updating namespace in flow
             domain = [('name', '=', flow.get('namespace'))]
             rc = names_pool.search(domain)
             if not rc:
-                 raise exceptions.ValidationError(
-                     "There's no namespace named %s" % (flow.get('namespace'),))
+                continue
+                # raise exceptions.ValidationError(
+                #     "There's no namespace named %s" % (flow.get('namespace'),))
 
             flow_data.update({
-                 'namespace': rc[0].id
+                'namespace': rc[0].id
             })
 
-            dt = flow.get('custom_data_type', {})
-            schema = dt.get('name', '')
-            namespace = dt.get('namespace', {})
-
-            dt_deferred = False
-            if not rc:
-                dt_deferred = True
-
-            if not dt_deferred:
-                domain = [
-                    ('name', '=', schema),
-                    ('namespace', '=', rc[0].id)
-                ]
-                rc = sch_pool.search(domain)
-                if not rc:
-                    continue
-                flow_data.update({
-                    'schema': rc[0].id
-                })
-
-            ev = flow.get('event', {})
-            domain = [('name', '=', ev.get('name')),
-                      ('namespace', '=', namespace)]
-            rc = ev_pool.search(domain)
+            # Updating translator
+            trans = flow.get('translator')
+            namesp = names_pool.search([('name', '=', trans.get('namespace'))])
+            rc = trans_pool.search([('name', '=', trans.get('name')),
+                                    ('namespace', '=', namesp[0].id)])
             if not rc:
                 continue
-            flow_data.update({
-                'event': rc[0].id
-            })
-
-            trans = flow.get('translator', {})
-            domain = [('name', '=', trans.get('name')),
-             ('namespace', '=', namespace)]
-            rc = trans_pool.search(domain)
-            if not rc:
-                continue
-
-            if dt_deferred:
-                if not rc[0].schema:
-                    continue
-                flow_data.update({
-                    'schema': rc[0].schema.id
-                })
 
             flow_data.update({
                 'cenit_translator': rc[0].id
             })
 
+            # Updating schema
+            sch_updated = False
+            dt = {}
+            if rc[0].schema:
+                flow_data.update({'schema': rc[0].schema.id})
+                sch_updated = True
+            elif 'custom_data_type' in flow:
+                dt = flow.get('custom_data_type')
+            else:
+                dt = flow.get('target_data_type')
+
+            if not sch_updated:
+                rc = names_pool.search([('name', '=', dt.get('namespace'))])
+                sch = sch_pool.search([('name', '=', dt.get('name')),
+                                       ('namespace', '=', rc[0].id)])
+                if not sch:
+                    continue
+                    # raise exceptions.ValidationError(
+                    #     "There's no definition of a \' %s \' schema in this collection" % (dt.get('name')))
+
+                flow_data.update({
+                    'schema': sch[0].id
+                })
+
+            # Updating event in Flow
+            if 'event' in flow:
+                ev = flow.get('event', {})
+                namesp = names_pool.search([('name', '=', ev.get('namespace'))])
+                rc = ev_pool.search([('name', '=', ev.get('name')),
+                                     ('namespace', '=', namesp[0].id)])
+                if not rc:
+                    continue
+                    # raise exceptions.ValidationError(
+                    #     "There's no definition of an \' %s \' event in this collection" % (ev.get('name')))
+
+                flow_data.update({
+                    'event': rc[0].id
+                })
+
+            # Updating webhook
             hook = flow.get('webhook', {})
+            namesp = names_pool.search([('name', '=', hook.get('namespace'))])
             domain = [('name', '=', hook.get('name')),
-                      ('namespace', '=', namespace)]
+                      ('namespace', '=', namesp[0].id)]
             rc = hook_pool.search(domain)
             if not rc:
                 continue
@@ -365,18 +371,21 @@ class CollectionInstaller(models.TransientModel):
                 'webhook': rc[0].id
             })
 
-            role = flow.get('connection_role', {})
-            domain = [('name', '=', role.get('name')),
-                      ('namespace', '=', namespace)]
-            rc = role_pool.search(domain)
-            if rc:
-                flow_data.update({
-                    'connection_role': rc[0].id
-                })
+            #Updating role
+            if 'connection_role' in flow:
+                role = flow.get('connection_role', {})
+                namesp = names_pool.search([('name', '=', role.get('namespace'))])
+                domain = [('name', '=', role.get('name')),
+                          ('namespace', '=', namesp[0].id)]
+                rc = role_pool.search(domain)
+                if rc:
+                    flow_data.update({
+                        'connection_role': rc[0].id
+                    })
 
             domain = [
                 ('name', '=', flow_data.get('name')),
-                 ('namespace', '=', namespace),
+                ('namespace', '=', flow_data.get('namespace')),
                 '|',
                 ('enabled', '=', True),
                 ('enabled', '=', False),
@@ -405,33 +414,38 @@ class CollectionInstaller(models.TransientModel):
                 'mime_type': translator.get('mime_type', False)
             }
 
+            #Updating namespace for translator
+            rc = names_pool.search([('name', '=', translator.get('namespace'))])
+            if not rc:
+                raise exceptions.ValidationError(
+                    "There's no namespace named %s" % (translator.get('namespace'),))
+
+            trans_data.update({
+                'namespace': rc[0].id
+            })
+
+            # Updating schema
             schema = translator.get({
                                         'Import': 'target_data_type',
                                         'Export': 'source_data_type',
                                     }.get(translator.get('type')), {})
 
-            schema_id = False
             if schema:
+                namesp = names_pool.search([('name', '=', schema.get('namespace'))])
                 domain = [
-                    ('name', '=', schema.get('name'))
-                    #   ('namespace', '=', schema.get('namespace'))
+                    ('name', '=', schema.get('name')),
+                    ('namespace', '=', namesp[0].id)
                 ]
                 candidates = sch_pool.search(domain)
                 if candidates:
                     schema_id = candidates[0].id
 
-            trans_data.update({
-                'schema': schema_id
-            })
+                trans_data.update({
+                    'schema': schema_id
+                })
 
-            # domain = [('name', '=', trans_data.get('namespace'))]
-            # rc = names_pool.search(domain)
-            # trans_data.update({
-            #     'namespace': rc[0].id
-            # })
-
-            domain = [('name', '=', trans_data.get('name'))]
-            #('namespace', '=', trans_data.get('namespace'))]
+            domain = [('name', '=', trans_data.get('name')),
+                      ('namespace', '=', trans_data.get('namespace'))]
             candidates = trans_pool.search(domain)
             if not candidates:
                 trans_pool.with_context(local=True).create(trans_data)
@@ -463,7 +477,7 @@ class CollectionInstaller(models.TransientModel):
             if schema:
                 domain = [
                     ('name', '=', schema.get('name')),
-                     ('namespace', '=', rc[0].id)
+                    ('namespace', '=', rc[0].id)
                 ]
                 candidates = sch_pool.search(domain)
                 if candidates:
