@@ -81,6 +81,16 @@
                                        class="oe_inline" />
                                 <label for="module_cenit_twitter" />
                             </div>
+                            <div name="module_cenit_messagebird">
+                                <field name="module_cenit_messagebird"
+                                       class="oe_inline" />
+                                <label for="module_cenit_messagebird" />
+                            </div>
+                            <div name="module_cenit_asana">
+                                <field name="module_cenit_asana"
+                                       class="oe_inline" />
+                                <label for="module_cenit_asana" />
+                            </div>
                         </group>
                     </div>
                 </form>

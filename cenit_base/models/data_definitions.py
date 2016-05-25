@@ -33,48 +33,29 @@ from datetime import datetime
 _logger = logging.getLogger(__name__)
 
 
-class CenitSchema(models.Model):
-
-    @api.one
-    def cenit_root(self):
-        # return "%s/%s" % (self.library.slug or "odoo", self.slug)
-        return self.slug
-
-    _name = 'cenit.schema'
+class CenitNameSpace(models.Model):
+    _name = 'cenit.namespace'
     _inherit = 'cenit.api'
 
-    cenit_model = 'data_type'
-    cenit_models = 'data_types'
+    cenit_model = 'namespace'
+    cenit_models = 'namespaces'
 
     cenitID = fields.Char('Cenit ID')
 
-    library = fields.Many2one('cenit.library', string='Library', required=True,
-                              ondelete='cascade')
-    slug = fields.Char('Slug', required=True)
-    schema = fields.Text('Schema')
-
-    name = fields.Char('Name')
+    name = fields.Char('Name', required=True)
+    slug = fields.Char('Slug')
+    schemas = fields.One2many('cenit.schema', 'namespace', string='Schemas')
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE(library,name)',
-         'The name must be unique for each library!'),
-        ('slug_uniq', 'UNIQUE(library,slug)',
-         'The slug must be unique for each library!'),
+        ('name_uniq', 'UNIQUE(name)', 'The name must be unique!'),
+        ('slug_uniq', 'UNIQUE(slug)', 'The slug must be unique!')
     ]
 
     @api.one
     def _get_values(self):
         vals = {
-            'library': {
-                '_reference': True,
-                'id': self.library.cenitID
-            },
-            'name': self.name,
-            'slug': self.slug,
-            'schema': self.schema,
-            '_type': 'Setup::SchemaDataType',
+            'name': self.name
         }
-
         if self.cenitID:
             vals.update({'id': self.cenitID})
 
@@ -89,8 +70,33 @@ class CenitSchema(models.Model):
                 update = {
                     'cenitID': v[0]['id'],
                 }
+                path = "/setup/namespace/%s" % (update.get('cenitID'))
+                rc = self.get(path)
+                slug = rc.get('namespace', {}).get('slug', False)
+                if slug:
+                    update.update({'slug': slug})
 
         return update
+
+    @api.model
+    def create(self, vals):
+        slug = vals.get("slug", False)
+        if not slug:
+            name = vals.get("name")
+            vals.update({"slug": name.lower().replace(" ", "_")})
+
+        return super(CenitNameSpace, self).create(vals)
+
+    @api.one
+    def write(self, vals):
+        slug = vals.get("slug", None)
+        if not slug and slug is False:
+            name = vals.get("name", False)
+            if not name:
+                name = self.name
+            vals.update({"slug": name.lower().replace(" ", "_")})
+
+        return super(CenitNameSpace, self).write(vals)
 
 
 class CenitLibrary(models.Model):
@@ -106,11 +112,9 @@ class CenitLibrary(models.Model):
     name = fields.Char('Name', required=True)
     slug = fields.Char('Slug')
 
-    schemas = fields.One2many('cenit.schema', 'library', string='Schemas')
-
     _sql_constraints = [
         ('name_uniq', 'UNIQUE(name)', 'The name must be unique!'),
-        ('slug_uniq', 'UNIQUE(slug)', 'The slug must be unique!'),
+        ('slug_uniq', 'UNIQUE(slug)', 'The slug must be unique!')
     ]
 
     @api.one
@@ -159,6 +163,72 @@ class CenitLibrary(models.Model):
             vals.update({"slug": name.lower().replace(" ", "_")})
 
         return super(CenitLibrary, self).write(vals)
+
+
+class CenitSchema(models.Model):
+
+    @api.one
+    def cenit_root(self):
+        # return "%s/%s" % (self.library.slug or "odoo", self.slug)
+        return self.slug
+
+    _name = 'cenit.schema'
+    _inherit = 'cenit.api'
+
+    cenit_model = 'data_type'
+    cenit_models = 'data_types'
+
+    cenitID = fields.Char('Cenit ID')
+
+    #library = fields.Many2one('cenit.library', string='Library',
+                             # ondelete='cascade')
+    slug = fields.Char('Slug', required=True)
+    schema = fields.Text('Schema')
+
+    name = fields.Char('Name')
+    namespace = fields.Many2one('cenit.namespace', string='Namespace', required=True,
+                              ondelete='cascade')
+
+    _sql_constraints = [
+        ('name_uniq', 'UNIQUE(namespace,name)',
+         'The name must be unique for each namespace!'),
+        ('slug_uniq', 'UNIQUE(namespace,slug)',
+         'The slug must be unique for each namespace!'),
+    ]
+
+    @api.one
+    def _get_values(self):
+        vals = {
+            #'library': {
+             #   '_reference': True,
+               # 'id': self.library.cenitID
+           # },
+           'namespace': {
+                 '_reference': True,
+                 'id': self.namespace.cenitID
+            },
+            'name': self.name,
+            'slug': self.slug,
+            'schema': self.schema,
+            '_type': 'Setup::SchemaDataType',
+        }
+
+        if self.cenitID:
+            vals.update({'id': self.cenitID})
+
+        return vals
+
+    @api.one
+    def _calculate_update(self, values):
+        update = {}
+
+        for k, v in values.items():
+            if k == "%s" % (self.cenit_models,):
+                update = {
+                    'cenitID': v[0]['id'],
+                }
+
+        return update
 
 
 class CenitDataTypeTrigger(models.Model):
@@ -297,15 +367,15 @@ class CenitDataTypeTrigger(models.Model):
 
 class CenitDataType(models.Model):
 
-    @api.onchange('library')
-    def _on_library_changed(self):
+    @api.onchange('namespace')
+    def _on_namespace_changed(self):
         return {
             'value': {
                 'schema': '',
             },
             'domain': {
                 'schema': [
-                    ('id', 'in', [x.id for x in self.library.schemas])
+                    ('id', 'in', [x.id for x in self.namespace.schemas])
                 ]
             }
         }
@@ -320,7 +390,10 @@ class CenitDataType(models.Model):
 
     name = fields.Char('Name', size=128, required=True)
     enabled = fields.Boolean('Enabled', default=True)
-    library = fields.Many2one('cenit.library', string='Library', required=True,
+    #library = fields.Many2one('cenit.library', string='Library', required=True,
+                              #ondelete='cascade')
+
+    namespace = fields.Many2one('cenit.namespace', string='Namespace', required=True,
                               ondelete='cascade')
 
     model = fields.Many2one('ir.model', 'Model', required=True)
@@ -340,6 +413,8 @@ class CenitDataType(models.Model):
     @api.one
     def _get_flows(self):
         flow_pool = self.env['cenit.flow']
+        if not self.search([('id', '=', self.id)]):
+            return []
 
         domain = [
             ('schema', '=', self.schema.id),
@@ -352,47 +427,46 @@ class CenitDataType(models.Model):
         for trigger in self.triggers:
             trigger.sync()
 
-    @api.model
-    def perform_scheduled_action(self, dt_id):
-        _logger.info("Performing scheduled trigger")
-        dt = self.browse(dt_id)
-
-        flow_pool = self.env["cenit.flow"]
-        flows = dt._get_flows()
-        if isinstance(flows, list) and len(flows) == 1:
-            flows = flows[0]
-
-        to_trigger = {
-            "cenit": None,
-            "other": []
-        }
-        for flow in flows:
-            if flow.enabled and not flow.local and not to_trigger["cenit"]:
-                to_trigger["cenit"] = flow.id
-            if flow.enabled and flow.local:
-                to_trigger["other"].append(flow.id)
-
-        for trigger in dt.triggers:
-            if trigger.name != 'interval':
-                continue
-
-            domain = []
-
-            if trigger.last_execution and (
-               trigger.cron_restrictions == "create"):
-                domain.append(("create_date", '>', trigger.last_execution))
-            elif trigger.last_execution and (
-               trigger.cron_restrictions == "update"):
-                domain.append(("write_date", '>', trigger.last_execution))
-
-            trigger.last_execution = fields.Datetime.now()
-
-            if to_trigger["cenit"]:
-                flow_pool.send_all(to_trigger["cenit"], dt, domain)
-
-            for id_ in to_trigger["other"]:
-                flow_pool.send_all(id_, dt, domain)
-
+    # @api.model
+    # def perform_scheduled_action(self, dt_id):
+    #     _logger.info("Performing scheduled trigger")
+    #     dt = self.browse(dt_id)
+    #
+    #     flow_pool = self.env["cenit.flow"]
+    #     flows = dt._get_flows()
+    #     if isinstance(flows, list) and len(flows) == 1:
+    #         flows = flows[0]
+    #
+    #     to_trigger = {
+    #         "cenit": None,
+    #         "other": []
+    #     }
+    #     for flow in flows:
+    #         if flow.enabled and not flow.local and not to_trigger["cenit"]:
+    #             to_trigger["cenit"] = flow.id
+    #         if flow.enabled and flow.local:
+    #             to_trigger["other"].append(flow.id)
+    #
+    #     for trigger in dt.triggers:
+    #         if trigger.name != 'interval':
+    #             continue
+    #
+    #         domain = []
+    #
+    #         if trigger.last_execution and (
+    #            trigger.cron_restrictions == "create"):
+    #             domain.append(("create_date", '>', trigger.last_execution))
+    #         elif trigger.last_execution and (
+    #            trigger.cron_restrictions == "update"):
+    #             domain.append(("write_date", '>', trigger.last_execution))
+    #
+    #         trigger.last_execution = fields.Datetime.now()
+    #
+    #         if to_trigger["cenit"]:
+    #             flow_pool.send_all(to_trigger["cenit"], dt, domain)
+    #
+    #         for id_ in to_trigger["other"]:
+    #             flow_pool.send_all(id_, dt, domain)
 
     @api.one
     def trigger_flows(self, obj):
@@ -516,3 +590,4 @@ class CenitDataTypeLine(models.Model):
         'Cardinality'
     )
     primary = fields.Boolean('Primary')
+    inlined = fields.Boolean('Inlined')

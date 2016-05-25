@@ -83,6 +83,14 @@ class CenitSettings (models.TransientModel):
         help=""
     )
 
+    module_cenit_asana = fields.Boolean('Asana API',
+        help=""
+    )
+
+    module_cenit_messagebird = fields.Boolean('MessageBird API',
+        help=""
+    )
+
     ############################################################################
     # Default values getters
     ############################################################################
@@ -92,7 +100,7 @@ class CenitSettings (models.TransientModel):
             cr, uid, "odoo_cenit.cenit_url", default=None, context=context
         )
 
-        return {'cenit_url': cenit_url or 'https://www.cenithub.com'}
+        return {'cenit_url': cenit_url or 'https://cenit.io'}
 
     def get_default_cenit_user_key (self, cr, uid, ids, context=None):
         cenit_user_key = self.pool.get ("ir.config_parameter").get_param (
@@ -205,9 +213,17 @@ class CenitSettings (models.TransientModel):
         conn_pool = self.pool.get("cenit.connection")
         hook_pool = self.pool.get("cenit.webhook")
         role_pool = self.pool.get("cenit.connection.role")
+        names_pool = self.pool.get("cenit.namespace")
+
+        names_data = {
+            "name": "MyOdoo",
+            "slug": "my_odoo",
+        }
+        namesp = names_pool.create(cr, uid, names_data, context=context)
 
         conn_data = {
             "name": "My Odoo host",
+            "namespace": namesp,
             "url": icp.get_param(cr, uid, 'web.base.url', default=None)
         }
         conn = conn_pool.create(cr, uid, conn_data, context=context)
@@ -215,11 +231,13 @@ class CenitSettings (models.TransientModel):
         hook_data = {
             "name": "Cenit webhook",
             "path": "cenit/push",
+            "namespace": namesp,
             "method": "post",
         }
         hook = hook_pool.create(cr, uid, hook_data, context=context)
 
         role_data = {
+            "namespace": namesp,
             "name": "My Odoo role",
             "connections": [(6, False, [conn])],
             "webhooks": [(6, False, [hook])],
@@ -267,7 +285,7 @@ class CenitAccountSettings(models.TransientModel):
 
         icp = self.pool.get("ir.config_parameter")
         hub_host = icp.get_param(cr, uid, "odoo_cenit.cenit_url",
-                                 default='https://www.cenithub.com')
+                                 default='https://cenit.io')
         if hub_host.endswith("/"):
             hub_host = hub_host[:-1]
         hub_hook = "captcha"

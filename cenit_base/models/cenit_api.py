@@ -32,7 +32,6 @@ API_PATH = "/api/v1"
 
 
 class CenitApi(models.AbstractModel):
-
     _name = "cenit.api"
 
     @api.one
@@ -218,7 +217,7 @@ class CenitApi(models.AbstractModel):
 
         config = {
             'cenit_url': icp.get_param(
-                "odoo_cenit.cenit_url", default='https://www.cenithub.com'
+                "odoo_cenit.cenit_url", default='https://cenit.io'
             ),
             'cenit_user_key': icp.get_param(
                 "odoo_cenit.cenit_user_key", default=None
