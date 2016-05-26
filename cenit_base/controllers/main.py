@@ -21,8 +21,8 @@ class WebhookController(http.Controller):
         status_code = 400
         environ = request.httprequest.headers.environ.copy()
 
-        key = environ.get('HTTP_X_HUB_STORE', False)
-        token = environ.get('HTTP_X_HUB_ACCESS_TOKEN', False)
+        key = environ.get('HTTP_X_USER_ACCESS_KEY', False)
+        token = environ.get('HTTP_X_USER_ACCESS_TOKEN', False)
         db_name = environ.get('HTTP_TENANT_DB', False)
 
         if not db_name:
@@ -32,7 +32,6 @@ class WebhookController(http.Controller):
         # if db_name in http.db_list():
         registry = RegistryManager.get(db_name)
         with registry.cursor() as cr:
-
             connection_model = registry['cenit.connection']
             domain = [('key', '=', key), ('token', '=', token)]
             _logger.info(
