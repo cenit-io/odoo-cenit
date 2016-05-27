@@ -209,7 +209,7 @@ class CenitConnectionRole (models.Model):
 
         vals.update({
             '_reset': _reset,
-            '_primary': ['name']
+            '_primary': ['name', 'namespace']
         })
 
         return vals
