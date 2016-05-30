@@ -1,9 +1,12 @@
-import base64
 import logging
 import json
 
-from openerp import api, exceptions
+from openerp import api, exceptions, http
 from openerp.osv import orm, fields
+
+from openerp.http import request
+from openerp.addons.web.controllers.main import serialize_exception, content_disposition
+import base64
 
 _logger = logging.getLogger(__name__)
 
@@ -12,19 +15,19 @@ class ImportExport(orm.TransientModel):
     _name = "cenit.import_export"
 
     _columns = {
-        'file': fields.binary('File')
+        'file': fields.binary('File'),
+        'filename': fields.char()
     }
 
-
-    @api.model
-    def export_data_types(self, cr, uid, context={}):
+    @api.multi
+    def export_data_types(self, context={}):
         datatype_pool = self.env['cenit.data_type']
 
-        domain = [("namespace", '=', "UBLPE")]
-        result = datatype_pool.search(domain)
-
-        folder_path = uid['folder']
-        fo = open(folder_path+"/mappings.json", "wb")
+        selected_data = context['active_ids']
+        result = []
+        for id_data in selected_data:
+            domain = [("id", '=', id_data)]
+            result.append(datatype_pool.search(domain))
 
         datatypes = []
 
@@ -50,8 +53,17 @@ class ImportExport(orm.TransientModel):
                               "schema": r.schema.name, "lines": lines, "domains": domains, "triggers": triggers})
 
         json_data = json.dumps(datatypes)
-        fo.write(json_data)
-        fo.close()
+        file_c = self.create({
+            'filename': 'mappings.json',
+            'file': json_data
+        })
+
+        return {
+             'type' : 'ir.actions.act_url',
+             'url': '/web/binary/download_document?file=%s&filename=data_types.json' % (file_c.file),
+             'target': 'self',
+        }
+
 
     @api.model
     def import_data_types(self, context={}):
@@ -64,7 +76,7 @@ class ImportExport(orm.TransientModel):
         domain_pool = self.env['cenit.data_type.domain_line']
         trigger_pool = self.env['cenit.data_type.trigger']
 
-        data_file =base64.decodestring(data_file)
+        data_file = base64.decodestring(data_file)
         json_data = json.loads(data_file)
 
         for data in json_data:
@@ -120,3 +132,15 @@ class ImportExport(orm.TransientModel):
                 }
                 line_pool.create(vals)
         return True
+
+
+class Binary(http.Controller):
+    @http.route('/web/binary/download_document', type='http', auth="public")
+    @serialize_exception
+    def download_document(self, file, filename):
+        if not file:
+            return request.not_found()
+        else:
+            return request.make_response(file,
+                                             [('Content-Type', 'application/octet-stream'),
+                                              ('Content-Disposition', content_disposition(filename))])
