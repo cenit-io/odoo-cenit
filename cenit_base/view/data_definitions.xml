@@ -126,10 +126,9 @@
             <field name="model">cenit.import_export</field>
             <field name="arch" type="xml">
                <form string="Export data types">
-					<!--  <label for="folder" string="Select the folder:" class="oe_inline"/>
-                    <field name="folder" /> -->
+                    Do you want to export the selected data types?
 					<footer>
-                        <button string="Save" name="export_data_types"
+                        <button string="Export" name="export_data_types"
                                 type="object" class="oe_highlight"/>
 					 </footer>
                 </form>
