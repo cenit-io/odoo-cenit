@@ -48,12 +48,14 @@ class CollectionInstaller(models.TransientModel):
             domain = [('name', '=', namespace_data.get('name'))]
             candidates = namespace_pool.search(domain)
             if not candidates:
-                nam = namespace_pool.with_context(local=True).create(namespace_data)
+                nam = namespace_pool.with_context(local=True).create(
+                    namespace_data)
             else:
                 nam = candidates[0]
                 nam.with_context(local=True).write(namespace_data)
 
-            values = (x for x in data_types_list if (x['namespace'] == nam.name))
+            values = (x for x in data_types_list if
+                      (x['namespace'] == nam.name))
             for schema in values:
                 sch_data = {
                     'cenitID': schema.get('id'),
@@ -196,7 +198,8 @@ class CollectionInstaller(models.TransientModel):
             candidates = names_pool.search(domain)
             if not candidates:
                 raise exceptions.ValidationError(
-                    "There's no namespace named %s" % (webhook.get('namespace'),))
+                    "There's no namespace named %s" % (
+                        webhook.get('namespace'),))
 
             hook_data.update({
                 'namespace': candidates[0].id
@@ -228,7 +231,7 @@ class CollectionInstaller(models.TransientModel):
             role_data = {
                 'cenitID': role.get('id'),
                 'name': role.get('name')
-                #'namespace': role.get('namespace'),
+                # 'namespace': role.get('namespace'),
             }
 
             domain = [('name', '=', role.get('namespace'))]
@@ -332,6 +335,9 @@ class CollectionInstaller(models.TransientModel):
                 dt = flow.get('target_data_type')
 
             if not sch_updated:
+                if not dt:
+                    continue
+
                 rc = names_pool.search([('name', '=', dt.get('namespace'))])
                 sch = sch_pool.search([('name', '=', dt.get('name')),
                                        ('namespace', '=', rc[0].id)])
@@ -371,10 +377,11 @@ class CollectionInstaller(models.TransientModel):
                 'webhook': rc[0].id
             })
 
-            #Updating role
+            # Updating role
             if 'connection_role' in flow:
                 role = flow.get('connection_role', {})
-                namesp = names_pool.search([('name', '=', role.get('namespace'))])
+                namesp = names_pool.search(
+                    [('name', '=', role.get('namespace'))])
                 domain = [('name', '=', role.get('name')),
                           ('namespace', '=', namesp[0].id)]
                 rc = role_pool.search(domain)
@@ -414,11 +421,12 @@ class CollectionInstaller(models.TransientModel):
                 'mime_type': translator.get('mime_type', False)
             }
 
-            #Updating namespace for translator
+            # Updating namespace for translator
             rc = names_pool.search([('name', '=', translator.get('namespace'))])
             if not rc:
                 raise exceptions.ValidationError(
-                    "There's no namespace named %s" % (translator.get('namespace'),))
+                    "There's no namespace named %s" % (
+                        translator.get('namespace'),))
 
             trans_data.update({
                 'namespace': rc[0].id
@@ -431,7 +439,8 @@ class CollectionInstaller(models.TransientModel):
                                     }.get(translator.get('type')), {})
 
             if schema:
-                namesp = names_pool.search([('name', '=', schema.get('namespace'))])
+                namesp = names_pool.search(
+                    [('name', '=', schema.get('namespace'))])
                 domain = [
                     ('name', '=', schema.get('name')),
                     ('namespace', '=', namesp[0].id)
@@ -558,7 +567,7 @@ class CollectionInstaller(models.TransientModel):
         rc = cenit_api.get(path)
         if isinstance(rc, list):
             rc = rc[0]
-        data = rc  #.get('collection', {})[0]
+        data = rc
 
         if not coll_id:
             for entry in rc.get('collection', []):
@@ -566,13 +575,17 @@ class CollectionInstaller(models.TransientModel):
                                                                     None):
                     data = entry
                     break
+            else:
+                raise exceptions.ValidationError(
+                    "Cenit failed to install the collection")
 
         keys = (
             'translators', 'events',
             'connections', 'webhooks', 'connection_roles'
         )
 
-        self._install_namespaces(data.get('namespaces'), data.get('data_types', []))
+        self._install_namespaces(data.get('namespaces', []),
+                                 data.get('data_types', []))
 
         for key in keys:
             values = data.get(key, {})
@@ -588,5 +601,3 @@ class CollectionInstaller(models.TransientModel):
             self._install_flows(data.get('flows'))
 
         return True
-
-

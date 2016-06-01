@@ -2,7 +2,46 @@
 <openerp>
     <data>
 
-        <menuitem id="menu_cenit_data_definitions" name="Data Definitions"
+        <menuitem id="menu_cenit_collections" name="Collections"
+            parent="menu_cenit_integration" sequence="0" />
+
+        <record id="view_cenit_namespace_tree" model="ir.ui.view">
+            <field name="name">view.cenit.namespace.tree</field>
+            <field name="model">cenit.namespace</field>
+            <field name="arch" type="xml">
+                <tree string="Namespaces">
+                    <field name="name"/>
+                    <field name="slug"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_cenit_namespace_form" model="ir.ui.view">
+            <field name="name">view.cenit.namespace.form</field>
+            <field name="model">cenit.namespace</field>
+            <field name="arch" type="xml">
+                <form string="Namespace">
+                    <group>
+                        <field name="name"/>
+                        <field name="slug"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_cenit_namespace" model="ir.actions.act_window">
+            <field name="name">Namespaces</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">cenit.namespace</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_cenit_namespace" name="Namespaces"
+                  parent="menu_cenit_collections" sequence="2"
+                  action="action_cenit_namespace"/>
+
+        <menuitem id="menu_cenit_data" name="Data"
             parent="menu_cenit_integration" sequence="1" />
 
         <record id="view_cenit_schema_tree" model="ir.ui.view">
@@ -43,7 +82,7 @@
         </record>
 
         <menuitem id="menu_cenit_schema" name="Schemas"
-            parent="menu_cenit_data_definitions" sequence="0"
+            parent="menu_cenit_data" sequence="0"
             action="action_cenit_schema" />
 
         <record id="view_cenit_data_type_tree" model="ir.ui.view">
@@ -51,9 +90,9 @@
             <field name="model">cenit.data_type</field>
             <field name="arch" type="xml">
                 <tree string="data_types" >
+                    <field name="namespace"/>
                     <field name="name"/>
                     <field name="model"/>
-                    <field name="namespace"/>
                 </tree>
             </field>
         </record>
@@ -66,9 +105,9 @@
                     <sheet>
                         <group>
                             <group>
+                                <field name="namespace"/>
                                 <field name="name"/>
                                 <field name="model"/>
-                                <field name="namespace"/>
                                 <field name="schema"
                                         attrs="{'required': True}"/>
                             </group>
@@ -126,10 +165,9 @@
             <field name="model">cenit.import_export</field>
             <field name="arch" type="xml">
                <form string="Export data types">
-					<!--  <label for="folder" string="Select the folder:" class="oe_inline"/>
-                    <field name="folder" /> -->
+                    Do you want to export the selected data types?
 					<footer>
-                        <button string="Save" name="export_data_types"
+                        <button string="Export" name="export_data_types"
                                 type="object" class="oe_highlight"/>
 					 </footer>
                 </form>
@@ -149,44 +187,9 @@
         </record>
 
         <menuitem id="menu_cenit_data_type" name="Data types"
-            parent="menu_cenit_data_definitions" sequence="1"
+            parent="menu_cenit_data" sequence="1"
             action="action_cenit_data_type"/>
 
-        <record id="view_cenit_namespace_tree" model="ir.ui.view">
-            <field name="name">view.cenit.namespace.tree</field>
-            <field name="model">cenit.namespace</field>
-            <field name="arch" type="xml">
-                <tree string="Namespaces" >
-                    <field name="name" />
-                    <field name="slug" />
-                </tree>
-            </field>
-        </record>
-
-        <record id="view_cenit_namespace_form" model="ir.ui.view">
-            <field name="name">view.cenit.namespace.form</field>
-            <field name="model">cenit.namespace</field>
-            <field name="arch" type="xml">
-                <form string="Namespace">
-                    <group>
-                        <field name="name" />
-                        <field name="slug" />
-                    </group>
-                </form>
-            </field>
-        </record>
-
-        <record id="action_cenit_namespace" model="ir.actions.act_window">
-            <field name="name">Namespaces</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="res_model">cenit.namespace</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,form</field>
-        </record>
-
-        <menuitem id="menu_cenit_namespace" name="Namespaces"
-            parent="menu_cenit_data_definitions" sequence="2"
-            action="action_cenit_namespace" />
 
         <record id="view_import_data_types" model="ir.ui.view">
             <field name="name">view.cenit.data_type.import</field>
@@ -207,7 +210,7 @@
                     view_mode="form" target="new" view_type="form" id="action_cenit_import_datatype"/>
 
         <menuitem id="menu_cenit_datatype_import" name="Import Data types"
-            parent="menu_cenit_data_definitions" sequence="2"
+            parent="menu_cenit_data" sequence="2"
             action="action_cenit_import_datatype" />
 
     </data>

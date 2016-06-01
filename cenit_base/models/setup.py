@@ -67,8 +67,8 @@ class CenitConnection (models.Model):
     )
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE(name)',
-         'The name must be unique!'),
+        ('name_uniq', 'UNIQUE(namespace, name)',
+         'The name must be unique for each namespace!'),
     ]
 
     @api.one
@@ -168,7 +168,7 @@ class CenitConnectionRole (models.Model):
     )
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE( name)',
+        ('name_uniq', 'UNIQUE(namespace, name)',
          'The name must be unique for each namespace!'),
     ]
 
@@ -209,7 +209,7 @@ class CenitConnectionRole (models.Model):
 
         vals.update({
             '_reset': _reset,
-            '_primary': ['name']
+            '_primary': ['name', 'namespace']
         })
 
         return vals
@@ -301,7 +301,7 @@ class CenitWebhook (models.Model):
     )
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE( name)',
+        ('name_uniq', 'UNIQUE(namespace, name)',
          'The name must be unique for each namespace!')
     ]
 
@@ -381,6 +381,13 @@ class CenitEvent (models.Model):
     )
     schema = fields.Many2one('cenit.schema', string='Schema')
 
+
+    _sql_constraints = [
+        ('name_uniq', 'UNIQUE(namespace, name)',
+         'The name must be unique for each namespace!')
+    ]
+
+
     @api.one
     def _get_values(self):
         vals = {
@@ -431,6 +438,12 @@ class CenitTranslator (models.Model):
     type_ = fields.Char("Type")
     mime_type = fields.Char('MIME Type')
     schema = fields.Many2one('cenit.schema', string='Schema')
+
+
+    _sql_constraints = [
+        ('name_uniq', 'UNIQUE(namespace, name)',
+         'The name must be unique for each namespace!')
+    ]
 
 
 class CenitFlow (models.Model):
@@ -490,8 +503,8 @@ class CenitFlow (models.Model):
     # )
 
     _sql_constraints = [
-        ('name_uniq', 'UNIQUE(name)',
-       'The name must be unique for each namespace!')
+        ('name_uniq', 'UNIQUE(namespace, name)',
+        'The name must be unique for each namespace!')
     ]
 
     @api.one

@@ -59,6 +59,8 @@ class CenitNameSpace(models.Model):
         if self.cenitID:
             vals.update({'id': self.cenitID})
 
+        vals.update({'_primary': ['name']})
+
         return vals
 
     @api.one
