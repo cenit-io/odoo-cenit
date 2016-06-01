@@ -2,7 +2,7 @@
 <openerp>
     <data>
 
-        <menuitem id="menu_cenit_setup" name="Setup"
+        <menuitem id="menu_cenit_connectors" name="API Connectors"
             parent="menu_cenit_integration" sequence="2" />
 
 
@@ -11,6 +11,7 @@
             <field name="model">cenit.connection</field>
             <field name="arch" type="xml">
                 <tree string="Connections" >
+                    <field name="namespace" />
                     <field name="name" />
                     <field name="url" />
                 </tree>
@@ -24,6 +25,7 @@
                 <form string="Connection">
                     <group>
                         <group>
+                            <field name="namespace"/>
                             <field name="name"/>
                             <field name="url"/>
                         </group>
@@ -77,7 +79,7 @@
         </record>
 
         <menuitem id="menu_cenit_connection" name="Connections"
-            parent="menu_cenit_setup" sequence="0"
+            parent="menu_cenit_connectors" sequence="0"
             action="action_cenit_connection" />
 
 
@@ -86,6 +88,7 @@
             <field name="model">cenit.connection.role</field>
             <field name="arch" type="xml">
                 <tree string="Roles" >
+                    <field name="namespace" />
                     <field name="name" />
                 </tree>
             </field>
@@ -97,6 +100,7 @@
             <field name="arch" type="xml">
                 <form string="Role">
                     <group>
+                        <field name="namespace" />
                         <field name="name" />
                     </group>
                     <notebook>
@@ -133,7 +137,7 @@
         </record>
 
         <menuitem id="menu_cenit_connection_role" name="Connection Roles"
-            parent="menu_cenit_setup" sequence="1"
+            parent="menu_cenit_connectors" sequence="1"
             action="action_cenit_connection_role" />
 
 
@@ -142,6 +146,7 @@
             <field name="model">cenit.webhook</field>
             <field name="arch" type="xml">
                 <tree string="Webhooks" >
+                    <field name="namespace" />
                     <field name="name" />
                     <field name="path" />
                     <field name="purpose" />
@@ -156,6 +161,7 @@
             <field name="arch" type="xml">
                 <form string="Webhook">
                     <group>
+                        <field name="namespace"/>
                         <field name="name"/>
                         <field name="path"/>
                         <field name="method"/>
@@ -205,8 +211,78 @@
         </record>
 
         <menuitem id="menu_cenit_webhook" name="Webhooks"
-            parent="menu_cenit_setup" sequence="2"
+            parent="menu_cenit_connectors" sequence="2"
             action="action_cenit_webhook" />
+
+
+        <menuitem id="menu_cenit_workflows" name="Workflows"
+                  parent="menu_cenit_integration" sequence="3"/>
+
+        <record id="view_cenit_flow_tree" model="ir.ui.view">
+            <field name="name">view.cenit.flow.tree</field>
+            <field name="model">cenit.flow</field>
+            <field name="arch" type="xml">
+                <tree string="Flows">
+                    <field name="namespace"/>
+                    <field name="name"/>
+                    <field name="schema"/>
+                    <field name="webhook"/>
+                    <field name="event"/>
+                    <field name="cenit_translator"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_cenit_flow_form" model="ir.ui.view">
+            <field name="name">view.cenit.flow.form</field>
+            <field name="model">cenit.flow</field>
+            <field name="arch" type="xml">
+                <form string="Flow">
+                    <group>
+                        <group>
+                            <field name="namespace"/>
+                            <field name="name"/>
+                            <field name="enabled"/>
+                            <field name="schema"/>
+                            <field name="data_type"
+                                   attrs="{'invisible':[('schema','=',False)]}"
+                                   options="{'no_quick_create':True,'no_create_edit':True}"/>
+                            <field name="webhook"/>
+                            <field name="connection_role"
+                                   attrs="{'invisible':[('webhook','=',False)]}"
+                                   options="{'no_quick_create':True,'no_create_edit':True}"/>
+                        </group>
+                        <group>
+                            <field name="method" invisible="1"/>
+                            <field name="event"
+                                   attrs="{'required':[('method','!=','get')],'invisible':[('method','=','get')]}"
+                                   options="{'no_quick_create':True,'no_create_edit':True}"/>
+                            <!--<field name="cron"-->
+                            <!--attrs="{'required':[('event','=','interval')],'invisible':[('event','!=','interval')]}" />-->
+                            <field name="format_"
+                                   attrs="{'required':[('local','=','True')],'invisible':[('local','!=','True')]}"/>
+                            <field name="cenit_translator"
+                                   attrs="{'invisible':[('local','=',True),('webhook','=',False)],'required':[('local','=',False)]}"
+                                   options="{'no_quick_create':True,'no_create_edit':True}"/>
+                            <field name="local" invisible="True"/>
+                            <field name="discard_events"/>
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_cenit_flow" model="ir.actions.act_window">
+            <field name="name">Flows</field>
+            <field name="res_model">cenit.flow</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_cenit_flow_tree"/>
+        </record>
+
+        <menuitem id="menu_cenit_flow" name="Flows"
+                  parent="menu_cenit_workflows" sequence="0"
+                  action="action_cenit_flow"/>
 
 
         <record id="view_cenit_event_tree" model="ir.ui.view">
@@ -214,6 +290,7 @@
             <field name="model">cenit.event</field>
             <field name="arch" type="xml">
                 <tree string="Available Events">
+                    <field name="namespace" />
                     <field name="name" />
                     <field name="type_" />
                     <field name="schema" />
@@ -228,6 +305,7 @@
                 <form string="Event" edit="false">
                     <sheet>
                         <group>
+                            <field name="namespace"/>
                             <field name="name"/>
                             <field name="type_" class="oe_read_only"/>
                             <field name="cenit_type" class="oe_edit_only"
@@ -251,73 +329,9 @@
         </record>
 
         <menuitem id="menu_cenit_event" name="Events"
-            parent="menu_cenit_setup" sequence="3"
+            parent="menu_cenit_workflows" sequence="1"
             action="action_cenit_event" />
 
-
-        <record id="view_cenit_flow_tree" model="ir.ui.view">
-            <field name="name">view.cenit.flow.tree</field>
-            <field name="model">cenit.flow</field>
-            <field name="arch" type="xml">
-                <tree string="Flows" >
-                    <field name="name" />
-                    <field name="schema" />
-                    <field name="webhook" />
-                    <field name="event" />
-                    <field name="cenit_translator" />
-                </tree>
-            </field>
-        </record>
-
-        <record id="view_cenit_flow_form" model="ir.ui.view">
-            <field name="name">view.cenit.flow.form</field>
-            <field name="model">cenit.flow</field>
-            <field name="arch" type="xml">
-                <form string="Flow">
-                    <group>
-                        <group>
-                            <field name="name" />
-                            <field name="enabled" />
-                            <field name="schema" />
-                            <field name="data_type"
-                                   attrs="{'invisible':[('schema','=',False)]}"
-                                   options="{'no_quick_create':True,'no_create_edit':True}" />
-                            <field name="webhook" />
-                            <field name="connection_role"
-                                   attrs="{'invisible':[('webhook','=',False)]}"
-                                   options="{'no_quick_create':True,'no_create_edit':True}" />
-                        </group>
-                        <group>
-                            <field name="method" invisible="1" />
-                            <field name="event"
-                                   attrs="{'required':[('method','!=','get')],'invisible':[('method','=','get')]}"
-                                   options="{'no_quick_create':True,'no_create_edit':True}"/>
-                            <!--<field name="cron"-->
-                                   <!--attrs="{'required':[('event','=','interval')],'invisible':[('event','!=','interval')]}" />-->
-                            <field name="format_"
-                                   attrs="{'required':[('local','=','True')],'invisible':[('local','!=','True')]}"/>
-                            <field name="cenit_translator"
-                                   attrs="{'invisible':[('local','=',True),('webhook','=',False)],'required':[('local','=',False)]}"
-                                   options="{'no_quick_create':True,'no_create_edit':True}"/>
-                            <field name="local" invisible="True" />
-                            <field name="discard_events" />
-                        </group>
-                    </group>
-                </form>
-            </field>
-        </record>
-
-        <record id="action_cenit_flow" model="ir.actions.act_window">
-            <field name="name">Flows</field>
-            <field name="res_model">cenit.flow</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,form</field>
-            <field name="view_id" ref="view_cenit_flow_tree"/>
-        </record>
-
-        <menuitem id="menu_cenit_flow" name="Flows"
-            parent="menu_cenit_setup" sequence="4"
-            action="action_cenit_flow" />
 
 
         <record id="view_cenit_translator_tree" model="ir.ui.view">
@@ -325,6 +339,7 @@
             <field name="model">cenit.translator</field>
             <field name="arch" type="xml">
                 <tree string="Available Translators" create="false">
+                    <field name="namespace" />
                     <field name="name" />
                     <field name="type_" />
                     <field name="mime_type" />
@@ -342,7 +357,7 @@
         </record>
 
         <menuitem id="menu_cenit_translator" name="Translators"
-            parent="menu_cenit_setup" sequence="5"
+            parent="menu_cenit_workflows" sequence="2"
             action="action_cenit_translator" />
 
     </data>
