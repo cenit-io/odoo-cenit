@@ -530,12 +530,15 @@ class CenitDataType(models.Model):
         if not rc or not self.enabled:
             return False
 
+        match = False
         domain = self.get_search_domain()[0]
-        if domain and isinstance(domain[0], list):
-            domain = domain[0]
-        domain.append(("id", "=", obj.id))
-
-        match = obj.search(domain) or False
+        if domain:
+            if isinstance(domain, list) and len(domain) > 1:
+                domain = [item for subdomain in domain for item in subdomain]
+            elif isinstance(domain[0], list):
+                domain = domain[0]
+            domain.append(("id", "=", obj.id))
+            match = obj.search(domain) or False
         return match
 
 
