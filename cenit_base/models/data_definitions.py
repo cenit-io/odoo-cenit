@@ -212,7 +212,7 @@ class CenitSchema(models.Model):
             'name': self.name,
             'slug': self.slug,
             'schema': self.schema,
-            '_type': 'Setup::SchemaDataType',
+            '_type': 'Setup::JsonDataType',
         }
 
         if self.cenitID:
