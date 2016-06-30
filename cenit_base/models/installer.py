@@ -76,11 +76,13 @@ class CollectionInstaller(models.TransientModel):
                     sch = candidates[0]
                     sch.with_context(local=True).write(sch_data)
 
-        names_data = {
-            "name": "MyOdoo",
-            "slug": "my_odoo",
-        }
-        namesp = namespace_pool.with_context(local=True).create(names_data)
+        candidates = namespace_pool.search([('name', '=', 'MyOdoo')])
+        if not candidates:
+            names_data = {
+                "name": "MyOdoo",
+                "slug": "my_odoo",
+            }
+            namesp = namespace_pool.with_context(local=True).create(names_data)
 
 
     @api.model
