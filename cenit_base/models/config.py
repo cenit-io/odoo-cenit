@@ -44,12 +44,6 @@ class CenitSettings (models.TransientModel):
     cenit_url = fields.Char ('Cenit URL')
     cenit_user_key = fields.Char ('Cenit User key')
     cenit_user_token = fields.Char ('Cenit User token')
-    #~ odoo_endpoint = fields.Many2one ('cenit.connection', string='Odoo endpoint')
-
-    module_cenit_extra = fields.Boolean('Use extra Toolkit',
-        help="Allow you to import your existant Cenit data and provides a"
-             "dynamic mapper for your DataTypes and Schemas"
-    )
 
     module_cenit_desk = fields.Boolean('Desk API',
         help=""
@@ -249,6 +243,32 @@ class CenitSettings (models.TransientModel):
         icp.set_param(cr, uid, 'cenit.odoo_feedback.role', role)
 
         return True
+
+    def update_collection(self, cr, uid, ids, context):
+        installer = self.pool.get('cenit.collection.installer')
+        objs = self.browse(cr, uid, ids, context)
+        if objs:
+            obj = objs[0]
+            if obj.module_cenit_asana:
+                installer.install_collection(cr, uid, {'name': 'asana'}, context)
+            if obj.module_cenit_desk:
+                installer.install_collection(cr, uid, {'name': 'desk'}, context)
+            if obj.module_cenit_mailchimp:
+                installer.install_collection(cr, uid, {'name': 'mailchimp'}, context)
+            if obj.module_cenit_mandrill:
+                installer.install_collection(cr, uid, {'name': 'mandrill'}, context)
+            if obj.module_cenit_messagebird:
+                installer.install_collection(cr, uid, {'name': 'messagebird'}, context)
+            if obj.module_cenit_shipstation:
+                installer.install_collection(cr, uid, {'name': 'shipstation'}, context)
+            if obj.module_cenit_shipwire:
+                installer.install_collection(cr, uid, {'name': 'shipwire'}, context)
+            if obj.module_cenit_slack:
+                installer.install_collection(cr, uid, {'name': 'slack'}, context)
+            if obj.module_cenit_twilio:
+                installer.install_collection(cr, uid, {'name': 'twilio'}, context)
+            if obj.module_cenit_twitter:
+                installer.install_collection(cr, uid, {'name': 'twitter'}, context)
 
 
 class CenitAccountSettings(models.TransientModel):
