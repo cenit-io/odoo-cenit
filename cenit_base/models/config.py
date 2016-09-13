@@ -159,6 +159,26 @@ class CenitSettings (models.TransientModel):
     # Actions
     ############################################################################
 
+    def sync_with_cenit(self, cr, uid, context=None):
+        installer = self.pool.get('cenit.collection.installer')
+
+        data = installer.get_collection_data(
+            cr, uid,
+            COLLECTION_NAME,
+            version=COLLECTION_VERSION,
+            context=context
+        )
+
+        ctx = context.copy()
+        ctx.update({
+            "coll_name": COLLECTION_NAME,
+            "coll_ver": COLLECTION_VERSION,
+        })
+
+        installer.install_collection(cr, uid, data.get('id'), context=ctx)
+
+        self.post_install(cr, uid, context=context)
+
     def execute(self, cr, uid, ids, context=None):
         prev = {}
         prev.update(
@@ -183,27 +203,10 @@ class CenitSettings (models.TransientModel):
         if (same or empty) and not install:
             return rc
 
-        installer = self.pool.get('cenit.collection.installer')
-        data = installer.get_collection_data(
-            cr, uid,
-            COLLECTION_NAME,
-            version=COLLECTION_VERSION,
-            context=context
-        )
-
-        ctx = context.copy()
-        ctx.update({
-            "coll_name": COLLECTION_NAME,
-            "coll_ver": COLLECTION_VERSION,
-        })
-
-        # This function pull a shared collection and install the collection
-        installer.pull_shared_collection(cr, uid, data.get('id'), context=ctx)
-
-        self.post_install(cr, uid, ids, context=None)
+        self.sync_with_cenit(cr, uid, context=context)
         return rc
 
-    def post_install(self, cr, uid, ids, context=None):
+    def post_install(self, cr, uid, context=None):
         icp = self.pool.get("ir.config_parameter")
         conn_pool = self.pool.get("cenit.connection")
         hook_pool = self.pool.get("cenit.webhook")
@@ -348,7 +351,7 @@ class CenitAccountSettings(models.TransientModel):
         token = icp.get_param(cr, uid, 'cenit.captcha.token', default=None)
 
         cenit_api = self.pool.get('cenit.api')
-        path = "/setup/account"
+        path = "/setup/user"
         vals = {
             'email': obj.cenit_email,
             'token': token,
