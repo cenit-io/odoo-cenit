@@ -175,7 +175,7 @@ class CenitSettings (models.TransientModel):
             "coll_ver": COLLECTION_VERSION,
         })
 
-        installer.install_collection(cr, uid, {'id': data.get('id')}, context=ctx)
+        installer.pull_shared_collection(cr, uid, data.get('id'), context=ctx)
 
         self.post_install(cr, uid, context=context)
 
