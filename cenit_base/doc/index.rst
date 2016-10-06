@@ -246,7 +246,7 @@ Contribute
 License
 =======
 
-    Copyright (C) 2014-2015 by CenitSaas Team <support [at] cenit [dot] io>
+    Copyright (C) 2014-2015 by Cenit IO Team <support [at] cenit [dot] io>
 
     All rights reserved.
 
