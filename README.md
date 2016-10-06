@@ -59,7 +59,7 @@ the purpose of organizing *Schemas* and *Data types*.
 
 #### Schemas
 
-*Schemas* are the fundamental stone of the `cenitsaas`_ platform models. They
+*Schemas* are the fundamental stone of the `cenitio`_ platform models. They
 define the way data is stored and transmitted.
 
 ##### Fields
@@ -218,7 +218,7 @@ define the way data is stored and transmitted.
 
 ## License
 
-    Copyright (C) 2014-2015 by CenitSaas Team <support [at] cenit [dot] io>
+    Copyright (C) 2014-2015 by Cenit IO Team <support [at] cenit [dot] io>
 
     All rights reserved.
 
