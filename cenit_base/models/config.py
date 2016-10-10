@@ -44,12 +44,6 @@ class CenitSettings (models.TransientModel):
     cenit_url = fields.Char ('Cenit URL')
     cenit_user_key = fields.Char ('Cenit User key')
     cenit_user_token = fields.Char ('Cenit User token')
-    #~ odoo_endpoint = fields.Many2one ('cenit.connection', string='Odoo endpoint')
-
-    module_cenit_extra = fields.Boolean('Use extra Toolkit',
-        help="Allow you to import your existant Cenit data and provides a"
-             "dynamic mapper for your DataTypes and Schemas"
-    )
 
     module_cenit_desk = fields.Boolean('Desk API',
         help=""
@@ -165,6 +159,26 @@ class CenitSettings (models.TransientModel):
     # Actions
     ############################################################################
 
+    def sync_with_cenit(self, cr, uid, context=None):
+        installer = self.pool.get('cenit.collection.installer')
+
+        data = installer.get_collection_data(
+            cr, uid,
+            COLLECTION_NAME,
+            version=COLLECTION_VERSION,
+            context=context
+        )
+
+        ctx = context.copy()
+        ctx.update({
+            "coll_name": COLLECTION_NAME,
+            "coll_ver": COLLECTION_VERSION,
+        })
+
+        installer.pull_shared_collection(cr, uid, data.get('id'), context=ctx)
+
+        self.post_install(cr, uid, context=context)
+
     def execute(self, cr, uid, ids, context=None):
         prev = {}
         prev.update(
@@ -189,41 +203,24 @@ class CenitSettings (models.TransientModel):
         if (same or empty) and not install:
             return rc
 
-        installer = self.pool.get('cenit.collection.installer')
-        data = installer.get_collection_data(
-            cr, uid,
-            COLLECTION_NAME,
-            version=COLLECTION_VERSION,
-            context=context
-        )
-
-        ctx = context.copy()
-        ctx.update({
-            "coll_name": COLLECTION_NAME,
-            "coll_ver": COLLECTION_VERSION,
-        })
-
-        installer.install_collection(cr, uid, data.get('id'), context=ctx)
-
-        self.post_install(cr, uid, ids, context=None)
+        self.sync_with_cenit(cr, uid, context=context)
         return rc
 
-    def post_install(self, cr, uid, ids, context=None):
+    def post_install(self, cr, uid, context=None):
         icp = self.pool.get("ir.config_parameter")
         conn_pool = self.pool.get("cenit.connection")
         hook_pool = self.pool.get("cenit.webhook")
         role_pool = self.pool.get("cenit.connection.role")
         names_pool = self.pool.get("cenit.namespace")
 
-        names_data = {
-            "name": "MyOdoo",
-            "slug": "my_odoo",
-        }
-        namesp = names_pool.create(cr, uid, names_data, context=context)
+
+        domain = [('name', '=', 'MyOdoo')]
+        namesp = names_pool.search(cr, uid, domain, context=context)
+
 
         conn_data = {
             "name": "My Odoo host",
-            "namespace": namesp,
+            "namespace": namesp[0],
             "url": icp.get_param(cr, uid, 'web.base.url', default=None)
         }
         conn = conn_pool.create(cr, uid, conn_data, context=context)
@@ -231,13 +228,13 @@ class CenitSettings (models.TransientModel):
         hook_data = {
             "name": "Cenit webhook",
             "path": "cenit/push",
-            "namespace": namesp,
+            "namespace": namesp[0],
             "method": "post",
         }
         hook = hook_pool.create(cr, uid, hook_data, context=context)
 
         role_data = {
-            "namespace": namesp,
+            "namespace": namesp[0],
             "name": "My Odoo role",
             "connections": [(6, False, [conn])],
             "webhooks": [(6, False, [hook])],
@@ -249,6 +246,32 @@ class CenitSettings (models.TransientModel):
         icp.set_param(cr, uid, 'cenit.odoo_feedback.role', role)
 
         return True
+
+    def update_collection(self, cr, uid, ids, context):
+        installer = self.pool.get('cenit.collection.installer')
+        objs = self.browse(cr, uid, ids, context)
+        if objs:
+            obj = objs[0]
+            if obj.module_cenit_asana:
+                installer.install_collection(cr, uid, {'name': 'asana'}, context)
+            if obj.module_cenit_desk:
+                installer.install_collection(cr, uid, {'name': 'desk'}, context)
+            if obj.module_cenit_mailchimp:
+                installer.install_collection(cr, uid, {'name': 'mailchimp'}, context)
+            if obj.module_cenit_mandrill:
+                installer.install_collection(cr, uid, {'name': 'mandrill'}, context)
+            if obj.module_cenit_messagebird:
+                installer.install_collection(cr, uid, {'name': 'messagebird'}, context)
+            if obj.module_cenit_shipstation:
+                installer.install_collection(cr, uid, {'name': 'shipstation'}, context)
+            if obj.module_cenit_shipwire:
+                installer.install_collection(cr, uid, {'name': 'shipwire'}, context)
+            if obj.module_cenit_slack:
+                installer.install_collection(cr, uid, {'name': 'slack'}, context)
+            if obj.module_cenit_twilio:
+                installer.install_collection(cr, uid, {'name': 'twilio'}, context)
+            if obj.module_cenit_twitter:
+                installer.install_collection(cr, uid, {'name': 'twitter'}, context)
 
 
 class CenitAccountSettings(models.TransientModel):
@@ -328,7 +351,7 @@ class CenitAccountSettings(models.TransientModel):
         token = icp.get_param(cr, uid, 'cenit.captcha.token', default=None)
 
         cenit_api = self.pool.get('cenit.api')
-        path = "/setup/account"
+        path = "/setup/user"
         vals = {
             'email': obj.cenit_email,
             'token': token,

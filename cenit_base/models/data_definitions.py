@@ -212,7 +212,7 @@ class CenitSchema(models.Model):
             'name': self.name,
             'slug': self.slug,
             'schema': self.schema,
-            '_type': 'Setup::SchemaDataType',
+            '_type': 'Setup::JsonDataType',
         }
 
         if self.cenitID:
@@ -530,12 +530,15 @@ class CenitDataType(models.Model):
         if not rc or not self.enabled:
             return False
 
+        match = False
         domain = self.get_search_domain()[0]
-        if domain and isinstance(domain[0], list):
-            domain = domain[0]
-        domain.append(("id", "=", obj.id))
-
-        match = obj.search(domain) or False
+        if domain:
+            if isinstance(domain, list) and len(domain) > 1:
+                domain = [item for subdomain in domain for item in subdomain]
+            elif isinstance(domain[0], list):
+                domain = domain[0]
+            domain.append(("id", "=", obj.id))
+            match = obj.search(domain) or False
         return match
 
 
