@@ -20,11 +20,11 @@
 ##############################################################################
 
 {
-    'name': 'Cenit Integrations Client',
+    'name': 'Cenit IO Integrations Client',
     'version': '0.10.1',
     'application': True,
-    'author': 'Cenit, OpenJAF',
-    'website': 'https://www.cenitsaas.com',
+    'author': 'Cenit IO',
+    'website': 'https://cenit.io',
     #~ 'license': 'LGPL-3',
     'category': 'Extra Tools',
     'summary': 'Odoo, Cenit, Integration, Connector',

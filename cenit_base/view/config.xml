@@ -30,15 +30,7 @@
                                    placeholder="Set a connection" />-->
                         </group>
                     </div>
-                    <div name="Custom Features">
-                        <group string="Addons">
-                            <div name="module_cenit_extra">
-                                <field name="module_cenit_extra"
-                                       class="oe_inline" />
-                                <label for="module_cenit_extra" />
-                            </div>
-                        </group>
-                    </div>
+
                     <div name="Preset Integrations">
                         <group string="Integrations">
                             <div name="module_cenit_desk">
@@ -92,6 +84,8 @@
                                 <label for="module_cenit_asana" />
                             </div>
                         </group>
+                        <button string="Update collections" type="object" name="update_collection"
+                                 icon="/web/static/src/img/icons/gtk-refresh.png" />
                     </div>
                 </form>
             </field>

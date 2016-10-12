@@ -76,6 +76,15 @@ class CollectionInstaller(models.TransientModel):
                     sch = candidates[0]
                     sch.with_context(local=True).write(sch_data)
 
+        candidates = namespace_pool.search([('name', '=', 'MyOdoo')])
+        if not candidates:
+            names_data = {
+                "name": "MyOdoo",
+                "slug": "my_odoo",
+            }
+            namesp = namespace_pool.with_context(local=True).create(names_data)
+
+
     @api.model
     def _get_param_lines(self, ref_id, values, prefix):
         parameter_pool = self.env['cenit.parameter']
@@ -548,8 +557,11 @@ class CollectionInstaller(models.TransientModel):
 
         return data
 
+    """
+      Pull a shared collection given an identifier
+    """
     @api.model
-    def install_collection(self, cenit_id, params=None):
+    def pull_shared_collection(self, cenit_id, params=None):
         cenit_api = self.env['cenit.api']
 
         path = "/setup/shared_collection/%s/pull" % (cenit_id,)
@@ -558,24 +570,34 @@ class CollectionInstaller(models.TransientModel):
         if params:
             data.update({'pull_parameters': params})
         rc = cenit_api.post(path, data)
-
         coll_id = rc.get('collection', {}).get('id', False)
-        path = "/setup/collection"
-        if coll_id:
-            path = "%s/%s" % (path, coll_id)
+
+        self.install_collection({'id': coll_id})
+
+    """
+     Install a collection given the identifier or the name
+    """
+    @api.model
+    def install_collection(self, params=None):
+        cenit_api = self.env['cenit.api']
+
+        if params:
+            key = params.keys()[0]
+            if key == 'id':
+                path = "/setup/collection"
+                path = "%s/%s" % (path, params.get(key))
+            else:
+                path = "/setup/collection?"
+                path = "%s%s=%s" % (path, key, params.get(key))
 
         rc = cenit_api.get(path)
         if isinstance(rc, list):
             rc = rc[0]
         data = rc
+        if 'collection' in data:
+            data = data['collection'][0]
 
-        if not coll_id:
-            for entry in rc.get('collection', []):
-                if entry.get('name', False) == self.env.context.get("coll_name",
-                                                                    None):
-                    data = entry
-                    break
-            else:
+        if not params:
                 raise exceptions.ValidationError(
                     "Cenit failed to install the collection")
 

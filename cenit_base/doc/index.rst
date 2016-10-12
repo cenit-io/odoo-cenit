@@ -3,15 +3,15 @@ Cenit Integrations Odoo Client
 ==============================
 
 Cenit Integrations Odoo Client allows you to integrate your Odoo system with
-many third party services available over the internet using the `Cenit.io`_
+many third party services available over the internet using the `cenit.io`_
 platform as data integrator.
 
 Overview
 ========
 
-+ The `Cenit.io`_ platform provides a set of models that allow you to map your
++ The `cenit.io`_ platform provides a set of models that allow you to map your
   data once and send it transparently to any service supported by the platform.
-+ The `Cenit.io`_ platform is free and community friendly, and makes use of
++ The `cenit.io`_ platform is free and community friendly, and makes use of
   open source and standards so that community driven development is easier.
 
 Requirements
@@ -246,7 +246,7 @@ Contribute
 License
 =======
 
-    Copyright (C) 2014-2015 by CenitSaas Team <support [at] cenit [dot] io>
+    Copyright (C) 2014-2015 by Cenit IO Team <support [at] cenit [dot] io>
 
     All rights reserved.
 
@@ -254,5 +254,5 @@ License
     redistribute and/or modify the Cenit Integrations Odoo Client according to
     the terms of the license.
 
-.. _Cenit.io: https://cenit.io
-.. _the repository: https://github.com/openjaf/odoo-cenit
+.. _Cenit IO: https://cenit.io
+.. _the repository: https://github.com/cenit-io/odoo-cenit

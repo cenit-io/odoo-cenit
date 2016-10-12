@@ -1,14 +1,14 @@
-# Cenit Integrations Client
+# Cenit IO Integrations Client
 
-Cenit Integrations Client allows you to integrate your Odoo system with many
-third party services available over the internet using the [Cenit.io](https://cenit.io)
+Cenit IO Integrations Client allows you to integrate your Odoo system with many
+third party services available over the internet using the [Cenit IO](https://cenit.io)
 platform as data integrator.
 
 ## Overview
 
-+ The [Cenit.io](https://cenit.io) platform provides a set of models that allow you to map your
++ The [Cenit IO](https://cenit.io) platform provides a set of models that allow you to map your
   data once and send it transparently to any service supported by the platform.
-+ The [Cenit.io](https://cenit.io) platform is free and community friendly, and makes use of
++ The [Cenit IO](https://cenit.io) platform is free and community friendly, and makes use of
   open source and standards so that community driven development is easier.
 
 ## Requirements
@@ -59,7 +59,7 @@ the purpose of organizing *Schemas* and *Data types*.
 
 #### Schemas
 
-*Schemas* are the fundamental stone of the `cenitsaas`_ platform models. They
+*Schemas* are the fundamental stone of the `cenit.io`_ platform models. They
 define the way data is stored and transmitted.
 
 ##### Fields
@@ -218,7 +218,7 @@ define the way data is stored and transmitted.
 
 ## License
 
-    Copyright (C) 2014-2015 by CenitSaas Team <support [at] cenit [dot] io>
+    Copyright (C) 2014-2016 by Cenit IO Team <support [at] cenit [dot] io>
 
     All rights reserved.
 
