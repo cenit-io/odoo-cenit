@@ -255,4 +255,4 @@ License
     the terms of the license.
 
 .. _Cenit IO: https://cenit.io
-.. _the repository: https://github.com/openjaf/odoo-cenit
+.. _the repository: https://github.com/cenit-io/odoo-cenit

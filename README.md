@@ -1,6 +1,6 @@
-# Cenit Integrations Client
+# Cenit IO Integrations Client
 
-Cenit Integrations Client allows you to integrate your Odoo system with many
+Cenit IO Integrations Client allows you to integrate your Odoo system with many
 third party services available over the internet using the [Cenit IO](https://cenit.io)
 platform as data integrator.
 
@@ -59,7 +59,7 @@ the purpose of organizing *Schemas* and *Data types*.
 
 #### Schemas
 
-*Schemas* are the fundamental stone of the `cenitsaas`_ platform models. They
+*Schemas* are the fundamental stone of the `cenit.io`_ platform models. They
 define the way data is stored and transmitted.
 
 ##### Fields
