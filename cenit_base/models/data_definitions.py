@@ -488,7 +488,8 @@ class CenitDataType(models.Model):
                 to_trigger["other"].append(flow.id)
 
         if to_trigger["cenit"]:
-            flow_pool.send(obj, to_trigger["cenit"])
+            dt_id = self.id
+            flow_pool.send(obj, to_trigger["cenit"], dt_id)
 
         for id_ in to_trigger["other"]:
             flow_pool.send(obj, id_)
