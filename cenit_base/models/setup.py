@@ -679,13 +679,13 @@ class CenitFlow (models.Model):
         return rc
 
     @api.one
-    def _get_data_types(self):
+    def _get_data_types(self, dt_id):
         dt_pool = self.env['cenit.data_type']
 
         if self.data_type:
             return self.data_type
         else:
-            domain = [('schema', '=', self.schema.id), ('enabled', '=', True)]
+            domain = [('schema', '=', self.schema.id), ('enabled', '=', True), ('id', '=', dt_id)]
             return dt_pool.search(domain)
 
     @api.model
@@ -866,14 +866,14 @@ class CenitFlow (models.Model):
         return True
 
     @api.model
-    def send(self, obj, flow_id):
+    def send(self, obj, flow_id, dt_id):
         flow = self.browse(flow_id)
         if not (flow and flow.enabled):
             return False
 
         ws = self.env['cenit.serializer']
 
-        data_types = flow._get_data_types()
+        data_types = flow._get_data_types(dt_id)
         if isinstance(data_types, list) and len(data_types) == 1:
             data_types = data_types[0]
 
