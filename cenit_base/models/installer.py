@@ -534,8 +534,8 @@ class CollectionInstaller(models.TransientModel):
                 'shared_version': version
             })
 
-        path = "/setup/shared_collection"
-        rc = cenit_api.get(path, params=args).get("shared_collection", False)
+        path = "/setup/cross_shared_collection"
+        rc = cenit_api.get(path, params=args).get("cross_shared_collection", False)
 
         if not isinstance(rc, list):
             raise exceptions.ValidationError(
@@ -550,12 +550,12 @@ class CollectionInstaller(models.TransientModel):
 
         rc = rc[0]
 
-        data = {
-            'id': rc.get('id'),
-            'params': rc.get('pull_parameters', [])
-        }
+        # data = {
+        #     'id': rc.get('id'),
+        #     'params': rc.get('pull_parameters', [])
+        # }
 
-        return data
+        return rc
 
     """
       Pull a shared collection given an identifier
@@ -575,8 +575,9 @@ class CollectionInstaller(models.TransientModel):
         self.install_collection({'id': coll_id})
 
     """
-     Install a collection given the identifier or the name
+     Install data from a collection given the identifier or the name
     """
+
     @api.model
     def install_collection(self, params=None):
         cenit_api = self.env['cenit.api']
@@ -601,6 +602,16 @@ class CollectionInstaller(models.TransientModel):
                 raise exceptions.ValidationError(
                     "Cenit failed to install the collection")
 
+        self.install_common_data(data)
+
+        return True
+
+    '''
+    Install data either from cross shared collection or collection
+    '''
+    @api.model
+    def install_common_data(self, data):
+
         keys = (
             'translators', 'events',
             'connections', 'webhooks', 'connection_roles'
@@ -621,5 +632,3 @@ class CollectionInstaller(models.TransientModel):
 
         if data.get('flows', False):
             self._install_flows(data.get('flows'))
-
-        return True
