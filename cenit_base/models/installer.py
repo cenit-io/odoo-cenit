@@ -34,7 +34,7 @@ class CollectionInstaller(models.TransientModel):
     _name = "cenit.collection.installer"
 
     @api.model
-    def _install_namespaces(self, values, data_types_list):
+    def _install_namespaces(self, values, data_types_list, snippets_list):
         namespace_pool = self.env['cenit.namespace']
         schema_pool = self.env['cenit.schema']
 
@@ -56,12 +56,15 @@ class CollectionInstaller(models.TransientModel):
 
             values = (x for x in data_types_list if
                       (x['namespace'] == nam.name))
+
             for schema in values:
+                schema_code = self.get_snippetcode(schema['snippet']['name'], snippets_list)
+
                 sch_data = {
                     'cenitID': schema.get('id'),
                     'name': schema.get('name'),
                     'slug': schema.get('slug'),
-                    'schema': simplejson.dumps(schema.get('schema')),
+                    'schema': simplejson.dumps(schema_code),
                     'namespace': nam.id
                 }
 
@@ -534,8 +537,8 @@ class CollectionInstaller(models.TransientModel):
                 'shared_version': version
             })
 
-        path = "/setup/shared_collection"
-        rc = cenit_api.get(path, params=args).get("shared_collection", False)
+        path = "/setup/cross_shared_collection"
+        rc = cenit_api.get(path, params=args).get("cross_shared_collection", False)
 
         if not isinstance(rc, list):
             raise exceptions.ValidationError(
@@ -550,12 +553,12 @@ class CollectionInstaller(models.TransientModel):
 
         rc = rc[0]
 
-        data = {
-            'id': rc.get('id'),
-            'params': rc.get('pull_parameters', [])
-        }
+        # data = {
+        #     'id': rc.get('id'),
+        #     'params': rc.get('pull_parameters', [])
+        # }
 
-        return data
+        return rc
 
     """
       Pull a shared collection given an identifier
@@ -575,8 +578,9 @@ class CollectionInstaller(models.TransientModel):
         self.install_collection({'id': coll_id})
 
     """
-     Install a collection given the identifier or the name
+     Install data from a collection given the identifier or the name
     """
+
     @api.model
     def install_collection(self, params=None):
         cenit_api = self.env['cenit.api']
@@ -601,13 +605,24 @@ class CollectionInstaller(models.TransientModel):
                 raise exceptions.ValidationError(
                     "Cenit failed to install the collection")
 
+        self.install_common_data(data)
+
+        return True
+
+    '''
+    Install data either from cross shared collection or collection
+    '''
+    @api.model
+    def install_common_data(self, data):
+
         keys = (
             'translators', 'events',
             'connections', 'webhooks', 'connection_roles'
         )
 
         self._install_namespaces(data.get('namespaces', []),
-                                 data.get('data_types', []))
+                                 data.get('data_types', []),
+                                 data.get('snippets', []))
 
         for key in keys:
             values = data.get(key, {})
@@ -622,4 +637,18 @@ class CollectionInstaller(models.TransientModel):
         if data.get('flows', False):
             self._install_flows(data.get('flows'))
 
-        return True
+    '''
+       Returns the snippet's code given the name
+    '''
+
+    def get_snippetcode(self, name, list):
+        code = None
+        found = False
+        i = 0
+        while (i < len(list) and not found):
+            if list[i]['name'] == name:
+                code = list[i]['code']
+                found = True
+            else:
+                i += 1
+        return code
