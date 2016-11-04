@@ -55,7 +55,7 @@ class CollectionInstaller(models.TransientModel):
                 nam.with_context(local=True).write(namespace_data)
 
             values = (x for x in data_types_list if
-                      (x['namespace'] == nam.name))
+                      (x['namespace'] == nam.name) and 'snippet' in x)
 
             for schema in values:
                 schema_code = self.get_snippetcode(schema['snippet']['name'], snippets_list)
