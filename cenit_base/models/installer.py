@@ -424,7 +424,7 @@ class CollectionInstaller(models.TransientModel):
         names_pool = self.env['cenit.namespace']
 
         for translator in values:
-            if translator.get('type') not in ('Import', 'Export'):
+            if translator.get('_type') not in ('Setup::Parser', 'Setup::Renderer'):
                 continue
             trans_data = {
                 'cenitID': translator.get('id'),
@@ -446,9 +446,9 @@ class CollectionInstaller(models.TransientModel):
 
             # Updating schema
             schema = translator.get({
-                                        'Import': 'target_data_type',
-                                        'Export': 'source_data_type',
-                                    }.get(translator.get('type')), {})
+                                        'Setup::Parser': 'target_data_type',
+                                        'Setup::Renderer': 'source_data_type',
+                                    }.get(translator.get('_type')), {})
 
             if schema:
                 namesp = names_pool.search(
