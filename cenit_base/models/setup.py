@@ -298,7 +298,8 @@ class CenitWebhook (models.Model):
         'cenit.parameter',
         'hook_template_id',
         string='Template Parameters'
-    )
+    ),
+    _type = fields.Char('Type', required=True)
 
     _sql_constraints = [
         ('name_uniq', 'UNIQUE(namespace, name)',
@@ -313,6 +314,7 @@ class CenitWebhook (models.Model):
             'purpose': self.purpose,
             'method': self.method,
             'namespace': self.namespace.id,
+            '_type': self._type
         }
 
         if self.cenitID:
