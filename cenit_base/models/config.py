@@ -230,6 +230,7 @@ class CenitSettings (models.TransientModel):
             "path": "cenit/push",
             "namespace": namesp[0],
             "method": "post",
+            "_type": "Setup::PlainWebhook"
         }
         hook = hook_pool.create(cr, uid, hook_data, context=context)
 
