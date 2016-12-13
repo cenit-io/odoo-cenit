@@ -312,7 +312,8 @@ class CenitWebhook (models.Model):
             'path': self.path,
             'purpose': self.purpose,
             'method': self.method,
-            'namespace': self.namespace.id
+            'namespace': str(self.namespace.id),
+            '_type': 'Setup::PlainWebhook',
         }
 
         if self.cenitID:
