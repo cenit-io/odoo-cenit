@@ -101,72 +101,6 @@ class CenitNameSpace(models.Model):
         return super(CenitNameSpace, self).write(vals)
 
 
-class CenitLibrary(models.Model):
-
-    _name = 'cenit.library'
-    _inherit = 'cenit.api'
-
-    cenit_model = 'library'
-    cenit_models = 'libraries'
-
-    cenitID = fields.Char('Cenit ID')
-
-    name = fields.Char('Name', required=True)
-    slug = fields.Char('Slug')
-
-    _sql_constraints = [
-        ('name_uniq', 'UNIQUE(name)', 'The name must be unique!'),
-        ('slug_uniq', 'UNIQUE(slug)', 'The slug must be unique!')
-    ]
-
-    @api.one
-    def _get_values(self):
-        vals = {
-            'name': self.name
-        }
-        if self.cenitID:
-            vals.update({'id': self.cenitID})
-
-        return vals
-
-    @api.one
-    def _calculate_update(self, values):
-        update = {}
-
-        for k, v in values.items():
-            if k == "%s" % (self.cenit_models,):
-                update = {
-                    'cenitID': v[0]['id'],
-                }
-                path = "/setup/library/%s" % (update.get('cenitID'))
-                rc = self.get(path)
-                slug = rc.get('library', {}).get('slug', False)
-                if slug:
-                    update.update({'slug': slug})
-
-        return update
-
-    @api.model
-    def create(self, vals):
-        slug = vals.get("slug", False)
-        if not slug:
-            name = vals.get("name")
-            vals.update({"slug": name.lower().replace(" ", "_")})
-
-        return super(CenitLibrary, self).create(vals)
-
-    @api.one
-    def write(self, vals):
-        slug = vals.get("slug", None)
-        if not slug and slug is False:
-            name = vals.get("name", False)
-            if not name:
-                name = self.name
-            vals.update({"slug": name.lower().replace(" ", "_")})
-
-        return super(CenitLibrary, self).write(vals)
-
-
 class CenitSchema(models.Model):
 
     @api.one
@@ -496,6 +430,8 @@ class CenitDataType(models.Model):
 
     @api.model
     def create(self, vals):
+        if not isinstance(vals['namespace'], int):
+           vals['namespace'] = vals['namespace']['id']
         obj = super(CenitDataType, self).create(vals)
         obj.sync_rules()
 

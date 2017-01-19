@@ -538,7 +538,7 @@ class CollectionInstaller(models.TransientModel):
             })
 
         path = "/setup/cross_shared_collection"
-        rc = cenit_api.get(path, params=args).get("cross_shared_collection", False)
+        rc = cenit_api.get(path, params=args).get("cross_shared_collections", False)
 
         if not isinstance(rc, list):
             raise exceptions.ValidationError(
@@ -567,15 +567,15 @@ class CollectionInstaller(models.TransientModel):
     def pull_shared_collection(self, cenit_id, params=None):
         cenit_api = self.env['cenit.api']
 
-        path = "/setup/shared_collection/%s/pull" % (cenit_id,)
+        path = "/setup/cross_shared_collection/%s/pull" % (cenit_id,)
 
         data = {}
         if params:
             data.update({'pull_parameters': params})
         rc = cenit_api.post(path, data)
-        coll_id = rc.get('collection', {}).get('id', False)
 
-        self.install_collection({'id': coll_id})
+        #coll_id = rc.get('collection', {}).get('id', False)
+        #self.install_collection({'id': coll_id})
 
     """
      Install data from a collection given the identifier or the name

@@ -135,6 +135,8 @@ class CenitConnection (models.Model):
 
     @api.model
     def create(self, vals):
+        if not isinstance(vals['namespace'], int):
+           vals['namespace'] = vals['namespace']['id']
         obj = super(CenitConnection, self).create(vals)
 
         if obj and obj.cenitID and not self.env.context.get('local', False):
@@ -349,6 +351,8 @@ class CenitWebhook (models.Model):
 
     @api.model
     def create(self, vals):
+        if not isinstance(vals['namespace'], int):
+           vals['namespace'] = vals['namespace']['id']
         return super(CenitWebhook, self).create(vals)
 
 
@@ -693,6 +697,9 @@ class CenitFlow (models.Model):
     def create(self, vals):
         local = (vals.get('cenitID', False) is False) or \
                 (self.env.context.get('local'), False)
+
+        if not isinstance(vals['namespace'], int):
+           vals['namespace'] = vals['namespace']['id']
 
         obj = super(CenitFlow, self).create(vals)
         # if not local:
