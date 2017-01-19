@@ -174,7 +174,7 @@ class CenitSettings (models.TransientModel):
         same = (prev.get('cenit_user_key', False) == obj.cenit_user_key) and \
                (prev.get('cenit_user_token', False) == obj.cenit_user_token)
         empty = not (obj.cenit_user_key and obj.cenit_user_token)
-        install = context.get('install', False)
+        install = self.env.context.get('install', False)
 
         if (same or empty) and not install:
             return rc
