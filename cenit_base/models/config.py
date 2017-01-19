@@ -89,108 +89,84 @@ class CenitSettings (models.TransientModel):
     # Default values getters
     ############################################################################
 
-    def get_default_cenit_url (self, cr, uid, ids, context=None):
-        cenit_url = self.pool.get ("ir.config_parameter").get_param (
-            cr, uid, "odoo_cenit.cenit_url", default=None, context=context
-        )
+    def get_default_cenit_url (self, context):
+        cenit_url = self.env["ir.config_parameter"].get_param (
+           "odoo_cenit.cenit_url", default=None)
 
         return {'cenit_url': cenit_url or 'https://cenit.io'}
 
-    def get_default_cenit_user_key (self, cr, uid, ids, context=None):
-        cenit_user_key = self.pool.get ("ir.config_parameter").get_param (
-            cr, uid, "odoo_cenit.cenit_user_key", default=None, context=context
-        )
+    def get_default_cenit_user_key (self, context):
+        cenit_user_key = self.env["ir.config_parameter"].get_param (
+           "odoo_cenit.cenit_user_key", default=None)
         return {'cenit_user_key': cenit_user_key or False}
 
-    def get_default_cenit_user_token (self, cr, uid, ids, context=None):
-        cenit_user_token = self.pool.get ("ir.config_parameter").get_param (
-            cr, uid, "odoo_cenit.cenit_user_token", default=None, context=context
-        )
+    def get_default_cenit_user_token (self, context):
+        cenit_user_token = self.env["ir.config_parameter"].get_param (
+            "odoo_cenit.cenit_user_token", default=None)
 
         return {'cenit_user_token': cenit_user_token or False}
 
-    #~ def get_default_odoo_endpoint (self, cr, uid, ids, context=None):
-        #~ odoo_endpoint = self.pool.get ("ir.config_parameter").get_param (
-            #~ cr, uid, "odoo_cenit.odoo_endpoint", default=None, context=context
-        #~ )
-#~
-        #~ if (type(odoo_endpoint) in (unicode, str)) and odoo_endpoint.isdigit ():
-            #~ odoo_endpoint = int(odoo_endpoint)
-#~
-        #~ return {'odoo_endpoint': odoo_endpoint or False}
 
     ############################################################################
     # Values setters
     ############################################################################
 
-    def set_cenit_url (self, cr, uid, ids, context=None):
-        config_parameters = self.pool.get ("ir.config_parameter")
-        for record in self.browse (cr, uid, ids, context=context):
+    def set_cenit_url(self):
+        config_parameters = self.env["ir.config_parameter"]
+        for record in self.browse(self.ids):
+            config_parameters.set_param ("odoo_cenit.cenit_url",
+                record.cenit_url or '')
+
+    def set_cenit_user_key(self):
+        config_parameters = self.env["ir.config_parameter"]
+        for record in self.browse (self.ids):
             config_parameters.set_param (
-                cr, uid, "odoo_cenit.cenit_url",
-                record.cenit_url or '', context=context
+                "odoo_cenit.cenit_user_key",
+                record.cenit_user_key or ''
             )
 
-    def set_cenit_user_key (self, cr, uid, ids, context=None):
-        config_parameters = self.pool.get ("ir.config_parameter")
-        for record in self.browse (cr, uid, ids, context=context):
+    def set_cenit_user_token(self):
+        config_parameters = self.env["ir.config_parameter"]
+        for record in self.browse(self.ids):
             config_parameters.set_param (
-                cr, uid, "odoo_cenit.cenit_user_key",
-                record.cenit_user_key or '', context=context
+                "odoo_cenit.cenit_user_token",
+                record.cenit_user_token or ''
             )
-
-    def set_cenit_user_token (self, cr, uid, ids, context=None):
-        config_parameters = self.pool.get ("ir.config_parameter")
-        for record in self.browse (cr, uid, ids, context=context):
-            config_parameters.set_param (
-                cr, uid, "odoo_cenit.cenit_user_token",
-                record.cenit_user_token or '', context=context
-            )
-
-    #~ def set_odoo_endpoint (self, cr, uid, ids, context=None):
-        #~ config_parameters = self.pool.get ("ir.config_parameter")
-        #~ for record in self.browse (cr, uid, ids, context=context):
-            #~ config_parameters.set_param (
-                #~ cr, uid, "odoo_cenit.odoo_endpoint",
-                #~ record.odoo_endpoint.id or '', context=context
-            #~ )
 
     ############################################################################
     # Actions
     ############################################################################
 
-    def sync_with_cenit(self, cr, uid, context=None):
-        installer = self.pool.get('cenit.collection.installer')
+    def sync_with_cenit(self):
+        installer = self.env['cenit.collection.installer']
 
         data = installer.get_collection_data(
-            cr, uid,
             COLLECTION_NAME,
-            version=COLLECTION_VERSION,
-            context=context
+            version=COLLECTION_VERSION
         )
 
-        ctx = context.copy()
-        ctx.update({
-            "coll_name": COLLECTION_NAME,
-            "coll_ver": COLLECTION_VERSION,
-        })
+        # ctx = self.with_context().copy({})
+        # ctx.update({
+        #     "coll_name": COLLECTION_NAME,
+        #     "coll_ver": COLLECTION_VERSION,
+        # })
 
-        installer.install_common_data(cr, uid, data.get('data'))
+        installer.install_common_data(data.get('data'))
 
-        self.post_install(cr, uid, context=context)
+        self.post_install()
 
-    def execute(self, cr, uid, ids, context=None):
+    def execute(self, context=None):
         prev = {}
         prev.update(
-            self.get_default_cenit_user_key(cr, uid, ids, context=context)
+            self.get_default_cenit_user_key(context=context)
         )
         prev.update(
-            self.get_default_cenit_user_token(cr, uid, ids, context=context)
+            self.get_default_cenit_user_token(context=context)
         )
 
-        rc = super(CenitSettings, self).execute(cr, uid, ids, context=context)
+        rc = super(CenitSettings, self).execute()
 
-        objs = self.browse(cr, uid, ids)
+        objs = self.browse(self.ids)
         if not objs:
             return rc
         obj = objs[0]
@@ -203,27 +179,27 @@ class CenitSettings (models.TransientModel):
         if (same or empty) and not install:
             return rc
 
-        self.sync_with_cenit(cr, uid, context=context)
+        self.sync_with_cenit()
         return rc
 
-    def post_install(self, cr, uid, context=None):
-        icp = self.pool.get("ir.config_parameter")
-        conn_pool = self.pool.get("cenit.connection")
-        hook_pool = self.pool.get("cenit.webhook")
-        role_pool = self.pool.get("cenit.connection.role")
-        names_pool = self.pool.get("cenit.namespace")
+    def post_install(self):
+        icp = self.env["ir.config_parameter"]
+        conn_pool = self.env["cenit.connection"]
+        hook_pool = self.env["cenit.webhook"]
+        role_pool = self.env["cenit.connection.role"]
+        names_pool = self.env["cenit.namespace"]
 
 
         domain = [('name', '=', 'MyOdoo')]
-        namesp = names_pool.search(cr, uid, domain, context=context)
+        namesp = names_pool.search(domain)
 
 
         conn_data = {
             "name": "My Odoo host",
             "namespace": namesp[0],
-            "url": icp.get_param(cr, uid, 'web.base.url', default=None)
+            "url": icp.get_param('web.base.url', default=None)
         }
-        conn = conn_pool.create(cr, uid, conn_data, context=context)
+        conn = conn_pool.create(conn_data)
 
         hook_data = {
             "name": "Cenit webhook",
@@ -231,47 +207,47 @@ class CenitSettings (models.TransientModel):
             "namespace": namesp[0],
             "method": "post"
         }
-        hook = hook_pool.create(cr, uid, hook_data, context=context)
+        hook = hook_pool.create( hook_data)
 
         role_data = {
-            "namespace": namesp[0],
+            "namespace": namesp[0]['id'],
             "name": "My Odoo role",
-            "connections": [(6, False, [conn])],
-            "webhooks": [(6, False, [hook])],
+            "connections": [(6, False, [conn['id']])],
+            "webhooks": [(6, False, [hook['id']])],
         }
-        role = role_pool.create(cr, uid, role_data, context=context)
+        role = role_pool.create(role_data)
 
-        icp.set_param(cr, uid, 'cenit.odoo_feedback.hook', hook)
-        icp.set_param(cr, uid, 'cenit.odoo_feedback.conn', conn)
-        icp.set_param(cr, uid, 'cenit.odoo_feedback.role', role)
+        icp.set_param('cenit.odoo_feedback.hook', hook)
+        icp.set_param('cenit.odoo_feedback.conn', conn)
+        icp.set_param('cenit.odoo_feedback.role', role)
 
         return True
 
     def update_collection(self, cr, uid, ids, context):
-        installer = self.pool.get('cenit.collection.installer')
-        objs = self.browse(cr, uid, ids, context)
+        installer = self.env['cenit.collection.installer']
+        objs = self.browse(self.ids)
         if objs:
             obj = objs[0]
             if obj.module_cenit_asana:
-                installer.install_collection(cr, uid, {'name': 'asana'}, context)
+                installer.install_collection({'name': 'asana'})
             if obj.module_cenit_desk:
-                installer.install_collection(cr, uid, {'name': 'desk'}, context)
+                installer.install_collection({'name': 'desk'})
             if obj.module_cenit_mailchimp:
-                installer.install_collection(cr, uid, {'name': 'mailchimp'}, context)
+                installer.install_collection({'name': 'mailchimp'})
             if obj.module_cenit_mandrill:
-                installer.install_collection(cr, uid, {'name': 'mandrill'}, context)
+                installer.install_collection({'name': 'mandrill'})
             if obj.module_cenit_messagebird:
-                installer.install_collection(cr, uid, {'name': 'messagebird'}, context)
+                installer.install_collection({'name': 'messagebird'})
             if obj.module_cenit_shipstation:
-                installer.install_collection(cr, uid, {'name': 'shipstation'}, context)
+                installer.install_collection({'name': 'shipstation'})
             if obj.module_cenit_shipwire:
-                installer.install_collection(cr, uid, {'name': 'shipwire'}, context)
+                installer.install_collection({'name': 'shipwire'})
             if obj.module_cenit_slack:
-                installer.install_collection(cr, uid, {'name': 'slack'}, context)
+                installer.install_collection({'name': 'slack'})
             if obj.module_cenit_twilio:
-                installer.install_collection(cr, uid, {'name': 'twilio'}, context)
+                installer.install_collection({'name': 'twilio'})
             if obj.module_cenit_twitter:
-                installer.install_collection(cr, uid, {'name': 'twitter'}, context)
+                installer.install_collection({'name': 'twitter'})
 
 
 class CenitAccountSettings(models.TransientModel):
@@ -285,8 +261,8 @@ class CenitAccountSettings(models.TransientModel):
     # Default values getters
     ############################################################################
 
-    def get_default_cenit_email (self, cr, uid, ids, context=None):
-        user = self.pool.get('res.users').browse(cr, uid, uid, context=context)
+    def get_default_cenit_email(self, context):
+        user = self.env['res.users'].browse(self.env.uid)
 
         return {'cenit_email': user.login or False}
 
@@ -294,21 +270,20 @@ class CenitAccountSettings(models.TransientModel):
     # Actions
     ############################################################################
 
-    def fields_view_get(self, cr, uid, view_id=None, view_type='tree',
-                        context=None, toolbar=False, submenu=False):
+    def fields_view_get(self, view_id=None, view_type='tree',
+                        context=None, toolbar=False):
 
         rc = super(CenitAccountSettings, self).fields_view_get(
-            cr, uid, view_id=view_id, view_type=view_type, context=context,
-            toolbar=toolbar, submenu=submenu
-        )
+            view_id=view_id, view_type=view_type, toolbar=toolbar)
 
         arch = rc['arch']
         if not arch.startswith('<form string="Cenit Hub account settings">'):
             return rc
 
-        icp = self.pool.get("ir.config_parameter")
-        hub_host = icp.get_param(cr, uid, "odoo_cenit.cenit_url",
-                                 default='https://cenit.io')
+        #icp = self.pool.get("ir.config_parameter")
+        icp = self.env['ir.config_parameter']
+        hub_host = icp.get_param("odoo_cenit.cenit_url", default='https://cenit.io')
+
         if hub_host.endswith("/"):
             hub_host = hub_host[:-1]
         hub_hook = "captcha"
@@ -325,7 +300,7 @@ class CenitAccountSettings(models.TransientModel):
         if not token:
             raise exceptions.AccessError("Error trying to connect to Cenit.")
 
-        icp.set_param(cr, uid, 'cenit.captcha.token', token, context=context)
+        icp.set_param('cenit.captcha.token', token)
 
         arch = arch.replace(
             'img_data_here', '{}/{}'.format(hub_url, token)
@@ -334,23 +309,21 @@ class CenitAccountSettings(models.TransientModel):
         rc['arch'] = arch
         return rc
 
-    def execute(self, cr, uid, ids, context=None):
-        rc = super(CenitAccountSettings, self).execute(
-            cr, uid, ids, context=context
-        )
+    def execute(self, ids, context=None):
+        rc = super(CenitAccountSettings, self).execute()
 
-        if not context.get('install', False):
+        if not self.env.context.get('install', False):
             return rc
 
-        objs = self.browse(cr, uid, ids)
+        objs = self.browse(ids)
         if not objs:
             return rc
         obj = objs[0]
 
-        icp = self.pool.get("ir.config_parameter")
-        token = icp.get_param(cr, uid, 'cenit.captcha.token', default=None)
+        icp = self.env["ir.config_parameter"]
+        token = icp.get_param('cenit.captcha.token', default=None)
 
-        cenit_api = self.pool.get('cenit.api')
+        cenit_api = self.env['cenit.api']
         path = "/setup/user"
         vals = {
             'email': obj.cenit_email,
@@ -358,10 +331,10 @@ class CenitAccountSettings(models.TransientModel):
             'code': obj.cenit_captcha,
         }
 
-        res = cenit_api.post(cr, uid, path, vals, context=context)
+        res = cenit_api.post(path, vals, context=context)
         _logger.info("\n\nRES: %s\n", res)
 
-        icp.set_param(cr, uid, 'odoo_cenit.cenit_user_key', res.get('number'))
-        icp.set_param(cr, uid, 'odoo_cenit.cenit_user_token', res.get('token'))
+        icp.set_param('odoo_cenit.cenit_user_key', res.get('number'))
+        icp.set_param('odoo_cenit.cenit_user_token', res.get('token'))
 
         return rc

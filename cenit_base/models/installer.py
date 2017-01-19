@@ -567,7 +567,7 @@ class CollectionInstaller(models.TransientModel):
     def pull_shared_collection(self, cenit_id, params=None):
         cenit_api = self.env['cenit.api']
 
-        path = "/setup/shared_collection/%s/pull" % (cenit_id,)
+        path = "/setup/cross_shared_collection/%s/pull" % (cenit_id,)
 
         data = {}
         if params:

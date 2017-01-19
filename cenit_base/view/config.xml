@@ -99,7 +99,7 @@
             <field name="view_id" ref="view_cenit_settings"/>
         </record>
 
-        <menuitem id="menu_cenit_settings" parent="base.menu_config"
+        <menuitem id="menu_cenit_settings" parent="base.menu_administration"
             sequence="90" name="Cenit settings"/>
 
         <menuitem id="menu_cenit_hub_settings" parent="menu_cenit_settings"

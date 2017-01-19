@@ -1,6 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_cenit_schema_system,cenit.schema.system,model_cenit_schema,base.group_user,1,1,1,1
-access_cenit_library_system,cenit.library.system,model_cenit_library,base.group_user,1,1,1,1
 access_cenit_data_type_system,cenit.data_type.system,model_cenit_data_type,base.group_user,1,1,1,1
 access_cenit_data_type_line_system,cenit.data_type.line.system,model_cenit_data_type_line,base.group_user,1,1,1,1
 access_cenit_connection_system,cenit.connection.system,model_cenit_connection,base.group_user,1,1,1,1
