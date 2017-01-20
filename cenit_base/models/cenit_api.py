@@ -28,7 +28,7 @@ from openerp import models, api, exceptions
 
 _logger = logging.getLogger(__name__)
 
-API_PATH = "/api/v1"
+API_PATH = "/api/v2"
 
 
 class CenitApi(models.AbstractModel):
