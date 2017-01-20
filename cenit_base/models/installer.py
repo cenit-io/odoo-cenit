@@ -538,7 +538,7 @@ class CollectionInstaller(models.TransientModel):
             })
 
         path = "/setup/cross_shared_collection"
-        rc = cenit_api.get(path, params=args).get("cross_shared_collection", False)
+        rc = cenit_api.get(path, params=args).get("cross_shared_collections", False)
 
         if not isinstance(rc, list):
             raise exceptions.ValidationError(
