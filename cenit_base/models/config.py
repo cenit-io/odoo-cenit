@@ -89,18 +89,18 @@ class CenitSettings (models.TransientModel):
     # Default values getters
     ############################################################################
 
-    def get_default_cenit_url (self, context):
+    def get_default_cenit_url(self, context):
         cenit_url = self.env["ir.config_parameter"].get_param (
            "odoo_cenit.cenit_url", default=None)
 
         return {'cenit_url': cenit_url or 'https://cenit.io'}
 
-    def get_default_cenit_user_key (self, context):
+    def get_default_cenit_user_key(self, context):
         cenit_user_key = self.env["ir.config_parameter"].get_param (
            "odoo_cenit.cenit_user_key", default=None)
         return {'cenit_user_key': cenit_user_key or False}
 
-    def get_default_cenit_user_token (self, context):
+    def get_default_cenit_user_token(self, context):
         cenit_user_token = self.env["ir.config_parameter"].get_param (
             "odoo_cenit.cenit_user_token", default=None)
 
@@ -155,13 +155,13 @@ class CenitSettings (models.TransientModel):
 
         self.post_install()
 
-    def execute(self, context=None):
+    def execute(self):
         prev = {}
         prev.update(
-            self.get_default_cenit_user_key(context=context)
+            self.get_default_cenit_user_key(self.env.context)
         )
         prev.update(
-            self.get_default_cenit_user_token(context=context)
+            self.get_default_cenit_user_token(self.env.context)
         )
 
         rc = super(CenitSettings, self).execute()
@@ -223,7 +223,7 @@ class CenitSettings (models.TransientModel):
 
         return True
 
-    def update_collection(self, cr, uid, ids, context):
+    def update_collection(self):
         installer = self.env['cenit.collection.installer']
         objs = self.browse(self.ids)
         if objs:
@@ -309,13 +309,13 @@ class CenitAccountSettings(models.TransientModel):
         rc['arch'] = arch
         return rc
 
-    def execute(self, ids, context=None):
+    def execute(self):
         rc = super(CenitAccountSettings, self).execute()
 
         if not self.env.context.get('install', False):
             return rc
 
-        objs = self.browse(ids)
+        objs = self.browse(self.ids)
         if not objs:
             return rc
         obj = objs[0]
@@ -331,7 +331,7 @@ class CenitAccountSettings(models.TransientModel):
             'code': obj.cenit_captcha,
         }
 
-        res = cenit_api.post(path, vals, context=context)
+        res = cenit_api.post(path, vals)
         _logger.info("\n\nRES: %s\n", res)
 
         icp.set_param('odoo_cenit.cenit_user_key', res.get('number'))
