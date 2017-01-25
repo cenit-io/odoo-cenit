@@ -571,11 +571,9 @@ class CollectionInstaller(models.TransientModel):
 
         data = {}
         if params:
-            data.update({'pull_parameters': params})
+            data.update({'pull_parameters': params, 'asynchronous': True, 'skip_pull_review': True})
         rc = cenit_api.post(path, data)
 
-        #coll_id = rc.get('collection', {}).get('id', False)
-        #self.install_collection({'id': coll_id})
 
     """
      Install data from a collection given the identifier or the name
