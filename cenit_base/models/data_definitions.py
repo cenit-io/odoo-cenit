@@ -270,7 +270,7 @@ class CenitDataTypeTrigger(models.Model):
             action_name = 'send_one_%s_as_%s' % (
                 self.data_type.model.model, self.data_type.cenit_root
             )
-            cd = "self.pool.get('{}').browse(cr, uid, {}).trigger_flows(obj)".format(
+            cd = "env['{}'].browse({}).trigger_flows(obj)".format(
                 self.data_type._name,
                 self.data_type.id
             )
