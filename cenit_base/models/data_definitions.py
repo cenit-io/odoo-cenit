@@ -448,12 +448,12 @@ class CenitDataType(models.Model):
 
     @api.one
     def unlink(self):
-        flows = self._get_flows()
-
+        triggers = self.triggers
         res = super(CenitDataType, self).unlink()
 
         if res:
-            self.sync_rules(flows)
+            for trigger in triggers:
+                trigger.unlink()
 
         return res
 
