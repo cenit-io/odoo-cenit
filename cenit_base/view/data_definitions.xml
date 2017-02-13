@@ -120,14 +120,14 @@
                                 <field name="lines">
                                     <tree string="Lines" editable="bottom">
                                         <field name="value" string="Schema property"/>
-                                        <field name="name" string="Model value" />
-                                        <field name="line_type" />
+                                        <field name="name" string="Model value"/>
+                                        <field name="line_type"/>
                                         <field name="reference"
-                                                attrs="{'required':[('line_type', '=', 'model')], 'invisible':[('line_type', '!=', 'model')]}" />
+                                               attrs="{'required':[('line_type', '=', 'model')], 'invisible':[('line_type', '!=', 'model')]}"/>
                                         <field name="line_cardinality"
-                                                attrs="{'required':[('line_type', 'in', ['model', 'reference'])], 'readonly':[('line_type', 'not in', ['model', 'reference'])]}" />
+                                               attrs="{'required':[('line_type', 'in', ['model', 'reference'])], 'readonly':[('line_type', 'not in', ['model', 'reference'])]}"/>
                                         <field name="primary"
-                                                attrs="{'invisible': [('line_type', '!=', 'field')]}"/>
+                                               attrs="{'invisible': [('line_type', '!=', 'field')]}"/>
                                         <field name="inlined"/>
                                     </tree>
                                 </field>
@@ -164,19 +164,19 @@
             <field name="name">view.cenit.data_type.export</field>
             <field name="model">cenit.import_export</field>
             <field name="arch" type="xml">
-               <form string="Export data types">
+                <form string="Export data types">
                     Do you want to export the selected data types?
-					<footer>
+                    <footer>
                         <button string="Export" name="export_data_types"
                                 type="object" class="oe_highlight"/>
-					 </footer>
+                    </footer>
                 </form>
             </field>
         </record>
 
-        <act_window name="Export data types" res_model="cenit.import_export"  view_id="view_export_data_types"
+        <act_window name="Export data types" res_model="cenit.import_export" view_id="view_export_data_types"
                     src_model="cenit.data_type"
-             key2="client_action_multi" view_mode="form" target="new" view_type="form" id="act_new_sub_menu" />
+                    key2="client_action_multi" view_mode="form" target="new" view_type="form" id="act_new_sub_menu"/>
 
         <record id="action_cenit_data_type" model="ir.actions.act_window">
             <field name="name">Data types</field>
@@ -187,19 +187,21 @@
         </record>
 
         <menuitem id="menu_cenit_data_type" name="Data types"
-            parent="menu_cenit_data" sequence="1"
-            action="action_cenit_data_type"/>
+                  parent="menu_cenit_data" sequence="1"
+                  action="action_cenit_data_type"/>
 
 
         <record id="view_import_data_types" model="ir.ui.view">
             <field name="name">view.cenit.data_type.import</field>
             <field name="model">cenit.import_export</field>
             <field name="arch" type="xml">
-                <form class="oe_import" enctype="multipart/form-data">
-                   <field name="file" />
+                <form>
+                    <group>
+                      <field name="b_file" filename="filename"/>
+                      <field name="filename" invisible="1"/>
+                    </group>
                     <footer>
-                      <button type="object" name="import_data_types" id="btn_import" context="{'attachment': file}"
-                              string="Import"  class="oe_highlight"  />
+                        <button name="import_data_types" type="object" string="_Import" class="btn-primary"/>
                     </footer>
                 </form>
             </field>
@@ -210,8 +212,8 @@
                     view_mode="form" target="new" view_type="form" id="action_cenit_import_datatype"/>
 
         <menuitem id="menu_cenit_datatype_import" name="Import Data types"
-            parent="menu_cenit_data" sequence="2"
-            action="action_cenit_import_datatype" />
+                  parent="menu_cenit_data" sequence="2"
+                  action="action_cenit_import_datatype"/>
 
     </data>
 </openerp>
