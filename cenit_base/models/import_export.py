@@ -1,23 +1,21 @@
 import logging
 import json
 
-from openerp import api, exceptions, http
-from openerp.osv import orm, fields
+from openerp import models, fields, http, api, exceptions, tools, _
 
 from openerp.http import request
 from openerp.addons.web.controllers.main import serialize_exception, content_disposition
 import base64
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
 
-class ImportExport(orm.TransientModel):
+class ImportExport(models.TransientModel):
     _name = "cenit.import_export"
 
-    _columns = {
-        'file': fields.binary('File'),
-        'filename': fields.char()
-    }
+    b_file = fields.Binary('File', help="JSON file to import", required=True)
+    filename = fields.Char('File Name', required=True)
 
     @api.multi
     def export_data_types(self, context={}):
@@ -49,7 +47,7 @@ class ImportExport(orm.TransientModel):
                 triggers.append({"name": trigger.name, "cron_name": trigger.cron.name, "cron_lapse": cron_lapse,
                                  "cron_units": trigger.cron_units, "cron_restrictions": trigger.cron_restrictions})
 
-            datatypes.append({"name": r.name, "model": r.model.model, "namespace": r.namespace.name,
+            datatypes.append({"id": r.id, "name": r.name, "model": r.model.model, "namespace": r.namespace.name,
                               "schema": r.schema.name, "lines": lines, "domains": domains, "triggers": triggers})
 
         json_data = json.dumps(datatypes)
@@ -64,10 +62,9 @@ class ImportExport(orm.TransientModel):
              'target': 'self',
         }
 
-
-    @api.model
-    def import_data_types(self, context={}):
-        data_file = self._context['attachment']
+    @api.multi
+    def import_data_types(self):
+        data_file = self[0].b_file
         irmodel_pool = self.env['ir.model']
         schema_pool = self.env['cenit.schema']
         namespace_pool = self.env['cenit.namespace']
@@ -76,8 +73,14 @@ class ImportExport(orm.TransientModel):
         domain_pool = self.env['cenit.data_type.domain_line']
         trigger_pool = self.env['cenit.data_type.trigger']
 
-        data_file = base64.decodestring(data_file)
-        json_data = json.loads(data_file)
+        try:
+           data_file = base64.decodestring(data_file)
+           print data_file
+           json_data = json.loads(data_file)
+        except Exception as e:
+            _logger.exception('File unsuccessfully imported, due to format mismatch.')
+            raise UserError(_('File not imported due to format mismatch or a malformed file. (Valid format is .json)\n\nTechnical Details:\n%s') % tools.ustr(e))
+
 
         for data in json_data:
             odoo_model = data['model']
@@ -109,15 +112,29 @@ class ImportExport(orm.TransientModel):
             schema = candidates.id
 
             vals = {'name': data['name'], 'model': odoo_model, 'namespace': namespace, 'schema': schema}
-            created_datatype = datatype_pool.create(vals)
+            dt = datatype_pool.search([('name', '=', data['name'])])
+            updt = False
+            if dt:
+                dt.write(vals)
+                updt = True
+            else:
+                dt = datatype_pool.create(vals)
+
+            if updt:
+                    for d in dt.domain:
+                        d.unlink()
+                    for d in dt.triggers:
+                        d.unlink()
+                    for d in dt.lines:
+                        d.unlink()
 
             for domain in data['domains']:
-                vals = {'data_type': created_datatype.id, 'field': domain['field'], 'value': domain['value'],
+                vals = {'data_type': dt.id, 'field': domain['field'], 'value': domain['value'],
                         'op': domain['op']}
                 domain_pool.create(vals)
 
             for trigger in data['triggers']:
-                vals = {'data_type': created_datatype.id, 'name': trigger['name'], 'cron_lapse': trigger['cron_lapse'],
+                vals = {'data_type': dt.id, 'name': trigger['name'], 'cron_lapse': trigger['cron_lapse'],
                         'cron_units': trigger['cron_units'], 'cron_restrictions': trigger['cron_restrictions'],
                         'cron_name': trigger['cron_name']}
                 trigger_pool.create(vals)
@@ -126,11 +143,12 @@ class ImportExport(orm.TransientModel):
                 domain = [('name', '=', line['reference'])]
                 candidate = datatype_pool.search(domain)
                 vals = {
-                    'data_type': created_datatype.id, 'name': line['name'], 'value': line['value'],
+                    'data_type': dt.id, 'name': line['name'], 'value': line['value'],
                     'line_type': line['line_type'], 'line_cardinality': line['line_cardinality'],
                     'primary': line['primary'], 'inlined': line['inlined'], 'reference': candidate.id
                 }
                 line_pool.create(vals)
+            dt.sync_rules()
         return True
 
 
