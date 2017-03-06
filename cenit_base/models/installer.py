@@ -596,8 +596,8 @@ class CollectionInstaller(models.TransientModel):
         if isinstance(rc, list):
             rc = rc[0]
         data = rc
-        if 'collection' in data:
-            data = data['collection'][0]
+        if 'collections' in data:
+            data = data['collections'][0]
 
         if not params:
                 raise exceptions.ValidationError(
