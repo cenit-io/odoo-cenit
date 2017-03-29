@@ -64,7 +64,7 @@ class CollectionInstaller(models.TransientModel):
                     'cenitID': schema.get('id'),
                     'name': schema.get('name'),
                     'slug': schema.get('slug'),
-                    'schema': str(schema_code),
+                    'schema': schema_code.encode('utf-8'),
                     'namespace': nam.id
                 }
 
