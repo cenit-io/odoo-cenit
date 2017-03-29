@@ -6,7 +6,7 @@ from openerp import models, fields, http, api, exceptions, tools, _
 from openerp.http import request
 from openerp.addons.web.controllers.main import serialize_exception, content_disposition
 import base64
-from odoo.exceptions import UserError
+from openerp.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
