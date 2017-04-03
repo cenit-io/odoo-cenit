@@ -550,8 +550,9 @@ class CollectionInstaller(models.TransientModel):
                     name, version or "any"
                 )
             )
-
-        rc = rc[0]
+        cross_id = rc[0]['id']
+        path = "/setup/cross_shared_collection/%s" % (cross_id)
+        rc = cenit_api.get(path)
 
         # data = {
         #     'id': rc.get('id'),
