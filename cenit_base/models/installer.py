@@ -573,6 +573,8 @@ class CollectionInstaller(models.TransientModel):
         data = {}
         if params:
             data.update({'pull_parameters': params, 'asynchronous': True, 'skip_pull_review': True})
+        else:
+            data.update({'asynchronous': True, 'skip_pull_review': True})
         rc = cenit_api.post(path, data)
 
     """
