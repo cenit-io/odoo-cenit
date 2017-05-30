@@ -14,8 +14,8 @@ _logger = logging.getLogger(__name__)
 class ImportExport(models.TransientModel):
     _name = "cenit.import_export"
 
-    b_file = fields.Binary('File', help="JSON file to import", required=True)
-    filename = fields.Char('File Name', required=True)
+    b_file = fields.Binary('File', help="JSON file to import")
+    filename = fields.Char('File Name')
 
     @api.multi
     def export_data_types(self, context={}):
@@ -53,12 +53,12 @@ class ImportExport(models.TransientModel):
         json_data = json.dumps(datatypes)
         file_c = self.create({
             'filename': 'mappings.json',
-            'file': json_data
+            'b_file': json_data
         })
 
         return {
              'type' : 'ir.actions.act_url',
-             'url': '/web/binary/download_document?file=%s&filename=data_types.json' % (file_c.file),
+             'url': '/web/binary/download_document?file=%s&filename=data_types.json' % (file_c.b_file),
              'target': 'self',
         }
 
