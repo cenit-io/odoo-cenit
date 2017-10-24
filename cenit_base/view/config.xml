@@ -119,6 +119,47 @@
             parent="menu_cenit_settings_alt" sequence="1" />
 
 
+        <record id="cenit_sign_up_view" model="ir.ui.view">
+            <field name="name">Cenit Hub settings</field>
+            <field name="model">cenit.account.settings</field>
+            <field name="inherit_id" ref="base.res_config_installer" />
+            <field name="mode">primary</field>
+            <field name="arch" type="xml">
+                <form position="attributes">
+                    <attribute name="string">Cenit Captcha</attribute>
+                </form>
+                <footer position="replace">
+                    <footer>
+                        <button string="Apply" type="object" name="execute"
+                                class="oe_highlight" context="{'code': cenit_captcha}"/>
+                    </footer>
+                </footer>
+                <separator position="replace">
+                    <p class="oe_grey">
+                        Write the text in the image
+                    </p>
+                    <div>
+                        <img src="img_data_here" width="150" height="48" />
+                    </div>
+                    <group>
+                        <field name="cenit_captcha" placeholder="Your Captcha" />
+                    </group>
+                </separator>
+            </field>
+        </record>
+
+        <record id="action_cenit_sign_up" model="ir.actions.act_window">
+            <field name="name">Configure Cenit data</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">cenit.account.settings</field>
+            <field name="view_id" ref="cenit_sign_up_view" />
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+
+
         <record id="wizard_cenit_install" model="ir.ui.view">
             <field name="name">Cenit Hub settings</field>
             <field name="model">cenit.hub.settings</field>
@@ -155,28 +196,23 @@
             <field name="target">new</field>
         </record>
 
-        <record id="todo_wizard_cenit_install" model="ir.actions.todo">
-            <field name="action_id" ref="action_wizard_cenit_install"/>
-            <field name="sequence">1</field>
-            <field name="type">automatic</field>
-        </record>
-
 
         <record id="wizard_cenit_install_account" model="ir.ui.view">
             <field name="name">Cenit Hub settings</field>
             <field name="model">cenit.account.settings</field>
             <field name="inherit_id" ref="base.res_config_installer" />
+            <field name="mode">primary</field>
             <field name="arch" type="xml">
                 <form position="attributes">
                     <attribute name="string">Cenit Hub account settings</attribute>
                 </form>
                 <footer position="replace">
                     <footer>
-                        <button string="SignUp" type="object" name="execute"
-                                class="oe_highlight" context="{'install': True}"/>
+                        <button string="SignUp" type="action" name="%(action_cenit_sign_up)d"
+                                class="oe_highlight" context="{'email':cenit_email, 'passwd': cenit_passwd, 'confirmation': confirm_passwd,'next_view': True}"/>
                         or
-                        <button string="Skip" type="object" name="execute"
-                                class="oe_link" context="{'install': False}"/>
+                        <button string="Skip" type="action" name="%(action_wizard_cenit_install)d"
+                                class="oe_link"/>
                     </footer>
                 </footer>
                 <separator position="replace">
@@ -185,12 +221,9 @@
                     </p>
                     <group>
                         <field name="cenit_email" placeholder="Your Cenit's user email" />
-                    </group>
-                    <div>
-                        <img src="img_data_here" width="200" height="48" />
-                    </div>
-                    <group>
-                        <field name="cenit_captcha" placeholder="Enter the text above" />
+                        <field name="cenit_passwd" placeholder="Your Cenit's user passwd" password="True" />
+                        <field name="confirm_passwd" placeholder="Confirm password" password="True"/>
+                        <!-- <input type="hidden" name="next_view" value="captcha"/> -->
                     </group>
                 </separator>
             </field>
