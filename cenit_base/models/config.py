@@ -236,11 +236,10 @@ class CenitSettings (models.TransientModel):
         role_data = {
             "namespace": namesp[0],
             "name": "My Odoo role",
-            #"connections": [(6, False, [conn])],
+            "connections": [(6, False, [conn])],
             "webhooks": [(6, False, [hook])],
         }
         role = role_pool.create(cr, uid, role_data, context=context)
-        #role_pool.write(cr, uid, {"connections": [conn], "id": role}, context=context)
 
         icp.set_param(cr, uid, 'cenit.odoo_feedback.hook', hook)
         icp.set_param(cr, uid, 'cenit.odoo_feedback.conn', conn)
@@ -305,7 +304,7 @@ class CenitAccountSettings(models.TransientModel):
             toolbar=toolbar, submenu=submenu
         )
 
-        if context.get('next_view'):
+        if context.get('sign_up'):
             arch = rc['arch']
 
             email = context.get('email')
