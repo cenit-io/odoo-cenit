@@ -279,7 +279,9 @@ class CenitAccountSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
     cenit_email = fields.Char ('Cenit user email')
-    cenit_captcha = fields.Char ('Enter the text in the image')
+    cenit_captcha = fields.Char ('Text in the image')
+    cenit_passwd = fields.Char ('Cenit password')
+    confirm_passwd = fields.Char ('Confirm password')
 
     ############################################################################
     # Default values getters
@@ -302,66 +304,86 @@ class CenitAccountSettings(models.TransientModel):
             toolbar=toolbar, submenu=submenu
         )
 
-        arch = rc['arch']
-        if not arch.startswith('<form string="Cenit Hub account settings">'):
-            return rc
+        if context.get('sign_up'):
+            arch = rc['arch']
 
-        icp = self.pool.get("ir.config_parameter")
-        hub_host = icp.get_param(cr, uid, "odoo_cenit.cenit_url",
-                                 default='https://cenit.io')
-        if hub_host.endswith("/"):
-            hub_host = hub_host[:-1]
-        hub_hook = "captcha"
-        hub_url = "{}/{}".format(hub_host, hub_hook)
+            email = context.get('email')
+            passwd = context.get('passwd')
+            confirmation = context.get('confirmation')
 
-        try:
-            r = requests.get(hub_url)
-        except Exception as e:
-            _logger.error("\n\Error: %s\n", e)
-            raise exceptions.AccessError("Error trying to connect to Cenit.")
+            icp = self.pool.get("ir.config_parameter")
+            hub_host = icp.get_param(cr, uid, "odoo_cenit.cenit_url", default='https://cenit.io', context=context)
+            if hub_host.endswith("/"):
+                hub_host = hub_host[:-1]
+            path = "/setup/user"
+            vals = {
+                      "email": email,
+                      "password": passwd,
+                      "password_confirmation": confirmation
+            }
 
-        captcha_data = simplejson.loads(r.content)
-        token = captcha_data.get('token', False)
-        if not token:
-            raise exceptions.AccessError("Error trying to connect to Cenit.")
+            payload = simplejson.dumps(vals)
+            url = hub_host + "/api/v2" + path
 
-        icp.set_param(cr, uid, 'cenit.captcha.token', token, context=context)
+            try:
+                _logger.info("[POST] %s", url)
+                r = requests.post(url, data=payload)
+            except Exception as e:
+                _logger.error(e)
+                raise exceptions.AccessError("Error trying to connect to Cenit.")
 
-        arch = arch.replace(
-            'img_data_here', '{}/{}'.format(hub_url, token)
-        )
+            if 200 <= r.status_code < 300:
+                response = r.json()
+            else:
+                try:
+                    error = r.json()
+                    _logger.error(error)
+                except Exception as e:
+                    _logger.error(e)
+                    raise exceptions.ValidationError("Cenit returned with errors")
 
-        rc['arch'] = arch
+                if r.status_code == 406:
+                       key = str(error.keys()[0])
+                       raise exceptions.ValidationError(key.capitalize()+" "+str(error[key][0]))
+                else:
+                    raise exceptions.AccessError("Error trying to connect to Cenit.")
+
+            token = response.get('token', False)
+
+            icp = self.pool.get('ir.config_parameter')
+
+
+            hub_hook = "captcha"
+            hub_url = "{}/{}/{}".format(hub_host, hub_hook, token)
+
+            try:
+                r = requests.get(hub_url)
+            except Exception as e:
+                _logger.error("\n\Error: %s\n", e)
+                raise exceptions.AccessError("Error trying to connect to Cenit.")
+
+            icp.set_param(cr, uid, 'cenit.captcha.token', token, context=context)
+
+            arch = arch.replace(
+                'img_data_here', '{}'.format(hub_url)
+            )
+
+            rc['arch'] = arch
         return rc
 
     def execute(self, cr, uid, ids, context=None):
-        rc = super(CenitAccountSettings, self).execute(
-            cr, uid, ids, context=context
-        )
-
-        if not context.get('install', False):
-            return rc
-
-        objs = self.browse(cr, uid, ids)
-        if not objs:
-            return rc
-        obj = objs[0]
-
-        icp = self.pool.get("ir.config_parameter")
-        token = icp.get_param(cr, uid, 'cenit.captcha.token', default=None)
-
         cenit_api = self.pool.get('cenit.api')
         path = "/setup/user"
+        icp = self.pool.get('ir.config_parameter')
+
         vals = {
-            'email': obj.cenit_email,
-            'token': token,
-            'code': obj.cenit_captcha,
+                  "token": icp.get_param(cr, uid, 'cenit.captcha.token', context=context),
+                  "code": context.get('code')
         }
 
         res = cenit_api.post(cr, uid, path, vals, context=context)
-        _logger.info("\n\nRES: %s\n", res)
+        icp.set_param(cr, uid, 'odoo_cenit.cenit_user_key', res.get('number'), context=context)
+        icp.set_param(cr, uid, 'odoo_cenit.cenit_user_token', res.get('token'), context=context)
 
-        icp.set_param(cr, uid, 'odoo_cenit.cenit_user_key', res.get('number'))
-        icp.set_param(cr, uid, 'odoo_cenit.cenit_user_token', res.get('token'))
-
-        return rc
+        hub = self.pool.get('cenit.hub.settings')
+        hub.sync_with_cenit(cr, uid, context=context)
