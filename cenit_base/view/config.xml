@@ -209,7 +209,7 @@
                 <footer position="replace">
                     <footer>
                         <button string="SignUp" type="action" name="%(action_cenit_sign_up)d"
-                                class="oe_highlight" context="{'email':cenit_email, 'passwd': cenit_passwd, 'confirmation': confirm_passwd,'next_view': True}"/>
+                                class="oe_highlight" context="{'email':cenit_email, 'passwd': cenit_passwd, 'confirmation': confirm_passwd,'sign_up': True}"/>
                         or
                         <button string="Skip" type="action" name="%(action_wizard_cenit_install)d"
                                 class="oe_link"/>
