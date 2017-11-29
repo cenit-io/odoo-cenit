@@ -22,7 +22,7 @@
 #
 #
 
-from openerp import models, fields, api, exceptions
+from odoo import models, fields, api, exceptions
 
 from datetime import datetime
 
@@ -471,7 +471,7 @@ class CenitFlow (models.Model):
 
     cron = fields.Many2one('ir.cron', string='Cron rules')
     base_action_rules = fields.Many2many(
-        'base.action.rule', string='Action Rule'
+        'base.automation', string='Action Rule'
     )
 
     format_ = fields.Selection(

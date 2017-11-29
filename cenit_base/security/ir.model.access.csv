@@ -11,3 +11,4 @@ access_cenit_translator_system,cenit.translator.system,model_cenit_translator,ba
 access_cenit_flow_system,cenit.flow.system,model_cenit_flow,base.group_user,1,1,1,1
 access_cenit_namespace_system,cenit.namespace.system,model_cenit_namespace,base.group_user,1,1,1,1
 access_cenit_data_type_domain_line_system,cenit.data_type.domain.line.system,model_cenit_data_type_domain_line,base.group_user,1,1,1,1
+access_cenit_data_type_trigger_system,cenit.data_type.trigger.system,model_cenit_data_type_trigger,base.group_user,1,1,1,1

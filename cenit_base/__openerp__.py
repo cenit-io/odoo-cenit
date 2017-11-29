@@ -31,7 +31,7 @@
     'description': """
         Integrate with third party systems through the Cenit platform
     """,
-    'depends': ['base', 'base_action_rule'],
+    'depends': ['base', 'base_automation'],
     'data': [
         'security/ir.model.access.csv',
         'view/config.xml',
