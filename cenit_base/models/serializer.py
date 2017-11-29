@@ -4,7 +4,7 @@ import re
 import logging
 import simplejson
 
-from openerp import models, api
+from odoo import models, api
 
 
 _logger = logging.getLogger(__name__)

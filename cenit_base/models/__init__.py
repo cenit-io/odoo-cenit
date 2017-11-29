@@ -22,13 +22,13 @@
 #
 #
 
-import cenit_api
+from . import cenit_api
 
-import config
-import data_definitions
-import setup
+from . import config
+from . import data_definitions
+from . import setup
 
-import serializer
-import handler
-import installer
-import import_export
+from . import serializer
+from . import handler
+from . import installer
+from . import import_export

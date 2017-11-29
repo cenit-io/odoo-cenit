@@ -3,10 +3,10 @@
 import logging
 import inflect
 
-from openerp import http
-from openerp import SUPERUSER_ID
-from openerp.http import request
-from openerp.modules.registry import RegistryManager
+from odoo import http
+from odoo import SUPERUSER_ID
+from odoo.http import request
+from openerp.modules.registry import Registry
 
 
 _logger = logging.getLogger(__name__)
