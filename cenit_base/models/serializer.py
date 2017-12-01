@@ -3,12 +3,14 @@
 import re
 import logging
 import simplejson
+from datetime import datetime, time, timedelta
+from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
 
-from openerp import models, api
-
+from openerp import models, api, tools
 
 _logger = logging.getLogger(__name__)
 re_key = re.compile("\\{(.*?)\\}")
+
 
 class CenitSerializer(models.TransientModel):
     _name = 'cenit.serializer'
@@ -20,6 +22,7 @@ class CenitSerializer(models.TransientModel):
                 if not obj:
                     return None
                 return checker(obj)
+
             return _do_check
 
         def _dummy(obj):
