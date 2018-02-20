@@ -461,9 +461,9 @@ class CollectionInstaller(models.TransientModel):
                 if candidates:
                     schema_id = candidates[0].id
 
-                trans_data.update({
-                    'schema': schema_id
-                })
+                    trans_data.update({
+                        'schema': schema_id
+                    })
 
             domain = [('name', '=', trans_data.get('name')),
                       ('namespace', '=', trans_data.get('namespace'))]

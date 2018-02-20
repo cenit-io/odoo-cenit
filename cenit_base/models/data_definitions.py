@@ -29,7 +29,6 @@ from openerp import models, fields, api
 
 from datetime import datetime
 
-
 _logger = logging.getLogger(__name__)
 
 
@@ -102,7 +101,6 @@ class CenitNameSpace(models.Model):
 
 
 class CenitLibrary(models.Model):
-
     _name = 'cenit.library'
     _inherit = 'cenit.api'
 
@@ -182,14 +180,14 @@ class CenitSchema(models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-    #library = fields.Many2one('cenit.library', string='Library',
-                             # ondelete='cascade')
+    # library = fields.Many2one('cenit.library', string='Library',
+    # ondelete='cascade')
     slug = fields.Char('Slug', required=True)
     schema = fields.Text('Schema')
 
     name = fields.Char('Name')
     namespace = fields.Many2one('cenit.namespace', string='Namespace', required=True,
-                              ondelete='cascade')
+                                ondelete='cascade')
 
     _sql_constraints = [
         ('name_uniq', 'UNIQUE(namespace,name)',
@@ -201,13 +199,13 @@ class CenitSchema(models.Model):
     @api.one
     def _get_values(self):
         vals = {
-            #'library': {
-             #   '_reference': True,
-               # 'id': self.library.cenitID
-           # },
-           'namespace': {
-                 '_reference': True,
-                 'id': self.namespace.cenitID
+            # 'library': {
+            #   '_reference': True,
+            # 'id': self.library.cenitID
+            # },
+            'namespace': {
+                '_reference': True,
+                'id': self.namespace.cenitID
             },
             'name': self.name,
             'slug': self.slug,
@@ -259,7 +257,7 @@ class CenitDataTypeTrigger(models.Model):
     )
 
     last_execution = fields.Datetime()
-    
+
     @api.one
     def unlink(self):
         if self.cron:
@@ -268,7 +266,7 @@ class CenitDataTypeTrigger(models.Model):
             for bar in self.base_action_rules:
                 bar.server_action_ids.unlink()
             self.base_action_rules.unlink()
-        
+
         return super(CenitDataTypeTrigger, self).unlink()
 
     @api.one
@@ -392,11 +390,11 @@ class CenitDataType(models.Model):
 
     name = fields.Char('Name', size=128, required=True)
     enabled = fields.Boolean('Enabled', default=True)
-    #library = fields.Many2one('cenit.library', string='Library', required=True,
-                              #ondelete='cascade')
+    # library = fields.Many2one('cenit.library', string='Library', required=True,
+    # ondelete='cascade')
 
     namespace = fields.Many2one('cenit.namespace', string='Namespace', required=True,
-                              ondelete='cascade')
+                                ondelete='cascade')
 
     model = fields.Many2one('ir.model', 'Model', required=True)
     schema = fields.Many2one('cenit.schema', 'Schema')

@@ -28,132 +28,109 @@ import simplejson
 
 from openerp import models, fields, exceptions
 
-
 _logger = logging.getLogger(__name__)
-
 
 COLLECTION_NAME = "basic"
 COLLECTION_VERSION = "1.0.0"
 
 
-class CenitSettings (models.TransientModel):
-
+class CenitSettings(models.TransientModel):
     _name = 'cenit.hub.settings'
     _inherit = 'res.config.settings'
 
-    cenit_url = fields.Char ('Cenit URL')
-    cenit_user_key = fields.Char ('Cenit User key')
-    cenit_user_token = fields.Char ('Cenit User token')
+    cenit_url = fields.Char('Cenit URL')
+    cenit_user_key = fields.Char('Cenit User key')
+    cenit_user_token = fields.Char('Cenit User token')
 
-    module_cenit_desk = fields.Boolean('Desk API',
-        help=""
-    )
+    module_cenit_desk = fields.Boolean('Desk API', help="")
 
-    module_cenit_mailchimp = fields.Boolean('Mailchimp API',
-        help=""
-    )
+    module_cenit_mailchimp = fields.Boolean('Mailchimp API', help="")
 
-    module_cenit_mandrill = fields.Boolean('Mandrill API',
-        help=""
-    )
+    module_cenit_mandrill = fields.Boolean('Mandrill API', help="")
 
-    module_cenit_shipstation = fields.Boolean('Shipstation API',
-        help=""
-    )
+    module_cenit_shipstation = fields.Boolean('Shipstation API', help="")
 
-    module_cenit_shipwire = fields.Boolean('Shipwire API',
-        help=""
-    )
+    module_cenit_shipwire = fields.Boolean('Shipwire API', help="")
 
-    module_cenit_slack = fields.Boolean('Slack API',
-        help=""
-    )
+    module_cenit_slack = fields.Boolean('Slack API', help="")
 
-    module_cenit_twilio = fields.Boolean('Twilio API',
-        help=""
-    )
+    module_cenit_twilio = fields.Boolean('Twilio API', help="")
 
-    module_cenit_twitter = fields.Boolean('Twitter API',
-        help=""
-    )
+    module_cenit_twitter = fields.Boolean('Twitter API', help="")
 
-    module_cenit_asana = fields.Boolean('Asana API',
-        help=""
-    )
+    module_cenit_asana = fields.Boolean('Asana API', help="")
 
-    module_cenit_messagebird = fields.Boolean('MessageBird API',
-        help=""
-    )
+    module_cenit_messagebird = fields.Boolean('MessageBird API', help="")
 
     ############################################################################
     # Default values getters
     ############################################################################
 
-    def get_default_cenit_url (self, cr, uid, ids, context=None):
-        cenit_url = self.pool.get ("ir.config_parameter").get_param (
+    def get_default_cenit_url(self, cr, uid, ids, context=None):
+        cenit_url = self.pool.get("ir.config_parameter").get_param(
             cr, uid, "odoo_cenit.cenit_url", default=None, context=context
         )
 
         return {'cenit_url': cenit_url or 'https://cenit.io'}
 
-    def get_default_cenit_user_key (self, cr, uid, ids, context=None):
-        cenit_user_key = self.pool.get ("ir.config_parameter").get_param (
+    def get_default_cenit_user_key(self, cr, uid, ids, context=None):
+        cenit_user_key = self.pool.get("ir.config_parameter").get_param(
             cr, uid, "odoo_cenit.cenit_user_key", default=None, context=context
         )
         return {'cenit_user_key': cenit_user_key or False}
 
-    def get_default_cenit_user_token (self, cr, uid, ids, context=None):
-        cenit_user_token = self.pool.get ("ir.config_parameter").get_param (
+    def get_default_cenit_user_token(self, cr, uid, ids, context=None):
+        cenit_user_token = self.pool.get("ir.config_parameter").get_param(
             cr, uid, "odoo_cenit.cenit_user_token", default=None, context=context
         )
 
         return {'cenit_user_token': cenit_user_token or False}
 
-    #~ def get_default_odoo_endpoint (self, cr, uid, ids, context=None):
-        #~ odoo_endpoint = self.pool.get ("ir.config_parameter").get_param (
-            #~ cr, uid, "odoo_cenit.odoo_endpoint", default=None, context=context
-        #~ )
-#~
-        #~ if (type(odoo_endpoint) in (unicode, str)) and odoo_endpoint.isdigit ():
-            #~ odoo_endpoint = int(odoo_endpoint)
-#~
-        #~ return {'odoo_endpoint': odoo_endpoint or False}
+    # ~ def get_default_odoo_endpoint (self, cr, uid, ids, context=None):
+    # ~ odoo_endpoint = self.pool.get ("ir.config_parameter").get_param (
+    # ~ cr, uid, "odoo_cenit.odoo_endpoint", default=None, context=context
+    # ~ )
+    # ~
+    # ~ if (type(odoo_endpoint) in (unicode, str)) and odoo_endpoint.isdigit ():
+    # ~ odoo_endpoint = int(odoo_endpoint)
+    # ~
+    # ~ return {'odoo_endpoint': odoo_endpoint or False}
 
     ############################################################################
     # Values setters
     ############################################################################
 
-    def set_cenit_url (self, cr, uid, ids, context=None):
-        config_parameters = self.pool.get ("ir.config_parameter")
-        for record in self.browse (cr, uid, ids, context=context):
-            config_parameters.set_param (
+    def set_cenit_url(self, cr, uid, ids, context=None):
+        config_parameters = self.pool.get("ir.config_parameter")
+        for record in self.browse(cr, uid, ids, context=context):
+            config_parameters.set_param(
                 cr, uid, "odoo_cenit.cenit_url",
                 record.cenit_url or '', context=context
             )
 
-    def set_cenit_user_key (self, cr, uid, ids, context=None):
-        config_parameters = self.pool.get ("ir.config_parameter")
-        for record in self.browse (cr, uid, ids, context=context):
-            config_parameters.set_param (
+    def set_cenit_user_key(self, cr, uid, ids, context=None):
+        config_parameters = self.pool.get("ir.config_parameter")
+        for record in self.browse(cr, uid, ids, context=context):
+            config_parameters.set_param(
                 cr, uid, "odoo_cenit.cenit_user_key",
                 record.cenit_user_key or '', context=context
             )
 
-    def set_cenit_user_token (self, cr, uid, ids, context=None):
-        config_parameters = self.pool.get ("ir.config_parameter")
-        for record in self.browse (cr, uid, ids, context=context):
-            config_parameters.set_param (
+    def set_cenit_user_token(self, cr, uid, ids, context=None):
+        config_parameters = self.pool.get("ir.config_parameter")
+        for record in self.browse(cr, uid, ids, context=context):
+            config_parameters.set_param(
                 cr, uid, "odoo_cenit.cenit_user_token",
                 record.cenit_user_token or '', context=context
             )
 
-    #~ def set_odoo_endpoint (self, cr, uid, ids, context=None):
-        #~ config_parameters = self.pool.get ("ir.config_parameter")
-        #~ for record in self.browse (cr, uid, ids, context=context):
-            #~ config_parameters.set_param (
-                #~ cr, uid, "odoo_cenit.odoo_endpoint",
-                #~ record.odoo_endpoint.id or '', context=context
-            #~ )
+    # ~ def set_odoo_endpoint (self, cr, uid, ids, context=None):
+    # ~ config_parameters = self.pool.get ("ir.config_parameter")
+    # ~ for record in self.browse (cr, uid, ids, context=context):
+    # ~ config_parameters.set_param (
+    # ~ cr, uid, "odoo_cenit.odoo_endpoint",
+    # ~ record.odoo_endpoint.id or '', context=context
+    # ~ )
 
     ############################################################################
     # Actions
@@ -213,10 +190,8 @@ class CenitSettings (models.TransientModel):
         role_pool = self.pool.get("cenit.connection.role")
         names_pool = self.pool.get("cenit.namespace")
 
-
         domain = [('name', '=', 'MyOdoo')]
         namesp = names_pool.search(cr, uid, domain, context=context)
-
 
         conn_data = {
             "name": "My Odoo host",
@@ -278,14 +253,14 @@ class CenitAccountSettings(models.TransientModel):
     _name = "cenit.account.settings"
     _inherit = "res.config.settings"
 
-    cenit_email = fields.Char ('Cenit user email')
-    cenit_captcha = fields.Char ('Enter the text in the image')
+    cenit_email = fields.Char('Cenit user email')
+    cenit_captcha = fields.Char('Enter the text in the image')
 
     ############################################################################
     # Default values getters
     ############################################################################
 
-    def get_default_cenit_email (self, cr, uid, ids, context=None):
+    def get_default_cenit_email(self, cr, uid, ids, context=None):
         user = self.pool.get('res.users').browse(cr, uid, uid, context=context)
 
         return {'cenit_email': user.login or False}
