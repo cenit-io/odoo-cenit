@@ -254,7 +254,9 @@ class CenitAccountSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
     cenit_email = fields.Char('Cenit user email')
-    cenit_captcha = fields.Char('Enter the text in the image')
+    cenit_captcha = fields.Char('Text in the image')
+    cenit_passwd = fields.Char('Cenit password')
+    confirm_passwd = fields.Char('Confirm password')
 
     ############################################################################
     # Default values getters
