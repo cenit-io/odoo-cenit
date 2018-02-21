@@ -24,7 +24,7 @@
 
 import logging
 import requests
-import simplejson
+import json
 
 from odoo import models, fields, exceptions
 
@@ -297,7 +297,7 @@ class CenitAccountSettings(models.TransientModel):
                 "password_confirmation": confirmation
             }
 
-            payload = simplejson.dumps(vals)
+            payload = json.dumps(vals)
             url = hub_host + "/api/v2" + path
 
             try:
