@@ -20,10 +20,10 @@
 ##############################################################################
 
 import requests
-import simplejson
+import json
 import logging
 
-from openerp import models, api, exceptions
+from odoo import models, api, exceptions
 
 
 _logger = logging.getLogger(__name__)
@@ -99,7 +99,7 @@ class CenitApi(models.AbstractModel):
     def post(self, path, vals):
         config = self.instance()
 
-        payload = simplejson.dumps(vals)
+        payload = json.dumps(vals)
         url = config.get('cenit_url') + API_PATH + path
         headers = self.headers(config)
 
@@ -157,7 +157,7 @@ class CenitApi(models.AbstractModel):
     def put(self, path, vals):
         config = self.instance()
 
-        payload = simplejson.dumps(vals)
+        payload = json.dumps(vals)
         url = config.get('cenit_url') + API_PATH + path
         headers = self.headers(config)
 

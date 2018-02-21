@@ -3,10 +3,10 @@
 import logging
 import inflect
 
-from openerp import http
-from openerp import SUPERUSER_ID
-from openerp.http import request
-from openerp.modules.registry import RegistryManager
+from odoo import http
+from odoo import SUPERUSER_ID
+from odoo.http import request
+from odoo.modules.registry import Registry
 
 
 _logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ class WebhookController(http.Controller):
             db_name = host.replace(".", "_").split(":")[0]
 
         # if db_name in http.db_list():
-        registry = RegistryManager.get(db_name)
+        registry = Registry(db_name)
         with registry.cursor() as cr:
             connection_model = registry['cenit.connection']
             domain = [('key', '=', key), ('token', '=', token)]

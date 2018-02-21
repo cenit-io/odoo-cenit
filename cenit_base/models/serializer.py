@@ -2,9 +2,9 @@
 
 import re
 import logging
-import simplejson
+import json
 
-from openerp import models, api
+from odoo import models, api
 
 
 _logger = logging.getLogger(__name__)
@@ -35,8 +35,7 @@ class CenitSerializer(models.TransientModel):
         }
         type_ = schema_type.get('type', 'other')
         if type_ == 'object' and inlined:
-            type_ = schema_type.get('properties', {'type': 'other'}).values()[
-                0].get('type', 'other')
+            type_ = list(schema_type.get('properties', {'type': 'other'}).values())[0].get('type', 'other')
 
         return get_checker(_checkers.get(type_, _dummy))
 
@@ -78,7 +77,7 @@ class CenitSerializer(models.TransientModel):
         match = data_type.ensure_object(obj)
 
         if match:
-            schema = simplejson.loads(data_type.schema.schema)['properties']
+            schema = json.loads(data_type.schema.schema)['properties']
             _reset = []
             _primary = []
 
@@ -112,7 +111,7 @@ class CenitSerializer(models.TransientModel):
                     ])
                     final = field.name.format(**kwargs)
                     try:
-                        value = simplejson.loads(final)
+                        value = json.loads(final)
                     except Exception:
                         value = final
                     vals[field.value] = checker(value)

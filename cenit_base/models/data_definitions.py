@@ -23,9 +23,9 @@
 #
 
 import logging
-import simplejson
+import json
 
-from openerp import models, fields, api
+from odoo import models, fields, api
 
 from datetime import datetime
 
@@ -189,7 +189,7 @@ class CenitDataTypeTrigger(models.Model):
         ("create", "Newly created"), ("update", "Newly updated"), ("all", "All")
     ], string="Restrictions", default="all")
     base_action_rules = fields.Many2many(
-        'base.action.rule', string='Action Rules'
+        'base.automation', string='Action Rules'
     )
 
     last_execution = fields.Datetime()
@@ -199,9 +199,9 @@ class CenitDataTypeTrigger(models.Model):
         if self.cron:
             self.cron.unlink()
         if self.base_action_rules:
-            for bar in self.base_action_rules:
-                bar.server_action_ids.unlink()
+            serv_id = self.base_action_rules.action_server_id
             self.base_action_rules.unlink()
+            serv_id.unlink()
         
         return super(CenitDataTypeTrigger, self).unlink()
 
@@ -211,16 +211,16 @@ class CenitDataTypeTrigger(models.Model):
             if self.cron:
                 self.cron.unlink()
             if self.base_action_rules:
-                for bar in self.base_action_rules:
-                    bar.server_action_ids.unlink()
+                serv_id = self.base_action_rules.action_server_id
                 self.base_action_rules.unlink()
+                serv_id.unlink()
 
         if self.name == 'only_manual':
 
             if self.base_action_rules:
-                for bar in self.base_action_rules:
-                    bar.server_action_ids.unlink()
+                serv_id = self.base_action_rules.action_server_id
                 self.base_action_rules.unlink()
+                serv_id.unlink()
 
             elif self.cron:
                 self.cron.unlink()
@@ -253,24 +253,24 @@ class CenitDataTypeTrigger(models.Model):
                 self.with_context(local=True).write({'cron': ic.id})
 
             if self.base_action_rules:
-                for bar in self.base_action_rules:
-                    bar.server_action_ids.unlink()
+                serv_id = self.base_action_rules.action_server_id
                 self.base_action_rules.unlink()
+                serv_id.unlink()
 
         elif self.name in ('on_create', 'on_write', 'on_create_or_write'):
             ias_obj = self.env['ir.actions.server']
-            bar_obj = self.env['base.action.rule']
+            bar_obj = self.env['base.automation']
 
             if self.base_action_rules:
-                for bar in self.base_action_rules:
-                    bar.server_action_ids.unlink()
+                serv_id = self.base_action_rules.action_server_id
                 self.base_action_rules.unlink()
+                serv_id.unlink()
 
             rules = []
             action_name = 'send_one_%s_as_%s' % (
                 self.data_type.model.model, self.data_type.cenit_root
             )
-            cd = "env['{}'].browse({}).trigger_flows(obj)".format(
+            cd = "env['{}'].browse({}).trigger_flows(record)".format(
                 self.data_type._name,
                 self.data_type.id
             )
@@ -284,9 +284,9 @@ class CenitDataTypeTrigger(models.Model):
             vals_bar = {
                 'name': action_name,
                 'active': True,
-                'kind': self.name,
+                'trigger': self.name,
                 'model_id': self.data_type.model.id,
-                'server_action_ids': [(6, False, [ias.id])]
+                'action_server_id': ias.id
             }
             bar = bar_obj.create(vals_bar)
             rules.append((4, bar.id, False))
@@ -430,8 +430,6 @@ class CenitDataType(models.Model):
 
     @api.model
     def create(self, vals):
-        if not isinstance(vals['namespace'], int):
-           vals['namespace'] = vals['namespace']['id']
         obj = super(CenitDataType, self).create(vals)
         obj.sync_rules()
 
