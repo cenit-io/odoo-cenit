@@ -23,7 +23,7 @@
 #
 
 import logging
-import simplejson
+import json
 
 from odoo import models, fields, api
 
