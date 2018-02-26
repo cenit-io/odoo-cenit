@@ -459,11 +459,12 @@ class CollectionInstaller(models.TransientModel):
                 ]
                 candidates = sch_pool.search(domain)
                 if candidates:
-                    schema_id = candidates[0].id
+                    schema_id = candidates[0].id or False
 
-                trans_data.update({
-                    'schema': schema_id
-                })
+                if schema_id:
+                    trans_data.update({
+                        'schema': schema_id
+                    })
 
             domain = [('name', '=', trans_data.get('name')),
                       ('namespace', '=', trans_data.get('namespace'))]
@@ -587,7 +588,7 @@ class CollectionInstaller(models.TransientModel):
         cenit_api = self.env['cenit.api']
 
         if params:
-            key = params.keys()[0]
+            key = list(params.keys())[0]
             if key == 'id':
                 path = "/setup/collection"
                 path = "%s/%s" % (path, params.get(key))
