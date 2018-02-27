@@ -461,7 +461,6 @@ class CollectionInstaller(models.TransientModel):
                 if candidates:
                     schema_id = candidates[0].id or False
 
-                if schema_id:
                     trans_data.update({
                         'schema': schema_id
                     })
