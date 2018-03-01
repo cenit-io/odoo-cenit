@@ -57,9 +57,9 @@ class ImportExport(models.TransientModel):
         })
 
         return {
-             'type' : 'ir.actions.act_url',
-             'url': '/web/binary/download_document?file=%s&filename=data_types.json' % (file_c.b_file),
-             'target': 'self',
+            'type': 'ir.actions.act_url',
+            'url': '/web/binary/download_document?file=%s&filename=data_types.json' % file_c.b_file,
+            'target': 'self',
         }
 
     @api.multi
@@ -74,13 +74,14 @@ class ImportExport(models.TransientModel):
         trigger_pool = self.env['cenit.data_type.trigger']
 
         try:
-           data_file = base64.decodestring(data_file)
-           print(data_file)
-           json_data = json.loads(data_file)
+            data_file = base64.decodebytes(data_file)
+            print(data_file)
+            json_data = json.loads(data_file)
         except Exception as e:
             _logger.exception('File unsuccessfully imported, due to format mismatch.')
-            raise UserError(_('File not imported due to format mismatch or a malformed file. (Valid format is .json)\n\nTechnical Details:\n%s') % tools.ustr(e))
-
+            raise UserError(_(
+                'File not imported due to format mismatch or a malformed file. (Valid format is .json)\n\nTechnical Details:\n%s') % tools.ustr(
+                e))
 
         for data in json_data:
             odoo_model = data['model']
@@ -121,12 +122,12 @@ class ImportExport(models.TransientModel):
                 dt = datatype_pool.create(vals)
 
             if updt:
-                    for d in dt.domain:
-                        d.unlink()
-                    for d in dt.triggers:
-                        d.unlink()
-                    for d in dt.lines:
-                        d.unlink()
+                for d in dt.domain:
+                    d.unlink()
+                for d in dt.triggers:
+                    d.unlink()
+                for d in dt.lines:
+                    d.unlink()
 
             for domain in data['domains']:
                 vals = {'data_type': dt.id, 'field': domain['field'], 'value': domain['value'],
@@ -160,5 +161,5 @@ class Binary(http.Controller):
             return request.not_found()
         else:
             return request.make_response(file,
-                                             [('Content-Type', 'application/octet-stream'),
-                                              ('Content-Disposition', content_disposition(filename))])
+                                         [('Content-Type', 'application/octet-stream'),
+                                          ('Content-Disposition', content_disposition(filename))])
