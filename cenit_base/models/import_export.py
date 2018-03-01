@@ -14,8 +14,8 @@ _logger = logging.getLogger(__name__)
 class ImportExport(models.TransientModel):
     _name = "cenit.import_export"
 
-    b_file = fields.Binary('File', help="JSON file to import", required=True)
-    filename = fields.Char('File Name', required=True)
+    b_file = fields.Binary('File', help="JSON file to import")
+    filename = fields.Char('File Name')
 
     @api.multi
     def export_data_types(self, context={}):
@@ -52,19 +52,19 @@ class ImportExport(models.TransientModel):
 
         json_data = json.dumps(datatypes)
         file_c = self.create({
-            'filename': 'mappings.json',
-            'file': json_data
+            'filename': result[0].name+'.json' if len(result) == 1 else 'mappings.json',
+            'b_file': base64.encodestring(json_data)
         })
 
         return {
             'type': 'ir.actions.act_url',
-            'url': '/web/binary/download_document?file=%s&filename=data_types.json' % (file_c.file),
+            'url': '/web/binary/download_document?data=%s&filename=%s' % (file_c.b_file, file_c.filename),
             'target': 'self',
         }
 
     @api.multi
     def import_data_types(self):
-        data_file = self[0].b_file
+        data_file = base64.decodestring(self[0].b_file)
         irmodel_pool = self.env['ir.model']
         schema_pool = self.env['cenit.schema']
         namespace_pool = self.env['cenit.namespace']
@@ -156,10 +156,10 @@ class ImportExport(models.TransientModel):
 class Binary(http.Controller):
     @http.route('/web/binary/download_document', type='http', auth="public")
     @serialize_exception
-    def download_document(self, file, filename):
-        if not file:
+    def download_document(self, data, filename):
+        if not data:
             return request.not_found()
         else:
-            return request.make_response(file,
+            return request.make_response(data,
                                          [('Content-Type', 'application/octet-stream'),
                                           ('Content-Disposition', content_disposition(filename))])
