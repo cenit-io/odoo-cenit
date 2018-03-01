@@ -87,7 +87,6 @@ class CollectionInstaller(models.TransientModel):
             }
             namesp = namespace_pool.with_context(local=True).create(names_data)
 
-
     @api.model
     def _get_param_lines(self, ref_id, values, prefix):
         parameter_pool = self.env['cenit.parameter']
@@ -564,6 +563,7 @@ class CollectionInstaller(models.TransientModel):
     """
       Pull a shared collection given an identifier
     """
+
     @api.model
     def pull_shared_collection(self, cenit_id, params=None):
         cenit_api = self.env['cenit.api']
@@ -576,7 +576,6 @@ class CollectionInstaller(models.TransientModel):
         else:
             data.update({'asynchronous': True, 'skip_pull_review': True})
         rc = cenit_api.post(path, data)
-
 
     """
      Install data from a collection given the identifier or the name
@@ -603,8 +602,8 @@ class CollectionInstaller(models.TransientModel):
             data = data['collections'][0]
 
         if not params:
-                raise exceptions.ValidationError(
-                    "Cenit failed to install the collection")
+            raise exceptions.ValidationError(
+                "Cenit failed to install the collection")
 
         self.install_common_data(data)
 
@@ -613,6 +612,7 @@ class CollectionInstaller(models.TransientModel):
     '''
     Install data either from cross shared collection or collection
     '''
+
     @api.model
     def install_common_data(self, data):
 
