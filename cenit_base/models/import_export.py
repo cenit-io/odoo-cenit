@@ -153,7 +153,8 @@ class ImportExport(models.TransientModel):
 
 
 class Binary(http.Controller):
-    @http.route('/web/binary/download/<string:model>/<int:record_id>/<string:binary_field>/<string:filename_field>', type='http',
+    @http.route('/web/binary/download/<string:model>/<int:record_id>/<string:binary_field>/<string:filename_field>',
+                type='http',
                 auth="public")
     # @serialize_exception
     def download_document(self, model, record_id, binary_field, filename_field, token=None):
