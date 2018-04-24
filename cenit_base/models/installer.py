@@ -423,7 +423,8 @@ class CollectionInstaller(models.TransientModel):
         names_pool = self.env['cenit.namespace']
 
         for translator in values:
-            if translator.get('_type') not in ('Setup::Parser', 'Setup::Renderer'):
+            if not translator or translator.get('_type') not in (
+                    'Setup::Parser', 'Setup::Renderer', 'Setup::MappingConverter'):
                 continue
             trans_data = {
                 'cenitID': translator.get('id'),
