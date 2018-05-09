@@ -5,6 +5,9 @@ import logging
 import json
 
 from odoo import models, api
+# This imports is for mapping purpose
+from datetime import datetime
+from odoo.tools import DEFAULT_SERVER_DATE_FORMAT
 
 
 _logger = logging.getLogger(__name__)
@@ -99,7 +102,8 @@ class CenitSerializer(models.TransientModel):
                         ]
                     else:
                         value = self.serialize(relation, field.reference)
-                    vals[field.value] = checker(value)
+                    # vals[field.value] = checker(value)
+                    vals[field.value] = value
                 elif field.line_type == 'reference':
                     _reset.append(field.value)
                     vals[field.value] = checker(self.find_reference(field, obj))
