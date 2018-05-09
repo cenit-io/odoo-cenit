@@ -87,7 +87,6 @@ class CollectionInstaller(models.TransientModel):
             }
             namesp = namespace_pool.with_context(local=True).create(names_data)
 
-
     @api.model
     def _get_param_lines(self, ref_id, values, prefix):
         parameter_pool = self.env['cenit.parameter']
@@ -424,7 +423,8 @@ class CollectionInstaller(models.TransientModel):
         names_pool = self.env['cenit.namespace']
 
         for translator in values:
-            if translator.get('_type') not in ('Setup::Parser', 'Setup::Renderer'):
+            if not translator or translator.get('_type') not in (
+                    'Setup::Parser', 'Setup::Renderer', 'Setup::MappingConverter'):
                 continue
             trans_data = {
                 'cenitID': translator.get('id'),
@@ -459,11 +459,11 @@ class CollectionInstaller(models.TransientModel):
                 ]
                 candidates = sch_pool.search(domain)
                 if candidates:
-                    schema_id = candidates[0].id
+                    schema_id = candidates[0].id or False
 
-                trans_data.update({
-                    'schema': schema_id
-                })
+                    trans_data.update({
+                        'schema': schema_id
+                    })
 
             domain = [('name', '=', trans_data.get('name')),
                       ('namespace', '=', trans_data.get('namespace'))]
@@ -564,6 +564,7 @@ class CollectionInstaller(models.TransientModel):
     """
       Pull a shared collection given an identifier
     """
+
     @api.model
     def pull_shared_collection(self, cenit_id, params=None):
         cenit_api = self.env['cenit.api']
@@ -577,7 +578,6 @@ class CollectionInstaller(models.TransientModel):
             data.update({'asynchronous': True, 'skip_pull_review': True})
         rc = cenit_api.post(path, data)
 
-
     """
      Install data from a collection given the identifier or the name
     """
@@ -587,7 +587,7 @@ class CollectionInstaller(models.TransientModel):
         cenit_api = self.env['cenit.api']
 
         if params:
-            key = params.keys()[0]
+            key = list(params.keys())[0]
             if key == 'id':
                 path = "/setup/collection"
                 path = "%s/%s" % (path, params.get(key))
@@ -603,8 +603,8 @@ class CollectionInstaller(models.TransientModel):
             data = data['collections'][0]
 
         if not params:
-                raise exceptions.ValidationError(
-                    "Cenit failed to install the collection")
+            raise exceptions.ValidationError(
+                "Cenit failed to install the collection")
 
         self.install_common_data(data)
 
@@ -613,6 +613,7 @@ class CollectionInstaller(models.TransientModel):
     '''
     Install data either from cross shared collection or collection
     '''
+
     @api.model
     def install_common_data(self, data):
 
