@@ -20,26 +20,29 @@
 ##############################################################################
 
 {
-    'name': 'Cenit IO Integrations Client',
-    'version': '0.10.1',
-    'application': True,
-    'author': 'Cenit IO',
-    'website': 'https://cenit.io',
-    #~ 'license': 'LGPL-3',
-    'category': 'Extra Tools',
-    'summary': 'Odoo, Cenit, Integration, Connector',
-    'description': """
+    "name": "Cenit IO Integrations Client",
+    "version": "0.10.1",
+    "application": True,
+    "author": "Cenit IO",
+    "website": "https://cenit.io",
+    # ~ "license": "LGPL-3",
+    "category": "Extra Tools",
+    "summary": "Odoo, Cenit, Integration, Connector",
+    "description": """
         Integrate with third party systems through the Cenit platform
     """,
-    'depends': ['base', 'base_automation'],
-    'data': [
-        'security/ir.model.access.csv',
-        'view/config.xml',
-        'view/data_definitions.xml',
-        'view/setup.xml',
+    "depends": ["base", "base_automation"],
+    "external_dependencies": {
+        "python": ["inflect", "pyasn1", "OpenSSL", "ndg"]
+    },
+    "data": [
+        "security/ir.model.access.csv",
+        "view/config.xml",
+        "view/data_definitions.xml",
+        "view/setup.xml",
     ],
-    'images': [
-        'static/screenshots/main.png'
+    "images": [
+        "static/screenshots/main.png"
     ],
-    'installable': True
+    "installable": True
 }
