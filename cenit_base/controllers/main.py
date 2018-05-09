@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import inflect
+_logger = logging.getLogger(__name__)
+try:
+    import inflect
+except ImportError as err:
+    _logger.debug(err)
 
 from odoo import http
 from odoo import SUPERUSER_ID
 from odoo.http import request
 from odoo.modules.registry import Registry
-
-
-_logger = logging.getLogger(__name__)
 
 
 class WebhookController(http.Controller):
@@ -63,6 +64,6 @@ class WebhookController(http.Controller):
         return {'status': status_code}
 
     @http.route('/cenit/<string:root>',
-        type='json', auth='none', methods=['GET'])
+                type='json', auth='none', methods=['GET'])
     def cenit_get(self, root):
         return {'status': 403}
