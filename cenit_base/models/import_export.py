@@ -4,7 +4,7 @@ import json
 from openerp import models, fields, http, api, exceptions, tools, _
 
 from openerp.http import request
-from openerp.addons.web.controllers.main import serialize_exception, content_disposition
+from openerp.addons.web.controllers.main import binary_content
 import base64
 from openerp.exceptions import UserError
 
@@ -14,8 +14,8 @@ _logger = logging.getLogger(__name__)
 class ImportExport(models.TransientModel):
     _name = "cenit.import_export"
 
-    b_file = fields.Binary('File', help="JSON file to import", required=True)
-    filename = fields.Char('File Name', required=True)
+    b_file = fields.Binary('File', help="JSON file to import")
+    filename = fields.Char('File Name')
 
     @api.multi
     def export_data_types(self, context={}):
@@ -52,19 +52,18 @@ class ImportExport(models.TransientModel):
 
         json_data = json.dumps(datatypes)
         file_c = self.create({
-            'filename': 'mappings.json',
-            'file': json_data
+            'filename': result[0].name + '.json' if len(result) == 1 else 'mappings.json',
+            'b_file': json_data
         })
-
         return {
-             'type' : 'ir.actions.act_url',
-             'url': '/web/binary/download_document?file=%s&filename=data_types.json' % (file_c.file),
-             'target': 'self',
+            'type': 'ir.actions.act_url',
+            'url': '/web/binary/download/%s/%s/%s/%s' % ('cenit.import_export', file_c.id, 'b_file', 'filename'),
+            'target': 'self',
         }
 
-    @api.multi
+    @api.one
     def import_data_types(self):
-        data_file = self[0].b_file
+        self.ensure_one()
         irmodel_pool = self.env['ir.model']
         schema_pool = self.env['cenit.schema']
         namespace_pool = self.env['cenit.namespace']
@@ -74,13 +73,13 @@ class ImportExport(models.TransientModel):
         trigger_pool = self.env['cenit.data_type.trigger']
 
         try:
-           data_file = base64.decodestring(data_file)
-           print data_file
-           json_data = json.loads(data_file)
+            data_file = base64.decodestring(self.b_file).decode("utf-8")
+            json_data = json.loads(data_file)
         except Exception as e:
             _logger.exception('File unsuccessfully imported, due to format mismatch.')
-            raise UserError(_('File not imported due to format mismatch or a malformed file. (Valid format is .json)\n\nTechnical Details:\n%s') % tools.ustr(e))
-
+            raise UserError(_(
+                'File not imported due to format mismatch or a malformed file. (Valid format is .json)\n\nTechnical Details:\n%s') % tools.ustr(
+                e))
 
         for data in json_data:
             odoo_model = data['model']
@@ -103,7 +102,7 @@ class ImportExport(models.TransientModel):
                 )
             namespace = candidates.id
 
-            domain = [('name', '=', schema)]
+            domain = [('name', '=', schema), ('namespace', '=', namespace)]
             candidates = schema_pool.search(domain)
             if not candidates:
                 raise exceptions.MissingError(
@@ -121,12 +120,12 @@ class ImportExport(models.TransientModel):
                 dt = datatype_pool.create(vals)
 
             if updt:
-                    for d in dt.domain:
-                        d.unlink()
-                    for d in dt.triggers:
-                        d.unlink()
-                    for d in dt.lines:
-                        d.unlink()
+                for d in dt.domain:
+                    d.unlink()
+                for d in dt.triggers:
+                    d.unlink()
+                for d in dt.lines:
+                    d.unlink()
 
             for domain in data['domains']:
                 vals = {'data_type': dt.id, 'field': domain['field'], 'value': domain['value'],
@@ -153,12 +152,21 @@ class ImportExport(models.TransientModel):
 
 
 class Binary(http.Controller):
-    @http.route('/web/binary/download_document', type='http', auth="public")
-    @serialize_exception
-    def download_document(self, file, filename):
-        if not file:
+    @http.route('/web/binary/download/<string:model>/<int:record_id>/<string:binary_field>/<string:filename_field>',
+                type='http',
+                auth="public")
+    # @serialize_exception
+    def download_document(self, model, record_id, binary_field, filename_field, token=None):
+        if not record_id:
             return request.not_found()
         else:
-            return request.make_response(file,
-                                             [('Content-Type', 'application/octet-stream'),
-                                              ('Content-Disposition', content_disposition(filename))])
+            status, headers, content = binary_content(model=model, id=record_id, field=binary_field,
+                                                      filename_field=filename_field, download=True)
+        if status != 200:
+            response = request.not_found()
+        else:
+            headers.append(('Content-Length', len(content)))
+            response = request.make_response(content, headers)
+        if token:
+            response.set_cookie('fileToken', token)
+        return response

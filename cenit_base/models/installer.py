@@ -424,7 +424,7 @@ class CollectionInstaller(models.TransientModel):
         names_pool = self.env['cenit.namespace']
 
         for translator in values:
-            if translator.get('_type') not in ('Setup::Parser', 'Setup::Renderer'):
+            if translator.get('_type') not in ('Setup::Parser', 'Setup::Renderer', 'Setup::MappingConverter'):
                 continue
             trans_data = {
                 'cenitID': translator.get('id'),
@@ -461,9 +461,9 @@ class CollectionInstaller(models.TransientModel):
                 if candidates:
                     schema_id = candidates[0].id
 
-                trans_data.update({
-                    'schema': schema_id
-                })
+                    trans_data.update({
+                        'schema': schema_id
+                    })
 
             domain = [('name', '=', trans_data.get('name')),
                       ('namespace', '=', trans_data.get('namespace'))]
