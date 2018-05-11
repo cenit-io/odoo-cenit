@@ -87,7 +87,6 @@ class CollectionInstaller(models.TransientModel):
             }
             namesp = namespace_pool.with_context(local=True).create(names_data)
 
-
     @api.model
     def _get_param_lines(self, ref_id, values, prefix):
         parameter_pool = self.env['cenit.parameter']
@@ -422,9 +421,30 @@ class CollectionInstaller(models.TransientModel):
         trans_pool = self.env['cenit.translator']
         sch_pool = self.env['cenit.schema']
         names_pool = self.env['cenit.namespace']
+        translators_types = (
+            # Template (Export)
+            "Setup::LiquidTemplate",  # 'liquid'
+            "Setup::XsltTemplate",  # 'xslt'
+            "Setup::ErbTemplate",  # 'html.erb' and 'js.erb'
+            "Setup::RubyTemplate",  # 'ruby'
+            "Setup::ErbTemplate",  # 'js.erb'
+            "Setup::PrawnTemplate",  # 'pdf.prawn'
+
+            # Converter (Conversion)
+            "Setup::LiquidConverter",  # 'liquid'
+            "Setup::XsltConverter",  # 'xslt'
+            "Setup::RubyConverter",  # 'ruby'
+            "Setup::MappingConverter",  # 'mapping'
+
+            # Parser (Import)
+            "Setup::RubyParser",  # 'ruby'
+
+            # Updater (Update)
+            "Setup::RubyUpdater",  # 'ruby'
+        )
 
         for translator in values:
-            if translator.get('_type') not in ('Setup::Parser', 'Setup::Renderer', 'Setup::MappingConverter'):
+            if translator.get('_type') not in translators_types:
                 continue
             trans_data = {
                 'cenitID': translator.get('id'),
@@ -446,8 +466,8 @@ class CollectionInstaller(models.TransientModel):
 
             # Updating schema
             schema = translator.get({
-                                        'Setup::Parser': 'target_data_type',
-                                        'Setup::Renderer': 'source_data_type',
+                                        'Setup::RubyParser': 'target_data_type',
+                                        'Setup::RubyTemplate': 'source_data_type',
                                     }.get(translator.get('_type')), {})
 
             if schema:
@@ -564,6 +584,7 @@ class CollectionInstaller(models.TransientModel):
     """
       Pull a shared collection given an identifier
     """
+
     @api.model
     def pull_shared_collection(self, cenit_id, params=None):
         cenit_api = self.env['cenit.api']
@@ -602,8 +623,8 @@ class CollectionInstaller(models.TransientModel):
             data = data['collections'][0]
 
         if not params:
-                raise exceptions.ValidationError(
-                    "Cenit failed to install the collection")
+            raise exceptions.ValidationError(
+                "Cenit failed to install the collection")
 
         self.install_common_data(data)
 
@@ -612,6 +633,7 @@ class CollectionInstaller(models.TransientModel):
     '''
     Install data either from cross shared collection or collection
     '''
+
     @api.model
     def install_common_data(self, data):
 
