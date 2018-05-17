@@ -421,10 +421,30 @@ class CollectionInstaller(models.TransientModel):
         trans_pool = self.env['cenit.translator']
         sch_pool = self.env['cenit.schema']
         names_pool = self.env['cenit.namespace']
+        translators_types = (
+            # Template (Export)
+            "Setup::LiquidTemplate",  # 'liquid'
+            "Setup::XsltTemplate",  # 'xslt'
+            "Setup::ErbTemplate",  # 'html.erb' and 'js.erb'
+            "Setup::RubyTemplate",  # 'ruby'
+            "Setup::ErbTemplate",  # 'js.erb'
+            "Setup::PrawnTemplate",  # 'pdf.prawn'
+
+            # Converter (Conversion)
+            "Setup::LiquidConverter",  # 'liquid'
+            "Setup::XsltConverter",  # 'xslt'
+            "Setup::RubyConverter",  # 'ruby'
+            "Setup::MappingConverter",  # 'mapping'
+
+            # Parser (Import)
+            "Setup::RubyParser",  # 'ruby'
+
+            # Updater (Update)
+            "Setup::RubyUpdater",  # 'ruby'
+        )
 
         for translator in values:
-            if not translator or translator.get('_type') not in (
-                    'Setup::Parser', 'Setup::Renderer', 'Setup::MappingConverter'):
+            if translator.get('_type') not in translators_types:
                 continue
             trans_data = {
                 'cenitID': translator.get('id'),
@@ -446,8 +466,8 @@ class CollectionInstaller(models.TransientModel):
 
             # Updating schema
             schema = translator.get({
-                                        'Setup::Parser': 'target_data_type',
-                                        'Setup::Renderer': 'source_data_type',
+                                        'Setup::RubyParser': 'target_data_type',
+                                        'Setup::RubyTemplate': 'source_data_type',
                                     }.get(translator.get('_type')), {})
 
             if schema:
