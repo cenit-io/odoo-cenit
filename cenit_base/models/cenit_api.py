@@ -79,7 +79,10 @@ class CenitApi(models.AbstractModel):
                 update = self._calculate_update(rc['success'])
                 if isinstance(update, list):
                     update = update[0]
-                rc = self.with_context(local=True).write(update)
+                # rc = self.with_context(local=True).write(update)
+                for key, value in update.items():
+                    self[key] = value
+                rc = True
             else:
                 _logger.error(rc.get('errors'))
                 return False
@@ -263,7 +266,7 @@ class CenitApi(models.AbstractModel):
 
         return obj
 
-    @api.one
+    @api.multi
     def write(self, vals):
         res = super(CenitApi, self).write(vals)
 

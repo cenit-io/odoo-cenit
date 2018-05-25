@@ -48,7 +48,7 @@
             <field name="name">view.cenit.schema.tree</field>
             <field name="model">cenit.schema</field>
             <field name="arch" type="xml">
-                <tree string="Schemas">
+                <tree string="Data types">
                     <field name="namespace"/>
                     <field name="name"/>
                     <field name="slug"/>
@@ -60,7 +60,7 @@
             <field name="name">view.cenit.schema.form</field>
             <field name="model">cenit.schema</field>
             <field name="arch" type="xml">
-                <form string="Schema">
+                <form string="Data type">
                     <group>
                         <field name="namespace"/>
                         <field name="name"/>
@@ -74,14 +74,14 @@
         </record>
 
         <record id="action_cenit_schema" model="ir.actions.act_window">
-            <field name="name">Schemas</field>
+            <field name="name">Data types</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.schema</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="menu_cenit_schema" name="Schemas"
+        <menuitem id="menu_cenit_schema" name="Data types"
                   parent="menu_cenit_data" sequence="0"
                   action="action_cenit_schema"/>
 
@@ -101,7 +101,7 @@
             <field name="name">view.cenit.data_type.form</field>
             <field name="model">cenit.data_type</field>
             <field name="arch" type="xml">
-                <form string="Data Type">
+                <form string="Mapping">
                     <sheet>
                         <group>
                             <group>
@@ -119,7 +119,7 @@
                             <page string="Mapping">
                                 <field name="lines">
                                     <tree string="Lines" editable="bottom">
-                                        <field name="value" string="Schema property"/>
+                                        <field name="value" string="Data type property"/>
                                         <field name="name" string="Model value"/>
                                         <field name="line_type"/>
                                         <field name="reference"
@@ -164,8 +164,8 @@
             <field name="name">view.cenit.data_type.export</field>
             <field name="model">cenit.import_export</field>
             <field name="arch" type="xml">
-                <form string="Export data types">
-                    Do you want to export the selected data types?
+                <form string="Export mappings">
+                    Do you want to export the selected mappings?
                     <footer>
                         <button string="Export" name="export_data_types"
                                 type="object" class="oe_highlight"/>
@@ -174,19 +174,19 @@
             </field>
         </record>
 
-        <act_window name="Export data types" res_model="cenit.import_export" view_id="view_export_data_types"
+        <act_window name="Export mappings" res_model="cenit.import_export" view_id="view_export_data_types"
                     src_model="cenit.data_type"
                     key2="client_action_multi" view_mode="form" target="new" view_type="form" id="act_new_sub_menu"/>
 
         <record id="action_cenit_data_type" model="ir.actions.act_window">
-            <field name="name">Data types</field>
+            <field name="name">Mappings</field>
             <field name="res_model">cenit.data_type</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_cenit_data_type_tree"/>
         </record>
 
-        <menuitem id="menu_cenit_data_type" name="Data types"
+        <menuitem id="menu_cenit_data_type" name="Mappings"
                   parent="menu_cenit_data" sequence="1"
                   action="action_cenit_data_type"/>
 
@@ -207,11 +207,11 @@
             </field>
         </record>
 
-        <act_window name="Import data types" res_model="cenit.import_export"
+        <act_window name="Import mappings" res_model="cenit.import_export"
                     view_id="view_import_data_types" src_model="cenit.data_type"
                     view_mode="form" target="new" view_type="form" id="action_cenit_import_datatype"/>
 
-        <menuitem id="menu_cenit_datatype_import" name="Import Data types"
+        <menuitem id="menu_cenit_datatype_import" name="Import Mappings"
                   parent="menu_cenit_data" sequence="2"
                   action="action_cenit_import_datatype"/>
 

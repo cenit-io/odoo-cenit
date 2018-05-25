@@ -355,6 +355,107 @@ class CenitWebhook (models.Model):
            vals['namespace'] = vals['namespace']['id']
         return super(CenitWebhook, self).create(vals)
 
+class CenitResource (models.Model):
+
+    @api.depends('method')
+    def _compute_purpose(self):
+        self.purpose = {
+            'get': 'send'
+        }.get(self.method, 'receive')
+
+    _name = 'cenit.resource'
+    _inherit = 'cenit.api'
+
+    cenit_model = 'resource'
+    cenit_models = 'resources'
+
+    cenitID = fields.Char('Cenit ID')
+
+    namespace = fields.Many2one('cenit.namespace', string='Namespace',
+                              ondelete='cascade')
+    name = fields.Char('Name', required=True)
+    path = fields.Char('Path', required=True)
+    purpose = fields.Char(compute='_compute_purpose', store=True)
+    method = fields.Selection(
+        [
+            ('get', 'HTTP GET'),
+            ('put', 'HTTP PUT'),
+            ('patch', 'HTTP PATCH'),
+            ('post', 'HTTP POST'),
+            ('delete', 'HTTP DELETE'),
+        ],
+        'Method', default='post', required=True
+    )
+
+    url_parameters = fields.One2many(
+        'cenit.parameter',
+        'hook_url_id',
+        string='Parameters'
+    )
+    header_parameters = fields.One2many(
+        'cenit.parameter',
+        'hook_header_id',
+        string='Header Parameters'
+    )
+    template_parameters = fields.One2many(
+        'cenit.parameter',
+        'hook_template_id',
+        string='Template Parameters'
+    )
+
+    _sql_constraints = [
+        ('name_uniq', 'UNIQUE(namespace, name)',
+         'The name must be unique for each namespace!')
+    ]
+
+    @api.one
+    def _get_values(self):
+        vals = {
+            'name': self.name,
+            'path': self.path,
+            'purpose': self.purpose,
+            'method': self.method,
+            'namespace': str(self.namespace.id),
+            '_type': 'Setup::PlainWebhook',
+        }
+
+        if self.cenitID:
+            vals.update({'id': self.cenitID})
+
+        params = []
+        for param in self.url_parameters:
+            params.append({
+                'key': param.key,
+                'value': param.value
+            })
+        vals.update({'parameters': params})
+
+        headers = []
+        for header in self.header_parameters:
+            headers.append({
+                'key': header.key,
+                'value': header.value
+            })
+        vals.update({'headers': headers})
+
+        template = []
+        for tpl in self.template_parameters:
+            template.append({
+                'key': tpl.key,
+                'value': tpl.value
+            })
+        vals.update({'template_parameters': template})
+
+        vals.update({'_primary': ['name', 'namespace']})
+
+        return vals
+
+    @api.model
+    def create(self, vals):
+        if not isinstance(vals['namespace'], int):
+           vals['namespace'] = vals['namespace']['id']
+        return super(CenitWebhook, self).create(vals)
+
 
 class CenitEvent (models.Model):
     _name = "cenit.event"
@@ -382,9 +483,9 @@ class CenitEvent (models.Model):
             ('on_create_or_write', 'On Create or Update'),
             # ('interval', 'Interval'),
         ],
-        string="Type"
+        string="Event"
     )
-    schema = fields.Many2one('cenit.schema', string='Schema')
+    schema = fields.Many2one('cenit.schema', string='Data type')
 
 
     _sql_constraints = [
@@ -442,7 +543,7 @@ class CenitTranslator (models.Model):
     name = fields.Char('Name', required=True, unique=True)
     type_ = fields.Char("Type")
     mime_type = fields.Char('MIME Type')
-    schema = fields.Many2one('cenit.schema', string='Schema')
+    schema = fields.Many2one('cenit.schema', string='Data type')
 
 
     _sql_constraints = [
@@ -485,7 +586,7 @@ class CenitFlow (models.Model):
     cenit_translator = fields.Many2one('cenit.translator', "Translator")
 
     schema = fields.Many2one(
-        'cenit.schema', 'Schema', required=True
+        'cenit.schema', 'Data type', required=True
     )
     data_type = fields.Many2one(
         'cenit.data_type', string='Source data type'

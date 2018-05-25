@@ -23,6 +23,7 @@ class CenitSerializer(models.TransientModel):
                 if not obj:
                     return None
                 return checker(obj)
+
             return _do_check
 
         def _dummy(obj):

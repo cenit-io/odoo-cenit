@@ -105,7 +105,6 @@ class CenitSchema(models.Model):
 
     @api.one
     def cenit_root(self):
-        # return "%s/%s" % (self.library.slug or "odoo", self.slug)
         return self.slug
 
     _name = 'cenit.schema'
@@ -116,14 +115,12 @@ class CenitSchema(models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-    #library = fields.Many2one('cenit.library', string='Library',
-                             # ondelete='cascade')
-    slug = fields.Char('Slug', required=True)
+    slug = fields.Char('Slug')  # TODO Crear por defecto este valor de la misma forma que se hace en Cenit
     schema = fields.Text('Schema')
 
-    name = fields.Char('Name')
+    name = fields.Char('Name', required=True)
     namespace = fields.Many2one('cenit.namespace', string='Namespace', required=True,
-                              ondelete='cascade')
+                                ondelete='cascade')
 
     _sql_constraints = [
         ('name_uniq', 'UNIQUE(namespace,name)',
@@ -135,13 +132,9 @@ class CenitSchema(models.Model):
     @api.one
     def _get_values(self):
         vals = {
-            #'library': {
-             #   '_reference': True,
-               # 'id': self.library.cenitID
-           # },
-           'namespace': {
-                 '_reference': True,
-                 'id': self.namespace.cenitID
+            'namespace': {
+                '_reference': True,
+                'id': self.namespace.cenitID
             },
             'name': self.name,
             'slug': self.slug,
@@ -193,7 +186,7 @@ class CenitDataTypeTrigger(models.Model):
     )
 
     last_execution = fields.Datetime()
-    
+
     @api.one
     def unlink(self):
         if self.cron:
@@ -202,7 +195,7 @@ class CenitDataTypeTrigger(models.Model):
             serv_id = self.base_action_rules.action_server_id
             self.base_action_rules.unlink()
             serv_id.unlink()
-        
+
         return super(CenitDataTypeTrigger, self).unlink()
 
     @api.one
@@ -326,11 +319,9 @@ class CenitDataType(models.Model):
 
     name = fields.Char('Name', size=128, required=True)
     enabled = fields.Boolean('Enabled', default=True)
-    #library = fields.Many2one('cenit.library', string='Library', required=True,
-                              #ondelete='cascade')
 
     namespace = fields.Many2one('cenit.namespace', string='Namespace', required=True,
-                              ondelete='cascade')
+                                ondelete='cascade')
 
     model = fields.Many2one('ir.model', 'Model', required=True)
     schema = fields.Many2one('cenit.schema', 'Schema')
@@ -362,47 +353,6 @@ class CenitDataType(models.Model):
     def sync_rules(self):
         for trigger in self.triggers:
             trigger.sync()
-
-    # @api.model
-    # def perform_scheduled_action(self, dt_id):
-    #     _logger.info("Performing scheduled trigger")
-    #     dt = self.browse(dt_id)
-    #
-    #     flow_pool = self.env["cenit.flow"]
-    #     flows = dt._get_flows()
-    #     if isinstance(flows, list) and len(flows) == 1:
-    #         flows = flows[0]
-    #
-    #     to_trigger = {
-    #         "cenit": None,
-    #         "other": []
-    #     }
-    #     for flow in flows:
-    #         if flow.enabled and not flow.local and not to_trigger["cenit"]:
-    #             to_trigger["cenit"] = flow.id
-    #         if flow.enabled and flow.local:
-    #             to_trigger["other"].append(flow.id)
-    #
-    #     for trigger in dt.triggers:
-    #         if trigger.name != 'interval':
-    #             continue
-    #
-    #         domain = []
-    #
-    #         if trigger.last_execution and (
-    #            trigger.cron_restrictions == "create"):
-    #             domain.append(("create_date", '>', trigger.last_execution))
-    #         elif trigger.last_execution and (
-    #            trigger.cron_restrictions == "update"):
-    #             domain.append(("write_date", '>', trigger.last_execution))
-    #
-    #         trigger.last_execution = fields.Datetime.now()
-    #
-    #         if to_trigger["cenit"]:
-    #             flow_pool.send_all(to_trigger["cenit"], dt, domain)
-    #
-    #         for id_ in to_trigger["other"]:
-    #             flow_pool.send_all(id_, dt, domain)
 
     @api.one
     def trigger_flows(self, obj):
