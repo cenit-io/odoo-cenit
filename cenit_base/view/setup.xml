@@ -3,17 +3,17 @@
     <data>
 
         <menuitem id="menu_cenit_connectors" name="API Connectors"
-            parent="menu_cenit_integration" sequence="2" />
+                  parent="menu_cenit_integration" sequence="2"/>
 
 
         <record id="view_cenit_connection_tree" model="ir.ui.view">
             <field name="name">view.cenit.connection.tree</field>
             <field name="model">cenit.connection</field>
             <field name="arch" type="xml">
-                <tree string="Connections" >
-                    <field name="namespace" />
-                    <field name="name" />
-                    <field name="url" />
+                <tree string="Connections">
+                    <field name="namespace"/>
+                    <field name="name"/>
+                    <field name="url"/>
                 </tree>
             </field>
         </record>
@@ -36,32 +36,34 @@
                     </group>
                     <notebook>
                         <page string="Parameters">
-                            <field name="url_parameters" widget="one2many_list"
-                                   nolabel="1" class="oe_inline oe_no_button"
-                                   context="{'conn_url_id': active_id}">
+                            <field name="url_parameters" widget="one2many_list" nolabel="1" mode="tree">
                                 <tree editable="bottom">
-                                    <field name="key" />
-                                    <field name="value" />
+                                    <field name="key"/>
+                                    <field name="value"/>
                                 </tree>
+                                <form>
+                                    <field name="key"/>
+                                    <field name="value"/>
+                                </form>
                             </field>
                         </page>
                         <page string="Header Parameters">
                             <field name="header_parameters" widget="one2many_list"
-                                   nolabel="1" class="oe_inline oe_no_button"
+                                   nolabel="1" class="oe_no_button"
                                    context="{'conn_header_id': active_id}">
                                 <tree editable="bottom">
-                                    <field name="key" />
-                                    <field name="value" />
+                                    <field name="key"/>
+                                    <field name="value"/>
                                 </tree>
                             </field>
                         </page>
                         <page string="Template Parameters">
                             <field name="template_parameters" widget="one2many_list"
-                                   nolabel="1" class="oe_inline oe_no_button"
+                                   nolabel="1" class="oe_no_button"
                                    context="{'conn_template_id': active_id}">
                                 <tree editable="bottom">
-                                    <field name="key" />
-                                    <field name="value" />
+                                    <field name="key"/>
+                                    <field name="value"/>
                                 </tree>
                             </field>
                         </page>
@@ -79,17 +81,17 @@
         </record>
 
         <menuitem id="menu_cenit_connection" name="Connections"
-            parent="menu_cenit_connectors" sequence="0"
-            action="action_cenit_connection" />
+                  parent="menu_cenit_connectors" sequence="0"
+                  action="action_cenit_connection"/>
 
 
         <record id="view_cenit_connection_role_tree" model="ir.ui.view">
             <field name="name">view.cenit.connection.role.tree</field>
             <field name="model">cenit.connection.role</field>
             <field name="arch" type="xml">
-                <tree string="Roles" >
-                    <field name="namespace" />
-                    <field name="name" />
+                <tree string="Roles">
+                    <field name="namespace"/>
+                    <field name="name"/>
                 </tree>
             </field>
         </record>
@@ -100,16 +102,16 @@
             <field name="arch" type="xml">
                 <form string="Role">
                     <group>
-                        <field name="namespace" />
-                        <field name="name" />
+                        <field name="namespace"/>
+                        <field name="name"/>
                     </group>
                     <notebook>
                         <page string="Connections">
                             <field name="connections" widget="many2many_list"
                                    nolabel="1" context="{'role_id': active_id}">
                                 <tree>
-                                    <field name="name" />
-                                    <field name="url" />
+                                    <field name="name"/>
+                                    <field name="url"/>
                                 </tree>
                             </field>
                         </page>
@@ -117,9 +119,9 @@
                             <field name="webhooks" widget="many2many_list"
                                    nolabel="1" context="{'role_id': active_id}">
                                 <tree>
-                                    <field name="name" />
-                                    <field name="path" />
-                                    <field name="purpose" />
+                                    <field name="name"/>
+                                    <field name="path"/>
+                                    <field name="purpose"/>
                                 </tree>
                             </field>
                         </page>
@@ -137,20 +139,20 @@
         </record>
 
         <menuitem id="menu_cenit_connection_role" name="Connection Roles"
-            parent="menu_cenit_connectors" sequence="1"
-            action="action_cenit_connection_role" />
+                  parent="menu_cenit_connectors" sequence="1"
+                  action="action_cenit_connection_role"/>
 
 
         <record id="view_cenit_webhook_tree" model="ir.ui.view">
             <field name="name">view.cenit.webhook.tree</field>
             <field name="model">cenit.webhook</field>
             <field name="arch" type="xml">
-                <tree string="Webhooks" >
-                    <field name="namespace" />
-                    <field name="name" />
-                    <field name="path" />
-                    <field name="purpose" />
-                    <field name="method" />
+                <tree string="Webhooks">
+                    <field name="namespace"/>
+                    <field name="name"/>
+                    <field name="path"/>
+                    <field name="purpose"/>
+                    <field name="method"/>
                 </tree>
             </field>
         </record>
@@ -169,31 +171,31 @@
                     <notebook>
                         <page string="Parameters">
                             <field name="url_parameters" widget="one2many_list"
-                                   nolabel="1" class="oe_inline oe_no_button"
+                                   nolabel="1" class="oe_no_button"
                                    context="{'hook_url_id': active_id}">
                                 <tree editable="bottom">
-                                    <field name="key" />
-                                    <field name="value" />
+                                    <field name="key"/>
+                                    <field name="value"/>
                                 </tree>
                             </field>
                         </page>
                         <page string="Header Parameters">
                             <field name="header_parameters" widget="one2many_list"
-                                   nolabel="1" class="oe_inline oe_no_button"
+                                   nolabel="1" class="oe_no_button"
                                    context="{'hook_header_id': active_id}">
                                 <tree editable="bottom">
-                                    <field name="key" />
-                                    <field name="value" />
+                                    <field name="key"/>
+                                    <field name="value"/>
                                 </tree>
                             </field>
                         </page>
                         <page string="Template Parameters">
                             <field name="template_parameters" widget="one2many_list"
-                                   nolabel="1" class="oe_inline oe_no_button"
+                                   nolabel="1" class="oe_no_button"
                                    context="{'hook_template_id': active_id}">
                                 <tree editable="bottom">
-                                    <field name="key" />
-                                    <field name="value" />
+                                    <field name="key"/>
+                                    <field name="value"/>
                                 </tree>
                             </field>
                         </page>
@@ -211,8 +213,82 @@
         </record>
 
         <menuitem id="menu_cenit_webhook" name="Webhooks"
-            parent="menu_cenit_connectors" sequence="2"
-            action="action_cenit_webhook" />
+                  parent="menu_cenit_connectors" sequence="2"
+                  action="action_cenit_webhook"/>
+
+
+        <record id="view_cenit_resource_tree" model="ir.ui.view">
+            <field name="name">view.cenit.resource.tree</field>
+            <field name="model">cenit.resource</field>
+            <field name="arch" type="xml">
+                <tree string="Resources">
+                    <field name="namespace"/>
+                    <field name="name"/>
+                    <field name="path"/>
+                    <field name="purpose"/>
+                    <field name="method"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_cenit_resource_form" model="ir.ui.view">
+            <field name="name">view.cenit.resource.form</field>
+            <field name="model">cenit.resource</field>
+            <field name="arch" type="xml">
+                <form string="Resource">
+                    <group>
+                        <field name="namespace"/>
+                        <field name="name"/>
+                        <field name="path"/>
+                        <field name="method"/>
+                    </group>
+                    <notebook>
+                        <page string="Parameters">
+                            <field name="url_parameters" widget="one2many_list"
+                                   nolabel="1" class="oe_no_button"
+                                   context="{'hook_url_id': active_id}">
+                                <tree editable="bottom">
+                                    <field name="key"/>
+                                    <field name="value"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Header Parameters">
+                            <field name="header_parameters" widget="one2many_list"
+                                   nolabel="1" class="oe_no_button"
+                                   context="{'hook_header_id': active_id}">
+                                <tree editable="bottom">
+                                    <field name="key"/>
+                                    <field name="value"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Template Parameters">
+                            <field name="template_parameters" widget="one2many_list"
+                                   nolabel="1" class="oe_no_button"
+                                   context="{'hook_template_id': active_id}">
+                                <tree editable="bottom">
+                                    <field name="key"/>
+                                    <field name="value"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_cenit_resource" model="ir.actions.act_window">
+            <field name="name">Resources</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">cenit.resource</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_cenit_resource" name="Resources"
+                  parent="menu_cenit_connectors" sequence="3"
+                  action="action_cenit_resource"/>
 
 
         <menuitem id="menu_cenit_workflows" name="Workflows"
@@ -290,10 +366,10 @@
             <field name="model">cenit.event</field>
             <field name="arch" type="xml">
                 <tree string="Available Events">
-                    <field name="namespace" />
-                    <field name="name" />
-                    <field name="type_" />
-                    <field name="schema" />
+                    <field name="namespace"/>
+                    <field name="name"/>
+                    <field name="type_"/>
+                    <field name="schema"/>
                 </tree>
             </field>
         </record>
@@ -307,9 +383,9 @@
                         <group>
                             <field name="namespace"/>
                             <field name="name"/>
-                            <field name="type_" class="oe_read_only"/>
+                            <field name="type_"/>
                             <field name="cenit_type" class="oe_edit_only"
-                                    attrs="{'required': True}" />
+                                   attrs="{'required': True, 'invisible':[('type_','!=','Setup::Observer')]}"/>
                             <field name="schema"
                                    attrs="{'required': True}"/>
                         </group>
@@ -329,9 +405,8 @@
         </record>
 
         <menuitem id="menu_cenit_event" name="Events"
-            parent="menu_cenit_workflows" sequence="1"
-            action="action_cenit_event" />
-
+                  parent="menu_cenit_workflows" sequence="1"
+                  action="action_cenit_event"/>
 
 
         <record id="view_cenit_translator_tree" model="ir.ui.view">
@@ -339,11 +414,11 @@
             <field name="model">cenit.translator</field>
             <field name="arch" type="xml">
                 <tree string="Available Translators" create="false">
-                    <field name="namespace" />
-                    <field name="name" />
-                    <field name="type_" />
-                    <field name="mime_type" />
-                    <field name="schema" />
+                    <field name="namespace"/>
+                    <field name="name"/>
+                    <field name="type_"/>
+                    <field name="mime_type"/>
+                    <field name="schema"/>
                 </tree>
             </field>
         </record>
@@ -357,8 +432,8 @@
         </record>
 
         <menuitem id="menu_cenit_translator" name="Translators"
-            parent="menu_cenit_workflows" sequence="2"
-            action="action_cenit_translator" />
+                  parent="menu_cenit_workflows" sequence="2"
+                  action="action_cenit_translator"/>
 
     </data>
 </openerp>

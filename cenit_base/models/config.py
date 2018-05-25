@@ -196,7 +196,7 @@ class CenitSettings(models.TransientModel):
 
         conn_data = {
             "name": "My Odoo host",
-            "namespace": namesp[0],
+            "namespace": namesp[0]['id'],
             "url": icp.get_param('web.base.url', default=None)
         }
         conn = conn_pool.create(conn_data)
@@ -204,7 +204,7 @@ class CenitSettings(models.TransientModel):
         hook_data = {
             "name": "Cenit webhook",
             "path": "cenit/push",
-            "namespace": namesp[0],
+            "namespace": namesp[0]['id'],
             "method": "post"
         }
         hook = hook_pool.create(hook_data)
@@ -318,7 +318,7 @@ class CenitAccountSettings(models.TransientModel):
                     raise exceptions.ValidationError("Cenit returned with errors")
 
                 if r.status_code == 406:
-                    key = str(error.keys()[0])
+                    key = str(list(error.keys())[0])
                     raise exceptions.ValidationError(key.capitalize() + " " + str(error[key][0]))
                 else:
                     raise exceptions.AccessError("Error trying to connect to Cenit.")
