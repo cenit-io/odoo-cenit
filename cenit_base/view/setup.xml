@@ -225,8 +225,7 @@
                     <field name="namespace"/>
                     <field name="name"/>
                     <field name="path"/>
-                    <field name="purpose"/>
-                    <field name="method"/>
+                    <field name="operations"/>
                 </tree>
             </field>
         </record>
@@ -240,13 +239,13 @@
                         <field name="namespace"/>
                         <field name="name"/>
                         <field name="path"/>
-                        <field name="method"/>
+                        <field name="operations" widget="many2many_tags"/>
                     </group>
                     <notebook>
                         <page string="Parameters">
                             <field name="url_parameters" widget="one2many_list"
                                    nolabel="1" class="oe_no_button"
-                                   context="{'hook_url_id': active_id}">
+                                   context="{'resource_url_id': active_id}">
                                 <tree editable="bottom">
                                     <field name="key"/>
                                     <field name="value"/>
@@ -256,7 +255,7 @@
                         <page string="Header Parameters">
                             <field name="header_parameters" widget="one2many_list"
                                    nolabel="1" class="oe_no_button"
-                                   context="{'hook_header_id': active_id}">
+                                   context="{'resource_header_id': active_id}">
                                 <tree editable="bottom">
                                     <field name="key"/>
                                     <field name="value"/>
@@ -266,7 +265,33 @@
                         <page string="Template Parameters">
                             <field name="template_parameters" widget="one2many_list"
                                    nolabel="1" class="oe_no_button"
-                                   context="{'hook_template_id': active_id}">
+                                   context="{'resource_template_id': active_id}">
+                                <tree editable="bottom">
+                                    <field name="key"/>
+                                    <field name="value"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_cenit_operation_form" model="ir.ui.view">
+            <field name="name">view.cenit.operation.form</field>
+            <field name="model">cenit.operation</field>
+            <field name="arch" type="xml">
+                <form string="Operation">
+                    <group>
+                        <field name="description"/>
+                        <field name="method"/>
+                        <field name="purpose"/>
+                    </group>
+                    <notebook>
+                        <page string="Parameters">
+                            <field name="url_parameters" widget="one2many_list"
+                                   nolabel="1" class="oe_no_button"
+                                   context="{'operation_url_id': active_id}">
                                 <tree editable="bottom">
                                     <field name="key"/>
                                     <field name="value"/>

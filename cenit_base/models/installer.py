@@ -79,13 +79,13 @@ class CollectionInstaller(models.TransientModel):
                     sch = candidates[0]
                     sch.with_context(local=True).write(sch_data)
 
-        candidates = namespace_pool.search([('name', '=', 'MyOdoo')])
+        candidates = namespace_pool.search([('name', '=', 'Odoo')])
         if not candidates:
             names_data = {
-                "name": "MyOdoo",
-                "slug": "my_odoo",
+                "name": "Odoo",
+                "slug": "odoo",
             }
-            namesp = namespace_pool.with_context(local=True).create(names_data)
+            namespace_pool.with_context(local=True).create(names_data)
 
     @api.model
     def _get_param_lines(self, ref_id, values, prefix):
@@ -163,7 +163,6 @@ class CollectionInstaller(models.TransientModel):
             conn_data = {
                 'cenitID': connection.get('id'),
                 'name': connection.get('name'),
-                # 'namespace': connection.get('namespace'),
                 'url': connection.get('url'),
                 'key': connection.get('number'),
                 'token': connection.get('token'),
@@ -199,7 +198,6 @@ class CollectionInstaller(models.TransientModel):
             hook_data = {
                 'cenitID': webhook.get('id'),
                 'name': webhook.get('name'),
-                # 'namespace': webhook.get('namespace'),
                 'path': webhook.get('path'),
                 'method': webhook.get('method'),
                 'purpose': webhook.get('purpose'),
@@ -242,7 +240,6 @@ class CollectionInstaller(models.TransientModel):
             role_data = {
                 'cenitID': role.get('id'),
                 'name': role.get('name')
-                # 'namespace': role.get('namespace'),
             }
 
             domain = [('name', '=', role.get('namespace'))]
@@ -314,9 +311,7 @@ class CollectionInstaller(models.TransientModel):
             domain = [('name', '=', flow.get('namespace'))]
             rc = names_pool.search(domain)
             if not rc:
-                continue
-                # raise exceptions.ValidationError(
-                #     "There's no namespace named %s" % (flow.get('namespace'),))
+                raise exceptions.ValidationError("There's no namespace named %s" % (flow.get('namespace'),))
 
             flow_data.update({
                 'namespace': rc[0].id
@@ -353,9 +348,8 @@ class CollectionInstaller(models.TransientModel):
                 sch = sch_pool.search([('name', '=', dt.get('name')),
                                        ('namespace', '=', rc[0].id)])
                 if not sch:
-                    continue
-                    # raise exceptions.ValidationError(
-                    #     "There's no definition of a \' %s \' schema in this collection" % (dt.get('name')))
+                    raise exceptions.ValidationError(
+                        "There's no definition of a \'%s\' data type in this collection" % (dt.get('name')))
 
                 flow_data.update({
                     'schema': sch[0].id
@@ -368,9 +362,8 @@ class CollectionInstaller(models.TransientModel):
                 rc = ev_pool.search([('name', '=', ev.get('name')),
                                      ('namespace', '=', namesp[0].id)])
                 if not rc:
-                    continue
-                    # raise exceptions.ValidationError(
-                    #     "There's no definition of an \' %s \' event in this collection" % (ev.get('name')))
+                    raise exceptions.ValidationError(
+                        "There's no definition of an \'%s\' event in this collection" % (ev.get('name')))
 
                 flow_data.update({
                     'event': rc[0].id
@@ -503,7 +496,6 @@ class CollectionInstaller(models.TransientModel):
             ev_data = {
                 'cenitID': event.get('id'),
                 'name': event.get('name'),
-                # 'namespace': event.get('namespace'),
                 'type_': event.get('_type'),
             }
 
@@ -573,11 +565,6 @@ class CollectionInstaller(models.TransientModel):
         cross_id = rc[0]['id']
         path = "/setup/cross_shared_collection/%s" % (cross_id)
         rc = cenit_api.get(path)
-
-        # data = {
-        #     'id': rc.get('id'),
-        #     'params': rc.get('pull_parameters', [])
-        # }
 
         return rc
 

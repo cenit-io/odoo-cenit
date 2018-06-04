@@ -28,11 +28,10 @@ from datetime import datetime
 
 import logging
 
-
 _logger = logging.getLogger(__name__)
 
 
-class CenitConnection (models.Model):
+class CenitConnection(models.Model):
     _name = 'cenit.connection'
     _inherit = 'cenit.api'
 
@@ -42,7 +41,7 @@ class CenitConnection (models.Model):
     cenitID = fields.Char('Cenit ID')
 
     namespace = fields.Many2one('cenit.namespace', string='Namespace',
-                               ondelete='cascade')
+                                ondelete='cascade')
 
     name = fields.Char('Name', required=True)
     url = fields.Char('URL', required=True)
@@ -76,12 +75,13 @@ class CenitConnection (models.Model):
         vals = {
             'name': self.name,
             'url': self.url,
-            'namespace': self.namespace.id,
+            'namespace': self.namespace.name,
         }
 
         if self.cenitID:
             vals.update({'id': self.cenitID})
 
+        _reset = []
         params = []
         for param in self.url_parameters:
             params.append({
@@ -89,6 +89,7 @@ class CenitConnection (models.Model):
                 'value': param.value
             })
         vals.update({'parameters': params})
+        _reset.append('parameters')
 
         headers = []
         for header in self.header_parameters:
@@ -97,6 +98,7 @@ class CenitConnection (models.Model):
                 'value': header.value
             })
         vals.update({'headers': headers})
+        _reset.append('headers')
 
         template = []
         for tpl in self.template_parameters:
@@ -105,8 +107,14 @@ class CenitConnection (models.Model):
                 'value': tpl.value
             })
         vals.update({'template_parameters': template})
+        _reset.append('template_parameters')
 
-        vals.update({"_primary": ["namespace", "name"]})
+        vals.update(
+            {
+                "_primary": ["namespace", "name"],
+                "_reset": _reset
+            }
+        )
 
         return vals
 
@@ -136,7 +144,7 @@ class CenitConnection (models.Model):
     @api.model
     def create(self, vals):
         if not isinstance(vals['namespace'], int):
-           vals['namespace'] = vals['namespace']['id']
+            vals['namespace'] = vals['namespace']['id']
         obj = super(CenitConnection, self).create(vals)
 
         if obj and obj.cenitID and not self.env.context.get('local', False):
@@ -145,7 +153,7 @@ class CenitConnection (models.Model):
         return obj
 
 
-class CenitConnectionRole (models.Model):
+class CenitConnectionRole(models.Model):
     _name = 'cenit.connection.role'
     _inherit = 'cenit.api'
 
@@ -155,7 +163,7 @@ class CenitConnectionRole (models.Model):
     cenitID = fields.Char('Cenit ID')
 
     namespace = fields.Many2one('cenit.namespace', string='Namespace',
-                              ondelete='cascade')
+                                ondelete='cascade')
 
     name = fields.Char('Name', required=True)
 
@@ -178,7 +186,7 @@ class CenitConnectionRole (models.Model):
     def _get_values(self):
         vals = {
             'name': self.name,
-            'namespace': self.namespace.id,
+            'namespace': self.namespace.name,
         }
         if self.cenitID:
             vals.update({'id': self.cenitID})
@@ -217,7 +225,7 @@ class CenitConnectionRole (models.Model):
         return vals
 
 
-class CenitParameter (models.Model):
+class CenitParameter(models.Model):
     _name = 'cenit.parameter'
 
     key = fields.Char('Key', required=True)
@@ -253,8 +261,28 @@ class CenitParameter (models.Model):
         string='Webhook'
     )
 
+    operation_url_id = fields.Many2one(
+        'cenit.operation',
+        string='Operation'
+    )
 
-class CenitWebhook (models.Model):
+    resource_url_id = fields.Many2one(
+        'cenit.resource',
+        string='Resource'
+    )
+
+    resource_header_id = fields.Many2one(
+        'cenit.resource',
+        string='Resource'
+    )
+
+    resource_template_id = fields.Many2one(
+        'cenit.resource',
+        string='Resource'
+    )
+
+
+class CenitWebhook(models.Model):
 
     @api.depends('method')
     def _compute_purpose(self):
@@ -271,17 +299,17 @@ class CenitWebhook (models.Model):
     cenitID = fields.Char('Cenit ID')
 
     namespace = fields.Many2one('cenit.namespace', string='Namespace',
-                              ondelete='cascade')
+                                ondelete='cascade')
     name = fields.Char('Name', required=True)
     path = fields.Char('Path', required=True)
     purpose = fields.Char(compute='_compute_purpose', store=True)
     method = fields.Selection(
         [
-            ('get', 'HTTP GET'),
-            ('put', 'HTTP PUT'),
-            ('patch', 'HTTP PATCH'),
-            ('post', 'HTTP POST'),
-            ('delete', 'HTTP DELETE'),
+            ('get', 'GET'),
+            ('put', 'PUT'),
+            ('patch', 'PATCH'),
+            ('post', 'POST'),
+            ('delete', 'DELETE'),
         ],
         'Method', default='post', required=True
     )
@@ -314,13 +342,14 @@ class CenitWebhook (models.Model):
             'path': self.path,
             'purpose': self.purpose,
             'method': self.method,
-            'namespace': str(self.namespace.id),
+            'namespace': self.namespace.name,
             '_type': 'Setup::PlainWebhook',
         }
 
         if self.cenitID:
             vals.update({'id': self.cenitID})
 
+        _reset = []
         params = []
         for param in self.url_parameters:
             params.append({
@@ -328,6 +357,7 @@ class CenitWebhook (models.Model):
                 'value': param.value
             })
         vals.update({'parameters': params})
+        _reset.append('parameters')
 
         headers = []
         for header in self.header_parameters:
@@ -336,6 +366,7 @@ class CenitWebhook (models.Model):
                 'value': header.value
             })
         vals.update({'headers': headers})
+        _reset.append('headers')
 
         template = []
         for tpl in self.template_parameters:
@@ -344,25 +375,66 @@ class CenitWebhook (models.Model):
                 'value': tpl.value
             })
         vals.update({'template_parameters': template})
+        _reset.append('template_parameters')
 
-        vals.update({'_primary': ['name', 'namespace']})
+        vals.update(
+            {
+                '_reset': _reset,
+                '_primary': ['name', 'namespace']
+            }
+        )
 
         return vals
 
     @api.model
     def create(self, vals):
         if not isinstance(vals['namespace'], int):
-           vals['namespace'] = vals['namespace']['id']
+            vals['namespace'] = vals['namespace']['id']
         return super(CenitWebhook, self).create(vals)
 
-class CenitResource (models.Model):
 
-    @api.depends('method')
+class CenitOperation(models.Model):
+    _name = 'cenit.operation'
+    _inherit = 'cenit.api'
+
+    cenit_model = 'operation'
+    cenit_models = 'operations'
+
+    cenitID = fields.Char('Cenit ID')
+
+    resource_id = fields.Many2one(
+        'cenit.resource',
+        string='Resource'
+    )
+
     def _compute_purpose(self):
         self.purpose = {
             'get': 'send'
         }.get(self.method, 'receive')
 
+    purpose = fields.Char(compute='_compute_purpose', store=True)
+    method = fields.Selection(
+        [
+            ('get', 'GET'),
+            ('put', 'PUT'),
+            ('patch', 'PATCH'),
+            ('post', 'POST'),
+            ('delete', 'DELETE'),
+        ],
+        'Method', default='post', required=True
+    )
+    description = fields.Text('Description')
+    url_parameters = fields.One2many(
+        'cenit.parameter',
+        'operation_url_id',
+        string='Parameters'
+    )
+
+    def __str__(self):
+        return self.method
+
+
+class CenitResource(models.Model):
     _name = 'cenit.resource'
     _inherit = 'cenit.api'
 
@@ -371,35 +443,29 @@ class CenitResource (models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-    namespace = fields.Many2one('cenit.namespace', string='Namespace',
-                              ondelete='cascade')
+    namespace = fields.Many2one('cenit.namespace', string='Namespace', ondelete='cascade')
     name = fields.Char('Name', required=True)
     path = fields.Char('Path', required=True)
-    purpose = fields.Char(compute='_compute_purpose', store=True)
-    method = fields.Selection(
-        [
-            ('get', 'HTTP GET'),
-            ('put', 'HTTP PUT'),
-            ('patch', 'HTTP PATCH'),
-            ('post', 'HTTP POST'),
-            ('delete', 'HTTP DELETE'),
-        ],
-        'Method', default='post', required=True
-    )
+    description = fields.Text('Description')
 
+    operations = fields.One2many(
+        'cenit.operation',
+        'resource_id',
+        string='Operations'
+    )
     url_parameters = fields.One2many(
         'cenit.parameter',
-        'hook_url_id',
+        'resource_url_id',
         string='Parameters'
     )
     header_parameters = fields.One2many(
         'cenit.parameter',
-        'hook_header_id',
+        'resource_header_id',
         string='Header Parameters'
     )
     template_parameters = fields.One2many(
         'cenit.parameter',
-        'hook_template_id',
+        'resource_template_id',
         string='Template Parameters'
     )
 
@@ -413,15 +479,15 @@ class CenitResource (models.Model):
         vals = {
             'name': self.name,
             'path': self.path,
-            'purpose': self.purpose,
-            'method': self.method,
-            'namespace': str(self.namespace.id),
-            '_type': 'Setup::PlainWebhook',
+            'description': self.description,
+            'namespace': self.namespace.name,
+            '_type': 'Setup::Resource',
         }
 
         if self.cenitID:
             vals.update({'id': self.cenitID})
 
+        _reset = []
         params = []
         for param in self.url_parameters:
             params.append({
@@ -429,6 +495,7 @@ class CenitResource (models.Model):
                 'value': param.value
             })
         vals.update({'parameters': params})
+        _reset.append({'parameters'})
 
         headers = []
         for header in self.header_parameters:
@@ -437,6 +504,7 @@ class CenitResource (models.Model):
                 'value': header.value
             })
         vals.update({'headers': headers})
+        _reset.append({'headers'})
 
         template = []
         for tpl in self.template_parameters:
@@ -445,19 +513,23 @@ class CenitResource (models.Model):
                 'value': tpl.value
             })
         vals.update({'template_parameters': template})
+        _reset.append({'template_parameters'})
 
-        vals.update({'_primary': ['name', 'namespace']})
+        vals.update({
+            '_reset': _reset,
+            '_primary': ['name', 'namespace']
+        })
 
         return vals
 
     @api.model
     def create(self, vals):
         if not isinstance(vals['namespace'], int):
-           vals['namespace'] = vals['namespace']['id']
-        return super(CenitWebhook, self).create(vals)
+            vals['namespace'] = vals['namespace']['id']
+        return super(CenitResource, self).create(vals)
 
 
-class CenitEvent (models.Model):
+class CenitEvent(models.Model):
     _name = "cenit.event"
     _inherit = "cenit.api"
 
@@ -466,7 +538,7 @@ class CenitEvent (models.Model):
 
     cenitID = fields.Char('CenitID')
     namespace = fields.Many2one('cenit.namespace', string='Namespace',
-                              ondelete='cascade')
+                                ondelete='cascade')
 
     name = fields.Char('Name', required=True, unique=True)
     type_ = fields.Selection(
@@ -480,24 +552,21 @@ class CenitEvent (models.Model):
         [
             ('on_create', 'On Create'),
             ('on_write', 'On Update'),
-            ('on_create_or_write', 'On Create or Update'),
-            # ('interval', 'Interval'),
+            ('on_create_or_write', 'On Create or Update')
         ],
         string="Event"
     )
     schema = fields.Many2one('cenit.schema', string='Data type')
-
 
     _sql_constraints = [
         ('name_uniq', 'UNIQUE(namespace, name)',
          'The name must be unique for each namespace!')
     ]
 
-
     @api.one
     def _get_values(self):
         vals = {
-            'namespace': self.namespace.id,
+            'namespace': self.namespace.name,
             'name': self.name,
             '_type': "Setup::Observer",
             'data_type': {
@@ -530,7 +599,7 @@ class CenitEvent (models.Model):
         return update
 
 
-class CenitTranslator (models.Model):
+class CenitTranslator(models.Model):
     _name = "cenit.translator"
     _inherit = "cenit.api"
 
@@ -539,12 +608,11 @@ class CenitTranslator (models.Model):
 
     cenitID = fields.Char('CenitID')
     namespace = fields.Many2one('cenit.namespace', string='Namespace',
-                              ondelete='cascade')
+                                ondelete='cascade')
     name = fields.Char('Name', required=True, unique=True)
     type_ = fields.Char("Type")
     mime_type = fields.Char('MIME Type')
     schema = fields.Many2one('cenit.schema', string='Data type')
-
 
     _sql_constraints = [
         ('name_uniq', 'UNIQUE(namespace, name)',
@@ -552,8 +620,7 @@ class CenitTranslator (models.Model):
     ]
 
 
-class CenitFlow (models.Model):
-
+class CenitFlow(models.Model):
     _name = "cenit.flow"
     _inherit = 'cenit.api'
 
@@ -563,7 +630,7 @@ class CenitFlow (models.Model):
     cenitID = fields.Char('Cenit ID')
 
     namespace = fields.Many2one('cenit.namespace', string='Namespace',
-                              ondelete='cascade')
+                                ondelete='cascade')
 
     name = fields.Char('Name', size=64, required=True, unique=True)
     enabled = fields.Boolean('Enabled', default=True)
@@ -601,22 +668,15 @@ class CenitFlow (models.Model):
 
     method = fields.Selection(related="webhook.method")
 
-    # cenit_response_translator = fields.Selection(
-    #    #~ [], string="Response translator"
-    # )
-    # response_data_type = fields.Many2one(
-    #    #~ 'cenit.data_type', string='Response data type'
-    # )
-
     _sql_constraints = [
         ('name_uniq', 'UNIQUE(namespace, name)',
-        'The name must be unique for each namespace!')
+         'The name must be unique for each namespace!')
     ]
 
     @api.one
     def _get_values(self):
         vals = {
-            'namespace': self.namespace.id,
+            'namespace': self.namespace.name,
             'name': self.name,
             'active': self.enabled,
             'discard_events': False,
@@ -626,15 +686,6 @@ class CenitFlow (models.Model):
         if self.cenitID:
             vals.update({'id': self.cenitID})
 
-        # odoo_events = (
-        #     'only_manual',
-        #     'interval',
-        #     'on_create',
-        #     'on_write',
-        #     'on_create_or_write'
-        # )
-
-        # if self.event not in odoo_events:
         event = {
             "_reference": True,
             "id": self.event.cenitID,
@@ -643,30 +694,6 @@ class CenitFlow (models.Model):
             'event': event,
             'data_type_scope': 'Event',
         })
-        # elif self.event not in ('only_manual', 'interval'):
-        #     cr = '{"created_at":{"0":{"o":"_not_null","v":["","",""]}}}'
-        #     wr = '{"updated_at":{"0":{"o":"_presence_change","v":["","",""]}}}'
-        #     cr_wr = '{"updated_at":{"0":{"o":"_change","v":["","",""]}}}'
-        #     event = {
-        #         '_type': "Setup::Observer",
-        #         'name': "%s::%s > %s @ %s" % (
-        #             self.data_type.library.name,
-        #             self.data_type.name,
-        #             self.execution,
-        #             datetime.now().ctime()
-        #         ),
-        #         'data_type': {'id': self.data_type.schema.cenitID},
-        #         'triggers': {
-        #             'on_create': cr,
-        #             'on_write': wr,
-        #             'on_create_or_write': cr_wr,
-        #         }[self.event]
-        #     }
-        #
-        #     vals.update({
-        #         'event': event,
-        #         'data_type_scope': 'Event',
-        #     })
 
         if self.cenit_translator:
             vals.update({
@@ -711,12 +738,6 @@ class CenitFlow (models.Model):
                     'cenitID': v[0]['id'],
 
                 }
-                # if v[0].get('event', False):
-                #     _logger.info("\n\nCalculating FLOW update from: %s\n", v[0])
-                #     update.update({
-                #        'event': v[0]['event']['id']
-                #     })
-
         return update
 
     @api.onchange('webhook')
@@ -772,7 +793,7 @@ class CenitFlow (models.Model):
         )
 
         conn = self.connection_role.connections and \
-            self.connection_role.connections[0]
+               self.connection_role.connections[0]
         my_conn = conn.url == my_url
 
         rc = {
@@ -800,40 +821,10 @@ class CenitFlow (models.Model):
                 (self.env.context.get('local'), False)
 
         if not isinstance(vals['namespace'], int):
-           vals['namespace'] = vals['namespace']['id']
+            vals['namespace'] = vals['namespace']['id']
 
         obj = super(CenitFlow, self).create(vals)
-        # if not local:
-        #     purpose = obj._get_direction()[0]
-        #     method = 'set_%s_execution' % (purpose, )
-        #     getattr(obj, method)()
-
         return obj
-
-    @api.one
-    def write(self, vals):
-        # prev_purpose = self._get_direction()[0]
-        # prev_sch = self.schema
-        # prev_dt = self.data_type
-        res = super(CenitFlow, self).write(vals)
-        # new_purpose = self._get_direction()[0]
-
-        # if (new_purpose != prev_purpose) or (vals.get('event', False)) or \
-        #    (prev_sch != self.schema) or (prev_dt != self.data_type):
-        #     method = 'set_%s_execution' % new_purpose
-        #     getattr(self, method)()
-
-        return res
-
-    @api.one
-    def unlink(self):
-
-        # if self.base_action_rules:
-        #     self.base_action_rules.unlink()
-        # if self.cron:
-        #     self.cron.unlink()
-
-        return super(CenitFlow, self).unlink()
 
     @api.model
     def find(self, model, purpose):
@@ -858,7 +849,6 @@ class CenitFlow (models.Model):
 
         if not flows:
             return res
-
 
         data_types = set()
         for flow in flows:
@@ -886,92 +876,6 @@ class CenitFlow (models.Model):
 
     @api.one
     def set_send_execution(self):
-        # if self.data_type:
-        #     dts = [self.data_type]
-        # else:
-        #     dt_pool = self.env['cenit.data_type']
-        #     domain = [('schema', '=', self.schema.id)]
-        #     dts = dt_pool.search(domain)
-        #
-        # execution = {
-        #     'only_manual': 'only_manual',
-        #     'interval': 'interval',
-        #     'on_create': 'on_create',
-        #     'on_write': 'on_write'
-        # }.get(self.event.type_, 'on_create_or_write')
-        #
-        # if execution == 'only_manual':
-        #
-        #     if self.base_action_rules:
-        #         self.base_action_rules.unlink()
-        #
-        #     elif self.cron:
-        #         self.cron.unlink()
-        #
-        # if execution == 'interval':
-        #     ic_obj = self.env['ir.cron']
-        #
-        #     for data_type in dts:
-        #         if self.cron:
-        #             _logger.info("\n\nCronID\n")
-        #
-        #         else:
-        #             vals_ic = {
-        #                 'name': 'send_all_%s' % data_type.model.model,
-        #                 'interval_number': 10,
-        #                 'interval_type': 'minutes',
-        #                 'numbercall': -1,
-        #                 'model': 'cenit.flow',
-        #                 'function': 'send_all',
-        #                 'args': '(%s)' % str(self.id)
-        #             }
-        #             ic = ic_obj.create(vals_ic)
-        #             self.with_context(local=True).write({'cron': ic.id})
-        #
-        #     if self.base_action_rules:
-        #         self.base_action_rules.unlink()
-        #
-        # elif execution in ('on_create', 'on_write', 'on_create_or_write'):
-        #     ias_obj = self.env['ir.actions.server']
-        #     bar_obj = self.env['base.action.rule']
-        #
-        #     if self.base_action_rules:
-        #         for bar in self.base_action_rules:
-        #             bar.server_action_ids.unlink()
-        #         self.base_action_rules.unlink()
-        #
-        #     rules = []
-        #     for data_type in dts:
-        #         action_name = 'send_one_%s_as_%s' % (
-        #             data_type.model.model, data_type.cenit_root
-        #         )
-        #         cd = "self.pool.get('cenit.flow').send(cr, uid, obj, %s)" % (
-        #             self.id,
-        #         )
-        #         vals_ias = {
-        #             'name': action_name,
-        #             'model_id': data_type.model.id,
-        #             'state': 'code',
-        #             'code': cd
-        #         }
-        #         ias = ias_obj.create(vals_ias)
-        #         vals_bar = {
-        #             'name': action_name,
-        #             'active': True,
-        #             'kind': execution,
-        #             'model_id': data_type.model.id,
-        #             'server_action_ids': [(6, False, [ias.id])]
-        #         }
-        #         bar = bar_obj.create(vals_bar)
-        #         rules.append((4, bar.id, False))
-        #
-        #     self.with_context(local=True).write(
-        #         {'base_action_rules': rules}
-        #     )
-        #
-        #     if self.cron:
-        #         self.cron.unlink()
-        #
         return True
 
     @api.model
@@ -1041,17 +945,12 @@ class CenitFlow (models.Model):
     @api.one
     def _send(self, data):
         method = "http_post"
-#         if local:
-#             method = "local_http"
         return getattr(self, method)(data)
 
     @api.one
     def http_post(self, data):
         path = "/%s/%s" % (self.schema.namespace.slug, self.schema.slug,)
 
-        #root = self.schema.slug
-        # if isinstance(root, list):
-        #     root = root[0]
         values = data[0]
 
         rc = False
@@ -1061,14 +960,3 @@ class CenitFlow (models.Model):
             _logger.exception(e)
 
         return rc
-
-#     def local_post(self,00 cr, uid, obj, data, context=None):
-#         db = context.get('partner_db')
-#         if db:
-#             registry = openerp.modules.registry.RegistryManager.get(db)
-#             with registry.cursor() as rcr:
-#                 uids = registry['res.users'].search(rcr, SI,
-#                                                 [('oauth_uid', '!=', False)])
-#                 ruid = uids and uids[0] or SI
-#                 model = obj.root.lower()
-#                 return registry['cenit.flow'].receive(rcr, ruid, model, data)

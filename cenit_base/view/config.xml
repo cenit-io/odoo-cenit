@@ -3,7 +3,7 @@
     <data>
 
         <menuitem id="menu_cenit_integration" name="Cenit Integration"
-                  sequence="30" />
+                  web_icon="cenit_base,static/description/icon.png"/>
 
         <record id="view_cenit_settings" model="ir.ui.view">
             <field name="name">Cenit Hub settings</field>
@@ -20,14 +20,10 @@
                     </header>
                     <div>
                         <group string="Connection settings">
-                            <!--<field name="cenit_url"
-                                   placeholder="https://www.cenithub.com" />-->
                             <field name="cenit_user_key"
-                                   placeholder="Your cenit's user key" />
+                                   placeholder="Your cenit's user key"/>
                             <field name="cenit_user_token"
-                                   placeholder="Your cenit's user token" />
-                            <!--<field name="odoo_endpoint"
-                                   placeholder="Set a connection" />-->
+                                   placeholder="Your cenit's user token"/>
                         </group>
                     </div>
 
@@ -70,22 +66,22 @@
                             </div>
                             <div name="module_cenit_twitter">
                                 <field name="module_cenit_twitter"
-                                       class="oe_inline" />
-                                <label for="module_cenit_twitter" />
+                                       class="oe_inline"/>
+                                <label for="module_cenit_twitter"/>
                             </div>
                             <div name="module_cenit_messagebird">
                                 <field name="module_cenit_messagebird"
-                                       class="oe_inline" />
-                                <label for="module_cenit_messagebird" />
+                                       class="oe_inline"/>
+                                <label for="module_cenit_messagebird"/>
                             </div>
                             <div name="module_cenit_asana">
                                 <field name="module_cenit_asana"
-                                       class="oe_inline" />
-                                <label for="module_cenit_asana" />
+                                       class="oe_inline"/>
+                                <label for="module_cenit_asana"/>
                             </div>
                         </group>
                         <button string="Update collections" type="object" name="update_collection"
-                                 icon="/web/static/src/img/icons/gtk-refresh.png" />
+                                icon="/web/static/src/img/icons/gtk-refresh.png"/>
                     </div>
                 </form>
             </field>
@@ -100,29 +96,29 @@
         </record>
 
         <menuitem id="menu_cenit_settings" parent="base.menu_administration"
-            sequence="90" name="Cenit settings"/>
+                  sequence="90" name="Cenit settings"/>
 
         <menuitem id="menu_cenit_hub_settings" parent="menu_cenit_settings"
-            sequence="0" action="action_cenit_settings"/>
+                  sequence="0" action="action_cenit_settings"/>
 
         <menuitem id="menu_cenit_integrations_settings" parent="menu_cenit_settings"
-            sequence="1" name="Integration settings"/>
+                  sequence="1" name="Integration settings"/>
 
         <menuitem id="menu_cenit_settings_alt" name="Settings"
-            parent="menu_cenit_integration" sequence="10"/>
+                  parent="menu_cenit_integration" sequence="10"/>
 
         <menuitem id="menu_cenit_settings_hub" name="Hub Settings"
-            parent="menu_cenit_settings_alt" sequence="0"
-            action="action_cenit_settings" />
+                  parent="menu_cenit_settings_alt" sequence="0"
+                  action="action_cenit_settings"/>
 
         <menuitem id="menu_cenit_integrations_settings_alt" name="Integrations"
-            parent="menu_cenit_settings_alt" sequence="1" />
+                  parent="menu_cenit_settings_alt" sequence="1"/>
 
 
         <record id="cenit_sign_up_view" model="ir.ui.view">
             <field name="name">Cenit Hub settings</field>
             <field name="model">cenit.account.settings</field>
-            <field name="inherit_id" ref="base.res_config_installer" />
+            <field name="inherit_id" ref="base.res_config_installer"/>
             <field name="mode">primary</field>
             <field name="arch" type="xml">
                 <form position="attributes">
@@ -139,10 +135,10 @@
                         Write the text in the image
                     </p>
                     <div>
-                        <img src="img_data_here" width="150" height="48" />
+                        <img src="img_data_here" width="150" height="48"/>
                     </div>
                     <group>
-                        <field name="cenit_captcha" placeholder="Your Captcha" />
+                        <field name="cenit_captcha" placeholder="Your Captcha"/>
                     </group>
                 </separator>
             </field>
@@ -152,18 +148,17 @@
             <field name="name">Configure Cenit data</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.account.settings</field>
-            <field name="view_id" ref="cenit_sign_up_view" />
+            <field name="view_id" ref="cenit_sign_up_view"/>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
 
 
-
         <record id="wizard_cenit_install" model="ir.ui.view">
             <field name="name">Cenit Hub settings</field>
             <field name="model">cenit.hub.settings</field>
-            <field name="inherit_id" ref="base.res_config_installer" />
+            <field name="inherit_id" ref="base.res_config_installer"/>
             <field name="arch" type="xml">
                 <form position="attributes">
                     <attribute name="string">Cenit Hub account settings</attribute>
@@ -179,8 +174,8 @@
                         Set the credentials given to your Cenit tenant.
                     </p>
                     <group>
-                        <field name="cenit_user_key" placeholder="Your Cenit's user key" />
-                        <field name="cenit_user_token" placeholder="Your Cenit's user token" />
+                        <field name="cenit_user_key" placeholder="Your Cenit's user key"/>
+                        <field name="cenit_user_token" placeholder="Your Cenit's user token"/>
                     </group>
                 </separator>
             </field>
@@ -190,7 +185,7 @@
             <field name="name">Configure Cenit data</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.hub.settings</field>
-            <field name="view_id" ref="wizard_cenit_install" />
+            <field name="view_id" ref="wizard_cenit_install"/>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
@@ -200,7 +195,7 @@
         <record id="wizard_cenit_install_account" model="ir.ui.view">
             <field name="name">Cenit Hub settings</field>
             <field name="model">cenit.account.settings</field>
-            <field name="inherit_id" ref="base.res_config_installer" />
+            <field name="inherit_id" ref="base.res_config_installer"/>
             <field name="mode">primary</field>
             <field name="arch" type="xml">
                 <form position="attributes">
@@ -209,7 +204,8 @@
                 <footer position="replace">
                     <footer>
                         <button string="SignUp" type="action" name="%(action_cenit_sign_up)d"
-                                class="oe_highlight" context="{'email':cenit_email, 'passwd': cenit_passwd, 'confirmation': confirm_passwd,'next_view': True}"/>
+                                class="oe_highlight"
+                                context="{'email':cenit_email, 'passwd': cenit_passwd, 'confirmation': confirm_passwd,'next_view': True}"/>
                         or
                         <button string="Skip" type="action" name="%(action_wizard_cenit_install)d"
                                 class="oe_link"/>
@@ -220,10 +216,9 @@
                         Enter the email for your Cenit Account
                     </p>
                     <group>
-                        <field name="cenit_email" placeholder="Your Cenit's user email" />
-                        <field name="cenit_passwd" placeholder="Your Cenit's user passwd" password="True" />
+                        <field name="cenit_email" placeholder="Your Cenit's user email"/>
+                        <field name="cenit_passwd" placeholder="Your Cenit's user passwd" password="True"/>
                         <field name="confirm_passwd" placeholder="Confirm password" password="True"/>
-                        <!-- <input type="hidden" name="next_view" value="captcha"/> -->
                     </group>
                 </separator>
             </field>
@@ -233,7 +228,7 @@
             <field name="name">Configure Cenit data</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.account.settings</field>
-            <field name="view_id" ref="wizard_cenit_install_account" />
+            <field name="view_id" ref="wizard_cenit_install_account"/>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
