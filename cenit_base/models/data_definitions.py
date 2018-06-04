@@ -29,7 +29,6 @@ from odoo import models, fields, api
 
 from datetime import datetime
 
-
 _logger = logging.getLogger(__name__)
 
 
