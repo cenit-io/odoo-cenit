@@ -393,8 +393,6 @@ class CenitOperation(models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-    name = 'Operation'
-
     resource_id = fields.Many2one('cenit.resource', string='Resource')
 
     def _compute_display_name(self):
