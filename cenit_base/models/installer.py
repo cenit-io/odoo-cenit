@@ -487,9 +487,11 @@ class CollectionInstaller(models.TransientModel):
             # Updating webhook
             hook = flow.get('webhook', {})
             if hook:
-                domain = [('cenitID', '=', hook.get('id'))]
+                namesp = names_pool.search([('name', '=', hook.get('namespace'))])
+                domain = [('name', '=', hook.get('name')), ('namespace', '=', namesp.id)]
                 rc = hook_pool.search(domain)
                 if not rc:
+                    domain = [('resource_id', '=', hook.get('resource_id')), ('method', '=', hook.get('method'))]
                     rc = oper_pool.search(domain)
                     if not rc:
                         continue

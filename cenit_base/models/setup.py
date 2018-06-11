@@ -741,11 +741,8 @@ class CenitFlow(models.Model):
     data_type = fields.Many2one(
         'cenit.data_type', string='Source data type'
     )
-    # webhook = fields.Many2one(
-    #     'cenit.webhook', string='Webhook', required=True
-    # )
     webhook = fields.Reference(string='Webhook',
-                               selection=[('cenit.webhook', 'Plain'), ('cenit.operation', 'Operation')])
+                               selection=[('cenit.webhook', 'Plain'), ('cenit.operation', 'Operation')], required=True)
     connection_role = fields.Many2one(
         'cenit.connection.role', string='Connection role'
     )
@@ -833,8 +830,7 @@ class CenitFlow(models.Model):
             },
             "domain": {
                 "connection_role": [
-                    # ('webhooks', 'in', self.webhook.id)
-                    ('webhooks', 'in', [])  # TODO
+                    ('webhooks', 'in', self.webhook.id)
                 ]
             }
         }
@@ -866,8 +862,7 @@ class CenitFlow(models.Model):
             'domain': {
                 'cenit_translator': [
                     ('schema', 'in', (self.schema.id, False)),
-                    # ('type_', '=', {'get': 'Import', }.get(self.webhook.method, 'Export'))
-                    ('type_', '=', 'Export')  # TODO
+                    ('type_', '=', {'get': 'Import', }.get(self.webhook.method, 'Export'))
                 ]
             }
         }
