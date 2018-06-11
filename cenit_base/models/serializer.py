@@ -9,9 +9,9 @@ from odoo import models, api
 from datetime import datetime
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT
 
-
 _logger = logging.getLogger(__name__)
 re_key = re.compile("\\{(.*?)\\}")
+
 
 class CenitSerializer(models.TransientModel):
     _name = 'cenit.serializer'
@@ -96,14 +96,16 @@ class CenitSerializer(models.TransientModel):
                     vals[field.value] = checker(getattr(obj, field.name))
                 elif field.line_type == 'model':
                     _reset.append(field.value)
-                    relation = getattr(obj, field.name)
+                    deep_relations = field.name.split('.')
+                    relation = obj
+                    for rel_attr in deep_relations:
+                        relation = getattr(relation, rel_attr)
                     if field.line_cardinality == '2many':
                         value = [
                             self.serialize(x, field.reference) for x in relation
                         ]
                     else:
                         value = self.serialize(relation, field.reference)
-                    # vals[field.value] = checker(value)
                     vals[field.value] = value
                 elif field.line_type == 'reference':
                     _reset.append(field.value)

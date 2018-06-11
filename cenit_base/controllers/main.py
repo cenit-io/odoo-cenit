@@ -30,7 +30,6 @@ class WebhookController(http.Controller):
             host = environ.get('HTTP_HOST', "")
             db_name = host.replace(".", "_").split(":")[0]
 
-        # if db_name in http.db_list():
         registry = Registry(db_name)
         with registry.cursor() as cr:
             connection_model = registry['cenit.connection']

@@ -217,6 +217,60 @@
                   action="action_cenit_webhook"/>
 
 
+        <record id="view_cenit_operation_tree" model="ir.ui.view">
+            <field name="name">view.cenit.operation.tree</field>
+            <field name="model">cenit.operation</field>
+            <field name="arch" type="xml">
+                <tree string="Operations">
+                    <field name="resource_id"/>
+                    <field name="method"/>
+                    <field name="purpose"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_cenit_operation_form" model="ir.ui.view">
+            <field name="name">view.cenit.operation.form</field>
+            <field name="model">cenit.operation</field>
+            <field name="arch" type="xml">
+                <form string="Operation">
+                    <group>
+                        <field name="resource_id"
+                               invisible="context.get('resource_id',False)"
+                               required="not context.get('resource_id',False)"/>
+                        <field name="description"/>
+                        <field name="method"/>
+                        <field name="purpose"/>
+                    </group>
+                    <notebook>
+                        <page string="Parameters">
+                            <field name="url_parameters" widget="one2many_list"
+                                   nolabel="1" class="oe_no_button"
+                                   context="{'operation_url_id': active_id}">
+                                <tree editable="bottom">
+                                    <field name="key"/>
+                                    <field name="value"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_cenit_operation" model="ir.actions.act_window">
+            <field name="name">Operations</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">cenit.operation</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_cenit_operation" name="Operations"
+                  parent="menu_cenit_connectors" sequence="3"
+                  action="action_cenit_operation"/>
+
+
         <record id="view_cenit_resource_tree" model="ir.ui.view">
             <field name="name">view.cenit.resource.tree</field>
             <field name="model">cenit.resource</field>
@@ -225,8 +279,7 @@
                     <field name="namespace"/>
                     <field name="name"/>
                     <field name="path"/>
-                    <field name="purpose"/>
-                    <field name="method"/>
+                    <field name="operations_list"/>
                 </tree>
             </field>
         </record>
@@ -240,13 +293,14 @@
                         <field name="namespace"/>
                         <field name="name"/>
                         <field name="path"/>
-                        <field name="method"/>
+                        <field name="operations" widget="many2many_tags" context="{'resource_id': active_id}"
+                               domain="[('resource_id', '=', active_id)]"/>
                     </group>
                     <notebook>
                         <page string="Parameters">
                             <field name="url_parameters" widget="one2many_list"
                                    nolabel="1" class="oe_no_button"
-                                   context="{'hook_url_id': active_id}">
+                                   context="{'resource_url_id': active_id}">
                                 <tree editable="bottom">
                                     <field name="key"/>
                                     <field name="value"/>
@@ -256,7 +310,7 @@
                         <page string="Header Parameters">
                             <field name="header_parameters" widget="one2many_list"
                                    nolabel="1" class="oe_no_button"
-                                   context="{'hook_header_id': active_id}">
+                                   context="{'resource_header_id': active_id}">
                                 <tree editable="bottom">
                                     <field name="key"/>
                                     <field name="value"/>
@@ -266,7 +320,7 @@
                         <page string="Template Parameters">
                             <field name="template_parameters" widget="one2many_list"
                                    nolabel="1" class="oe_no_button"
-                                   context="{'hook_template_id': active_id}">
+                                   context="{'resource_template_id': active_id}">
                                 <tree editable="bottom">
                                     <field name="key"/>
                                     <field name="value"/>
@@ -287,7 +341,7 @@
         </record>
 
         <menuitem id="menu_cenit_resource" name="Resources"
-                  parent="menu_cenit_connectors" sequence="3"
+                  parent="menu_cenit_connectors" sequence="4"
                   action="action_cenit_resource"/>
 
 
@@ -333,8 +387,6 @@
                             <field name="event"
                                    attrs="{'required':[('method','!=','get')],'invisible':[('method','=','get')]}"
                                    options="{'no_quick_create':True,'no_create_edit':True}"/>
-                            <!--<field name="cron"-->
-                            <!--attrs="{'required':[('event','=','interval')],'invisible':[('event','!=','interval')]}" />-->
                             <field name="format_"
                                    attrs="{'required':[('local','=','True')],'invisible':[('local','!=','True')]}"/>
                             <field name="cenit_translator"
