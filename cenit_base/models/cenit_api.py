@@ -69,7 +69,6 @@ class CenitApi(models.AbstractModel):
             self.cenit_model: vals
         }
         if 'namespace' in values[self.cenit_model] and isinstance(values[self.cenit_model]['namespace'], int):
-            # values[self.cenit_model]['namespace'] = self.env['cenit.namespace'].search([('id', '=', vals['namespace'])])['name']
             values[self.cenit_model]['namespace'] = self.namespace.name
         rc = False
         try:
@@ -257,7 +256,7 @@ class CenitApi(models.AbstractModel):
             _logger.exception(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
         except exceptions.AccessError:
-            raise exceptions.AccessError("Error trying to connect to Cenit.")
+            raise exceptions.AccessError("Error trying to access to Cenit.")
         except Exception as e:
             _logger.exception(e)
             raise exceptions.ValidationError("Cenit returned with errors")

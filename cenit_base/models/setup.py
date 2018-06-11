@@ -306,10 +306,19 @@ class CenitWebhook(models.Model):
     method = fields.Selection(
         [
             ('get', 'GET'),
-            ('put', 'PUT'),
-            ('patch', 'PATCH'),
             ('post', 'POST'),
+            ('put', 'PUT'),
             ('delete', 'DELETE'),
+            ('patch', 'PATCH'),
+            ('copy', 'COPY'),
+            ('head', 'HEAD'),
+            ('options', 'OPTIONS'),
+            ('link', 'LINK'),
+            ('unlink', 'UNLINK'),
+            ('purge', 'PURGE'),
+            ('lock', 'LOCK'),
+            ('unlock', 'UNLOCK'),
+            ('propfind', 'PROPFIND')
         ],
         'Method', default='post', required=True
     )
@@ -359,24 +368,6 @@ class CenitWebhook(models.Model):
         vals.update({'parameters': params})
         _reset.append('parameters')
 
-        headers = []
-        for header in self.header_parameters:
-            headers.append({
-                'key': header.key,
-                'value': header.value
-            })
-        vals.update({'headers': headers})
-        _reset.append('headers')
-
-        template = []
-        for tpl in self.template_parameters:
-            template.append({
-                'key': tpl.key,
-                'value': tpl.value
-            })
-        vals.update({'template_parameters': template})
-        _reset.append('template_parameters')
-
         vals.update(
             {
                 '_reset': _reset,
@@ -402,11 +393,26 @@ class CenitOperation(models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-    resource_id = fields.Many2one(
-        'cenit.resource',
-        string='Resource'
-    )
+    name = 'Operation'
 
+    resource_id = fields.Many2one('cenit.resource', string='Resource')
+
+    def _compute_display_name(self):
+        for record in self:
+            record.display_name = record.method.upper()
+
+    def name_get(self):
+        result = []
+        for record in self:
+            resource = record.resource_id
+            if not resource:
+                resource_id = record.env.context['resource_id']
+                resource = record.env['cenit.resource'].search([('id', '=', resource_id)])
+            name = resource.namespace.name + ' | ' + resource.name + ' | ' + record['method'].upper()
+            result.append((record.id, name))
+        return result
+
+    @api.depends('method')
     def _compute_purpose(self):
         self.purpose = {
             'get': 'send'
@@ -416,10 +422,19 @@ class CenitOperation(models.Model):
     method = fields.Selection(
         [
             ('get', 'GET'),
-            ('put', 'PUT'),
-            ('patch', 'PATCH'),
             ('post', 'POST'),
+            ('put', 'PUT'),
             ('delete', 'DELETE'),
+            ('patch', 'PATCH'),
+            ('copy', 'COPY'),
+            ('head', 'HEAD'),
+            ('options', 'OPTIONS'),
+            ('link', 'LINK'),
+            ('unlink', 'UNLINK'),
+            ('purge', 'PURGE'),
+            ('lock', 'LOCK'),
+            ('unlock', 'UNLOCK'),
+            ('propfind', 'PROPFIND')
         ],
         'Method', default='post', required=True
     )
@@ -430,8 +445,47 @@ class CenitOperation(models.Model):
         string='Parameters'
     )
 
-    def __str__(self):
-        return self.method
+    _sql_constraints = [
+        ('method_uniq', 'UNIQUE(method, resource_id)',
+         'The method must be unique for each resource!')
+    ]
+
+    @api.one
+    def _get_values(self):
+        vals = {
+            'method': self.method,
+            '_type': 'Setup::Operation'
+        }
+
+        if self.cenitID:
+            vals.update({'id': self.cenitID})
+
+        _reset = []
+
+        resource = self.resource_id
+        if not resource:
+            resource_id = self.env.context['resource_id']
+            resource = self.env['cenit.resource'].search([('id', '=', resource_id)])
+        vals.update({'resource': {
+            'id': resource.cenitID,
+            "_reference": True
+        }})
+        _reset.append('resource')
+
+        params = []
+        for param in self.url_parameters:
+            params.append({
+                'key': param.key,
+                'value': param.value
+            })
+        vals.update({'parameters': params})
+        _reset.append('parameters')
+
+        vals.update({
+            '_reset': _reset
+        })
+
+        return vals
 
 
 class CenitResource(models.Model):
@@ -453,6 +507,21 @@ class CenitResource(models.Model):
         'resource_id',
         string='Operations'
     )
+
+    @api.one
+    @api.depends('operations')
+    def _get_operations_list(self):
+        self.ensure_one()
+        operations_list = ""
+        for operation in self.operations:
+            if operations_list != "":
+                operations_list += " and "
+            operation_name = operation.name_get()[0]
+            if operation_name:
+                operations_list += operation_name[1]
+        self.operations_list = operations_list
+
+    operations_list = fields.Text(compute="_get_operations_list", string="Operations")
     url_parameters = fields.One2many(
         'cenit.parameter',
         'resource_url_id',
@@ -479,15 +548,22 @@ class CenitResource(models.Model):
         vals = {
             'name': self.name,
             'path': self.path,
-            'description': self.description,
+            'description': self.description or '',
             'namespace': self.namespace.name,
             '_type': 'Setup::Resource',
+            '_primary': ['name', 'namespace']
         }
 
         if self.cenitID:
             vals.update({'id': self.cenitID})
 
         _reset = []
+        operations = []
+        for operation in self.operations:
+            operations.append(operation._get_values()[0])
+        vals.update({'operations': operations})
+        _reset.append('operations')
+
         params = []
         for param in self.url_parameters:
             params.append({
@@ -495,7 +571,7 @@ class CenitResource(models.Model):
                 'value': param.value
             })
         vals.update({'parameters': params})
-        _reset.append({'parameters'})
+        _reset.append('parameters')
 
         headers = []
         for header in self.header_parameters:
@@ -504,7 +580,7 @@ class CenitResource(models.Model):
                 'value': header.value
             })
         vals.update({'headers': headers})
-        _reset.append({'headers'})
+        _reset.append('headers')
 
         template = []
         for tpl in self.template_parameters:
@@ -513,11 +589,10 @@ class CenitResource(models.Model):
                 'value': tpl.value
             })
         vals.update({'template_parameters': template})
-        _reset.append({'template_parameters'})
+        _reset.append('template_parameters')
 
         vals.update({
-            '_reset': _reset,
-            '_primary': ['name', 'namespace']
+            '_reset': _reset
         })
 
         return vals
@@ -527,6 +602,16 @@ class CenitResource(models.Model):
         if not isinstance(vals['namespace'], int):
             vals['namespace'] = vals['namespace']['id']
         return super(CenitResource, self).create(vals)
+
+    @api.multi
+    def write(self, vals):
+        res = super(CenitResource, self).write(vals)
+        if 'operations' in vals:
+            for operation in vals['operations']:
+                if operation[0] == 3:
+                    operation_id = operation[1]
+                    self.env['cenit.operation'].search([('id', '=', operation_id)]).unlink()
+        return res
 
 
 class CenitEvent(models.Model):
@@ -658,15 +743,17 @@ class CenitFlow(models.Model):
     data_type = fields.Many2one(
         'cenit.data_type', string='Source data type'
     )
-
-    webhook = fields.Many2one(
-        'cenit.webhook', string='Webhook', required=True
-    )
+    # webhook = fields.Many2one(
+    #     'cenit.webhook', string='Webhook', required=True
+    # )
+    webhook = fields.Reference(string='Webhook',
+                               selection=[('cenit.webhook', 'Plain'), ('cenit.operation', 'Operation')])
     connection_role = fields.Many2one(
         'cenit.connection.role', string='Connection role'
     )
 
-    method = fields.Selection(related="webhook.method")
+    # method = fields.Selection(related="webhook.method")
+    method = fields.Selection([])  # TODO
 
     _sql_constraints = [
         ('name_uniq', 'UNIQUE(namespace, name)',
@@ -748,7 +835,8 @@ class CenitFlow(models.Model):
             },
             "domain": {
                 "connection_role": [
-                    ('webhooks', 'in', self.webhook.id)
+                    # ('webhooks', 'in', self.webhook.id)
+                    ('webhooks', 'in', [])  # TODO
                 ]
             }
         }
@@ -780,8 +868,8 @@ class CenitFlow(models.Model):
             'domain': {
                 'cenit_translator': [
                     ('schema', 'in', (self.schema.id, False)),
-                    ('type_', '=',
-                     {'get': 'Import', }.get(self.webhook.method, 'Export'))
+                    # ('type_', '=', {'get': 'Import', }.get(self.webhook.method, 'Export'))
+                    ('type_', '=', 'Export')  # TODO
                 ]
             }
         }

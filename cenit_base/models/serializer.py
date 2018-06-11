@@ -96,7 +96,10 @@ class CenitSerializer(models.TransientModel):
                     vals[field.value] = checker(getattr(obj, field.name))
                 elif field.line_type == 'model':
                     _reset.append(field.value)
-                    relation = getattr(obj, field.name)
+                    deep_relations = field.name.split('.')
+                    relation = obj
+                    for rel_attr in deep_relations:
+                        relation = getattr(relation, rel_attr)
                     if field.line_cardinality == '2many':
                         value = [
                             self.serialize(x, field.reference) for x in relation
