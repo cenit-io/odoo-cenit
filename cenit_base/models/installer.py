@@ -89,10 +89,7 @@ class CollectionInstaller(models.TransientModel):
 
     @api.model
     def _get_operations(self, ref_id, values):
-        # operation_pool = self.env['cenit.operation']
-
         operations = values.get('operations', [])
-        # strict_keys = []
         oper = []
 
         for operation in operations:
