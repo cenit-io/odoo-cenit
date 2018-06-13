@@ -89,48 +89,25 @@ class CollectionInstaller(models.TransientModel):
 
     @api.model
     def _get_operations(self, ref_id, values):
-        operation_pool = self.env['cenit.operation']
+        # operation_pool = self.env['cenit.operation']
 
         operations = values.get('operations', [])
-        strict_keys = []
+        # strict_keys = []
         oper = []
 
         for operation in operations:
             if not operation.get('resource'):
                 continue
 
-            domain = [
-                ('cenitID', '=', operation.get('id'))
-            ]
-            candidates = operation_pool.search(domain)
-
             operation_data = {
                 'method': operation.get('method'),
                 'resource_id': ref_id,
                 'cenitID': operation.get('id')
             }
-
-            if not candidates:
-                oper.append([0, False, operation_data])
-                ref_id = False
-            else:
-                p = candidates[0]
-                oper.append([1, p.id, operation_data])
-                ref_id = p.id
-
-            strict_keys.append(operation_data.get('method'))
-
-        domain = [
-            ('method', 'not in', strict_keys),
-            ('resource_id', '=', ref_id),
-        ]
-
-        left_overs = operation_pool.search(domain)
-        for operation in left_overs:
-            oper.append([2, operation.id, False])
+            oper.append([0, False, operation_data])
 
         rc = {
-            'operations': oper  # TODO
+            'operations': oper
         }
 
         return rc
@@ -278,30 +255,6 @@ class CollectionInstaller(models.TransientModel):
 
             resource_operations = self._get_operations(res.id, resource)
             res.with_context(local=True).write(resource_operations)
-
-    @api.model
-    def _install_operations(self, values):
-        operation_pool = self.env['cenit.operation']
-
-        for operation in values:
-            operation_data = {
-                'cenitID': operation.get('id'),
-                'method': operation.get('method')
-            }
-
-            domain = [('cenitID', '=', operation.get('id'))]
-            candidates = operation_pool.search(domain)
-
-            if not candidates:
-                oper = operation_pool.with_context(local=True).create(
-                    operation_data
-                )
-            else:
-                oper = candidates[0]
-                oper.with_context(local=True).write(operation_data)
-
-            operation_params = self._get_param_lines(oper.id, operation, "operation")
-            oper.with_context(local=True).write(operation_params)
 
     @api.model
     def _install_webhooks(self, values):
@@ -491,7 +444,9 @@ class CollectionInstaller(models.TransientModel):
                 domain = [('name', '=', hook.get('name')), ('namespace', '=', namesp.id)]
                 rc = hook_pool.search(domain)
                 if not rc:
-                    domain = [('resource_id', '=', hook.get('resource_id')), ('method', '=', hook.get('method'))]
+                    resr_pool = self.env['cenit.resource']
+                    resource = resr_pool.search([('cenitID', '=', hook.get('resource_id'))])
+                    domain = [('resource_id', '=', resource.id), ('method', '=', hook.get('method'))]
                     rc = oper_pool.search(domain)
                     if not rc:
                         continue
@@ -744,7 +699,7 @@ class CollectionInstaller(models.TransientModel):
 
         keys = (
             'translators', 'events',
-            'connections', 'webhooks', 'operations', 'resources', 'connection_roles'
+            'connections', 'webhooks', 'resources', 'connection_roles'
         )
 
         self._install_namespaces(data.get('namespaces', []),
@@ -759,7 +714,6 @@ class CollectionInstaller(models.TransientModel):
                 'events': self._install_events,
                 'translators': self._install_translators,
                 'webhooks': self._install_webhooks,
-                'operations': self._install_operations,
                 'resources': self._install_resources
             }.get(key, self._install_dummy)(values)
 
@@ -770,13 +724,13 @@ class CollectionInstaller(models.TransientModel):
        Returns the snippet's code given the name
     '''
 
-    def get_snippetcode(self, name, list):
+    def get_snippetcode(self, name, snippets_list):
         code = None
         found = False
         i = 0
-        while (i < len(list) and not found):
-            if list[i]['name'] == name:
-                code = list[i]['code']
+        while i < len(snippets_list) and not found:
+            if snippets_list[i]['name'] == name:
+                code = snippets_list[i]['code']
                 found = True
             else:
                 i += 1

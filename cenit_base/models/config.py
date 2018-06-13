@@ -26,7 +26,7 @@ import logging
 import requests
 import json
 
-from odoo import models, fields, exceptions
+from odoo import models, fields, exceptions, api
 
 _logger = logging.getLogger(__name__)
 
@@ -39,8 +39,8 @@ class CenitSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
     cenit_url = fields.Char('Cenit URL')
-    cenit_user_key = fields.Char('Cenit User key')
-    cenit_user_token = fields.Char('Cenit User token')
+    cenit_user_key = fields.Char('Cenit User key', required=True)
+    cenit_user_token = fields.Char('Cenit User token', required=True)
 
     module_cenit_desk = fields.Boolean('Desk API',
                                        help=""
@@ -85,43 +85,29 @@ class CenitSettings(models.TransientModel):
     ############################################################################
     # Default values getters
     ############################################################################
-
-    def get_values_cenit_url(self, context):
-        cenit_url = self.env["ir.config_parameter"].get_param(
-            "odoo_cenit.cenit_url", default=None)
-
-        return {'cenit_url': cenit_url or 'https://cenit.io'}
-
-    def get_values_cenit_user_key(self, context):
-        cenit_user_key = self.env["ir.config_parameter"].get_param(
-            "odoo_cenit.cenit_user_key", default=None)
-        return {'cenit_user_key': cenit_user_key or False}
-
-    def get_values_cenit_user_token(self, context):
-        cenit_user_token = self.env["ir.config_parameter"].get_param(
-            "odoo_cenit.cenit_user_token", default=None)
-
-        return {'cenit_user_token': cenit_user_token or False}
+    @api.model
+    def get_values(self):
+        res = super(CenitSettings, self).get_values()
+        res.update(
+            cenit_url=self.env["ir.config_parameter"].sudo().get_param("odoo_cenit.cenit_url", default=None),
+            cenit_user_key=self.env["ir.config_parameter"].sudo().get_param("odoo_cenit.cenit_user_key", default=None),
+            cenit_user_token=self.env["ir.config_parameter"].sudo().get_param("odoo_cenit.cenit_user_token",
+                                                                              default=None)
+        )
+        return res
 
     ############################################################################
     # Values setters
     ############################################################################
 
+    @api.multi
     def set_values(self):
-        config_parameters = self.env["ir.config_parameter"]
-        cenit_url = config_parameters.search([('key', '=', 'odoo_cenit.cenit_url')]).value
-
-        config_parameters.set_param("odoo_cenit.cenit_url",
-                                    cenit_url or '')
-
-        for record in self.browse(self.ids):
-            config_parameters.set_param("odoo_cenit.cenit_user_key",
-                                        record.cenit_user_key or ''
-                                        )
-        for record in self.browse(self.ids):
-            config_parameters.set_param("odoo_cenit.cenit_user_token",
-                                        record.cenit_user_token or ''
-                                        )
+        super(CenitSettings, self).set_values()
+        for record in self:
+            self.env['ir.config_parameter'].sudo().set_param("odoo_cenit.cenit_url", record.cenit_url or '')
+            self.env['ir.config_parameter'].sudo().set_param("odoo_cenit.cenit_user_key", record.cenit_user_key or '')
+            self.env['ir.config_parameter'].sudo().set_param("odoo_cenit.cenit_user_token",
+                                                             record.cenit_user_token or '')
 
     ############################################################################
     # Actions
@@ -140,13 +126,7 @@ class CenitSettings(models.TransientModel):
         self.post_install()
 
     def execute(self):
-        prev = {}
-        prev.update(
-            self.get_values_cenit_user_key(self.env.context)
-        )
-        prev.update(
-            self.get_values_cenit_user_token(self.env.context)
-        )
+        prev = self.get_values()
 
         rc = super(CenitSettings, self).execute()
 

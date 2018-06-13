@@ -3,6 +3,8 @@ access_cenit_schema_system,cenit.schema.system,model_cenit_schema,base.group_use
 access_cenit_data_type_system,cenit.data_type.system,model_cenit_data_type,base.group_user,1,1,1,1
 access_cenit_data_type_line_system,cenit.data_type.line.system,model_cenit_data_type_line,base.group_user,1,1,1,1
 access_cenit_connection_system,cenit.connection.system,model_cenit_connection,base.group_user,1,1,1,1
+access_cenit_operation_system,cenit.operation.system,model_cenit_operation,base.group_user,1,1,1,1
+access_cenit_resource_system,cenit.resource.system,model_cenit_resource,base.group_user,1,1,1,1
 access_cenit_webhook_system,cenit.webhook.system,model_cenit_webhook,base.group_user,1,1,1,1
 access_cenit_parameter_system,cenit.parameter.system,model_cenit_parameter,base.group_user,1,1,1,1
 access_cenit_connection_role_system,cenit.connection.role.system,model_cenit_connection_role,base.group_user,1,1,1,1
