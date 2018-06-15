@@ -153,135 +153,6 @@ class CenitConnection(models.Model):
         return obj
 
 
-class CenitConnectionRole(models.Model):
-    _name = 'cenit.connection.role'
-    _inherit = 'cenit.api'
-
-    cenit_model = 'connection_role'
-    cenit_models = 'connection_roles'
-
-    cenitID = fields.Char('Cenit ID')
-
-    namespace = fields.Many2one('cenit.namespace', string='Namespace',
-                                ondelete='cascade')
-
-    name = fields.Char('Name', required=True)
-
-    connections = fields.Many2many(
-        'cenit.connection',
-        string='Connections'
-    )
-
-    webhooks = fields.Many2many(
-        'cenit.webhook',
-        string='Webhooks'
-    )
-
-    _sql_constraints = [
-        ('name_uniq', 'UNIQUE(namespace, name)',
-         'The name must be unique for each namespace!'),
-    ]
-
-    @api.one
-    def _get_values(self):
-        vals = {
-            'name': self.name,
-            'namespace': self.namespace.name,
-        }
-        if self.cenitID:
-            vals.update({'id': self.cenitID})
-
-        _reset = []
-
-        connections = []
-        for conn in self.connections:
-            vals_ = conn._get_values()
-            if isinstance(vals_, list):
-                vals_ = vals_[0]
-            connections.append(vals_)
-
-        vals.update({
-            'connections': connections,
-        })
-        _reset.append('connections')
-
-        webhooks = []
-        for hook in self.webhooks:
-            vals_ = hook._get_values()
-            if isinstance(vals_, list):
-                vals_ = vals_[0]
-            webhooks.append(vals_)
-
-        vals.update({
-            'webhooks': webhooks
-        })
-        _reset.append('webhooks')
-
-        vals.update({
-            '_reset': _reset,
-            '_primary': ['name', 'namespace']
-        })
-
-        return vals
-
-
-class CenitParameter(models.Model):
-    _name = 'cenit.parameter'
-
-    key = fields.Char('Key', required=True)
-    value = fields.Char('Value')
-
-    conn_url_id = fields.Many2one(
-        'cenit.connection',
-        string='Connection'
-    )
-
-    conn_header_id = fields.Many2one(
-        'cenit.connection',
-        string='Connection'
-    )
-
-    conn_template_id = fields.Many2one(
-        'cenit.connection',
-        string='Connection'
-    )
-
-    hook_url_id = fields.Many2one(
-        'cenit.webhook',
-        string='Webhook'
-    )
-
-    hook_header_id = fields.Many2one(
-        'cenit.webhook',
-        string='Webhook'
-    )
-
-    hook_template_id = fields.Many2one(
-        'cenit.webhook',
-        string='Webhook'
-    )
-
-    operation_url_id = fields.Many2one(
-        'cenit.operation',
-        string='Operation'
-    )
-
-    resource_url_id = fields.Many2one(
-        'cenit.resource',
-        string='Resource'
-    )
-
-    resource_header_id = fields.Many2one(
-        'cenit.resource',
-        string='Resource'
-    )
-
-    resource_template_id = fields.Many2one(
-        'cenit.resource',
-        string='Resource'
-    )
-
-
 class CenitWebhook(models.Model):
 
     @api.depends('method')
@@ -303,6 +174,7 @@ class CenitWebhook(models.Model):
     name = fields.Char('Name', required=True)
     path = fields.Char('Path', required=True)
     purpose = fields.Char(compute='_compute_purpose', store=True)
+    description = fields.Text('Description')
     method = fields.Selection(
         [
             ('get', 'GET'),
@@ -391,6 +263,15 @@ class CenitOperation(models.Model):
     cenit_model = 'operation'
     cenit_models = 'operations'
 
+    @api.depends('resource_id', 'method')
+    def _compute_extra_fields(self):
+        for record in self:
+            record.namespace = record.resource_id.namespace.name
+            record.path = record.resource_id.path + '/' + record.method
+
+    namespace = fields.Char(compute='_compute_extra_fields')
+    path = fields.Char(compute='_compute_extra_fields')
+
     cenitID = fields.Char('Cenit ID')
 
     resource_id = fields.Many2one('cenit.resource', string='Resource')
@@ -461,10 +342,8 @@ class CenitOperation(models.Model):
 
         _reset = []
 
-        resource = self.resource_id
-        if not resource:
-            resource_id = self.env.context['resource_id']
-            resource = self.env['cenit.resource'].search([('id', '=', resource_id)])
+        resource_id = self.resource_id or self.env.context['resource_id']
+        resource = self.env['cenit.resource'].search([('id', '=', resource_id)])
         vals.update({'resource': {
             'id': resource.cenitID,
             "_reference": True
@@ -485,6 +364,145 @@ class CenitOperation(models.Model):
         })
 
         return vals
+
+
+class CenitConnectionRole(models.Model):
+    _name = 'cenit.connection.role'
+    _inherit = 'cenit.api'
+
+    cenit_model = 'connection_role'
+    cenit_models = 'connection_roles'
+
+    cenitID = fields.Char('Cenit ID')
+
+    namespace = fields.Many2one('cenit.namespace', string='Namespace',
+                                ondelete='cascade')
+
+    name = fields.Char('Name', required=True)
+
+    connections = fields.Many2many(
+        'cenit.connection',
+        string='Connections'
+    )
+
+    webhooks = fields.Many2many(
+        'cenit.webhook',
+        string='Webhooks'
+    )
+
+    operations = fields.Many2many(
+        'cenit.operation',
+        string='Operations'
+    )
+
+    _sql_constraints = [
+        ('name_uniq', 'UNIQUE(namespace, name)',
+         'The name must be unique for each namespace!'),
+    ]
+
+    @api.one
+    def _get_values(self):
+        vals = {
+            'name': self.name,
+            'namespace': self.namespace.name,
+        }
+        if self.cenitID:
+            vals.update({'id': self.cenitID})
+
+        _reset = []
+
+        connections = []
+        for conn in self.connections:
+            vals_ = conn._get_values()
+            if isinstance(vals_, list):
+                vals_ = vals_[0]
+            connections.append(vals_)
+
+        vals.update({
+            'connections': connections,
+        })
+        _reset.append('connections')
+
+        webhooks = []
+        for hook in self.webhooks:
+            vals_ = hook._get_values()
+            if isinstance(vals_, list):
+                vals_ = vals_[0]
+            webhooks.append(vals_)
+        for hook in self.operations:
+            vals_ = hook._get_values()
+            if isinstance(vals_, list):
+                vals_ = vals_[0]
+            webhooks.append(vals_)
+
+        vals.update({
+            'webhooks': webhooks
+        })
+        _reset.append('webhooks')
+
+        vals.update({
+            '_reset': _reset,
+            '_primary': ['name', 'namespace']
+        })
+
+        return vals
+
+
+class CenitParameter(models.Model):
+    _name = 'cenit.parameter'
+
+    key = fields.Char('Key', required=True)
+    value = fields.Char('Value')
+
+    conn_url_id = fields.Many2one(
+        'cenit.connection',
+        string='Connection'
+    )
+
+    conn_header_id = fields.Many2one(
+        'cenit.connection',
+        string='Connection'
+    )
+
+    conn_template_id = fields.Many2one(
+        'cenit.connection',
+        string='Connection'
+    )
+
+    hook_url_id = fields.Many2one(
+        'cenit.webhook',
+        string='Webhook'
+    )
+
+    hook_header_id = fields.Many2one(
+        'cenit.webhook',
+        string='Webhook'
+    )
+
+    hook_template_id = fields.Many2one(
+        'cenit.webhook',
+        string='Webhook'
+    )
+
+    operation_url_id = fields.Many2one(
+        'cenit.operation',
+        string='Operation'
+    )
+
+    resource_url_id = fields.Many2one(
+        'cenit.resource',
+        string='Resource'
+    )
+
+    resource_header_id = fields.Many2one(
+        'cenit.resource',
+        string='Resource'
+    )
+
+    resource_template_id = fields.Many2one(
+        'cenit.resource',
+        string='Resource'
+    )
 
 
 class CenitResource(models.Model):
@@ -748,8 +766,11 @@ class CenitFlow(models.Model):
         'cenit.connection.role', string='Connection role'
     )
 
-    # method = fields.Selection(related="webhook.method")
-    method = fields.Selection([])  # TODO
+    @api.depends('webhook')
+    def _compute_method(self):
+        self.method = self.webhook.method
+
+    method = fields.Char(compute="_compute_method")
 
     _sql_constraints = [
         ('name_uniq', 'UNIQUE(namespace, name)',

@@ -298,6 +298,8 @@ class CollectionInstaller(models.TransientModel):
         role_pool = self.env['cenit.connection.role']
         conn_pool = self.env['cenit.connection']
         hook_pool = self.env['cenit.webhook']
+        oper_pool = self.env['cenit.operation']
+        resr_pool = self.env['cenit.resource']
         names_pool = self.env['cenit.namespace']
 
         for role in values:
@@ -342,6 +344,15 @@ class CollectionInstaller(models.TransientModel):
                 domain = [('name', '=', webhook.get('name')),
                           ('namespace', '=', webhook.get('namespace'))]
                 candidates = hook_pool.search(domain)
+                type = 'webhooks'
+                if not candidates:
+                    resource = resr_pool.search([
+                        ('namespace', '=', webhook.get('resource', []).get('namespace')),
+                        ('name', '=', webhook.get('resource', []).get('name'))
+                    ])
+                    domain = [('resource_id', '=', resource.id), ('method', '=', webhook.get('method'))]
+                    candidates = oper_pool.search(domain)
+                    type = 'operations'
 
                 if candidates:
                     hook = candidates[0]
@@ -349,7 +360,7 @@ class CollectionInstaller(models.TransientModel):
 
             role_members = {
                 'connections': [(6, False, connections)],
-                'webhooks': [(6, False, webhooks)],
+                type: [(6, False, webhooks)],
             }
             crole.with_context(local=True).write(role_members)
 
