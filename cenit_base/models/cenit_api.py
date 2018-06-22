@@ -81,7 +81,7 @@ class CenitApi(models.AbstractModel):
                     update = update[0]
                 # rc = self.with_context(local=True).write(update)
                 for key, value in update.items():
-                    self[key] = value
+                    self.with_context(local=True)[key] = value
                 rc = True
             else:
                 _logger.error(rc.get('errors'))

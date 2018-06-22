@@ -20,10 +20,9 @@
                     </header>
                     <div>
                         <group string="Connection settings">
-                            <field name="cenit_user_key"
-                                   placeholder="Your cenit's user key"/>
-                            <field name="cenit_user_token"
-                                   placeholder="Your cenit's user token"/>
+                            <field name="cenit_url" placeholder="Your Cenit's url (Default: 'https://cenit.io')"/>
+                            <field name="cenit_user_key" placeholder="Your Cenit's user key"/>
+                            <field name="cenit_user_token" placeholder="Your Cenit's user token" password="True"/>
                         </group>
                     </div>
 
@@ -80,8 +79,7 @@
                                 <label for="module_cenit_asana"/>
                             </div>
                         </group>
-                        <button string="Update collections" type="object" name="update_collection"
-                                icon="/web/static/src/img/icons/gtk-refresh.png"/>
+                        <button string="Update collections" type="object" name="update_collection"/>
                     </div>
                 </form>
             </field>
@@ -174,8 +172,9 @@
                         Set the credentials given to your Cenit tenant.
                     </p>
                     <group>
+                        <field name="cenit_url" placeholder="Your Cenit's url (Default: 'https://cenit.io')"/>
                         <field name="cenit_user_key" placeholder="Your Cenit's user key"/>
-                        <field name="cenit_user_token" placeholder="Your Cenit's user token"/>
+                        <field name="cenit_user_token" placeholder="Your Cenit's user token" password="True"/>
                     </group>
                 </separator>
             </field>
