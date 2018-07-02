@@ -159,17 +159,17 @@ class CenitSettings(models.TransientModel):
 
         params_ids = []
         param_data = {
-            "key": "X_USER_ACCESS_KEY",
+            "key": "X-USER-ACCESS-KEY",
             "value": self.cenit_user_key
         }
         params_ids.append(param_pool.create(param_data).id)
         param_data = {
-            "key": "X_USER_ACCESS_TOKEN",
+            "key": "X-USER-ACCESS-TOKEN",
             "value": self.cenit_user_token
         }
         params_ids.append(param_pool.create(param_data).id)
         param_data = {
-            "key": "TENANT_DB",
+            "key": "TENANT-DB",
             "value": self.env.registry.db_name
         }
         params_ids.append(param_pool.create(param_data).id)
