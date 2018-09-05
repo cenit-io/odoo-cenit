@@ -180,7 +180,7 @@ class CenitSettings(models.TransientModel):
             "url": icp.get_param('web.base.url', default=None),
             "header_parameters": [(6, 0, params_ids)]
         }
-        conn = conn_pool.create(conn_data)
+        conn = conn_pool.with_context(local=False).create(conn_data)
 
         hook_data = {
             "name": "Cenit webhook",

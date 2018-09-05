@@ -8,6 +8,7 @@ from odoo import models, api
 # This imports is for mapping purpose
 from datetime import datetime
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT
+import pytz
 
 _logger = logging.getLogger(__name__)
 re_key = re.compile("\\{(.*?)\\}")
