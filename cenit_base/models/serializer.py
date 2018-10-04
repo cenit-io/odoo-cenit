@@ -2,13 +2,17 @@
 
 import re
 import logging
-import simplejson
+import json
 
-from openerp import models, api
-
+from odoo import models, api
+# This imports is for mapping purpose
+from datetime import datetime
+from odoo.tools import DEFAULT_SERVER_DATE_FORMAT
+import pytz
 
 _logger = logging.getLogger(__name__)
 re_key = re.compile("\\{(.*?)\\}")
+
 
 class CenitSerializer(models.TransientModel):
     _name = 'cenit.serializer'
@@ -20,6 +24,7 @@ class CenitSerializer(models.TransientModel):
                 if not obj:
                     return None
                 return checker(obj)
+
             return _do_check
 
         def _dummy(obj):
@@ -35,8 +40,7 @@ class CenitSerializer(models.TransientModel):
         }
         type_ = schema_type.get('type', 'other')
         if type_ == 'object' and inlined:
-            type_ = schema_type.get('properties', {'type': 'other'}).values()[
-                0].get('type', 'other')
+            type_ = list(schema_type.get('properties', {'type': 'other'}).values())[0].get('type', 'other')
 
         return get_checker(_checkers.get(type_, _dummy))
 
@@ -78,7 +82,7 @@ class CenitSerializer(models.TransientModel):
         match = data_type.ensure_object(obj)
 
         if match:
-            schema = simplejson.loads(data_type.schema.schema)['properties']
+            schema = json.loads(data_type.schema.schema)['properties']
             _reset = []
             _primary = []
 
@@ -93,14 +97,17 @@ class CenitSerializer(models.TransientModel):
                     vals[field.value] = checker(getattr(obj, field.name))
                 elif field.line_type == 'model':
                     _reset.append(field.value)
-                    relation = getattr(obj, field.name)
+                    deep_relations = field.name.split('.')
+                    relation = obj
+                    for rel_attr in deep_relations:
+                        relation = getattr(relation, rel_attr)
                     if field.line_cardinality == '2many':
                         value = [
                             self.serialize(x, field.reference) for x in relation
                         ]
                     else:
                         value = self.serialize(relation, field.reference)
-                    vals[field.value] = checker(value)
+                    vals[field.value] = value
                 elif field.line_type == 'reference':
                     _reset.append(field.value)
                     vals[field.value] = checker(self.find_reference(field, obj))
@@ -112,7 +119,7 @@ class CenitSerializer(models.TransientModel):
                     ])
                     final = field.name.format(**kwargs)
                     try:
-                        value = simplejson.loads(final)
+                        value = json.loads(final)
                     except Exception:
                         value = final
                     vals[field.value] = checker(value)
