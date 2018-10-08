@@ -1,0 +1,4 @@
+inflect==0.3.1
+pyOpenSSL==17.5.0
+ndg-httpsclient
+pyasn1
