@@ -21,6 +21,8 @@ class CenitSerializer(models.TransientModel):
     def _get_checker(self, schema_type, inlined=False):
         def get_checker(checker):
             def _do_check(obj):
+                if (isinstance(obj, float) or isinstance(obj, int)) and obj == 0:
+                    return checker(obj)
                 if not obj:
                     return None
                 return checker(obj)
