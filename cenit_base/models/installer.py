@@ -635,7 +635,7 @@ class CollectionInstaller(models.TransientModel):
     Install data either from cross shared collection or collection
     '''
     @api.model
-    def install_common_data(self, data):
+    def install_common_data(self, data, basepath=False):
 
         keys = (
             'translators', 'events',
@@ -658,6 +658,7 @@ class CollectionInstaller(models.TransientModel):
 
         if data.get('flows', False):
             self._install_flows(data.get('flows'))
+        self._install_mapping(basepath)
 
     '''
        Returns the snippet's code given the name
@@ -674,3 +675,18 @@ class CollectionInstaller(models.TransientModel):
             else:
                 i += 1
         return code
+
+
+    '''
+       Installs default mappings
+    '''
+    def _install_mapping(self, basepath):
+        if basepath:
+            filepath = os.path.abspath(os.path.join(basepath, "..", "data/mappings.json"))
+            with open(filepath) as json_file:
+                vals = {
+                        'filename': 'mappings.json',
+                        'b_file': base64.encodebytes(json_file.read().encode("utf-8"))
+                }
+                cenit_import_export = self.env['cenit.import_export'].create(vals)
+                cenit_import_export.import_data_types()
