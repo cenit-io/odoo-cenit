@@ -41,9 +41,9 @@ class CenitSettings (models.TransientModel):
     _name = 'cenit.hub.settings'
     _inherit = 'res.config.settings'
 
-    cenit_url = fields.Char ('Cenit URL')
-    cenit_user_key = fields.Char ('Cenit User key')
-    cenit_user_token = fields.Char ('Cenit User token')
+    cenit_url = fields.Char('Cenit URL')
+    cenit_user_key = fields.Char('Cenit User key', required=True)
+    cenit_user_token = fields.Char('Cenit User token', required=True)
 
     module_cenit_desk = fields.Boolean('Desk API',
         help=""
@@ -178,38 +178,56 @@ class CenitSettings (models.TransientModel):
 
     def post_install(self):
         icp = self.env["ir.config_parameter"]
+        param_pool = self.env["cenit.parameter"]
         conn_pool = self.env["cenit.connection"]
         hook_pool = self.env["cenit.webhook"]
         role_pool = self.env["cenit.connection.role"]
         names_pool = self.env["cenit.namespace"]
 
 
-        domain = [('name', '=', 'MyOdoo')]
+        domain = [('name', '=', 'Odoo')]
         namesp = names_pool.search(domain)
 
-        conn_data = {
-            "name": "My Odoo host",
-            "namespace": namesp[0],
-            "url": icp.get_param('web.base.url', default=None)
+        params_ids = []
+        param_data = {
+            "key": "X-USER-ACCESS-KEY",
+            "value": self.cenit_user_key
         }
-        conn = conn_pool.create(conn_data)
+        params_ids.append(param_pool.create(param_data).id)
+        param_data = {
+            "key": "X-USER-ACCESS-TOKEN",
+            "value": self.cenit_user_token
+        }
+        params_ids.append(param_pool.create(param_data).id)
+        param_data = {
+            "key": "TENANT-DB",
+            "value": self.env.registry.db_name
+        }
+        params_ids.append(param_pool.create(param_data).id)
+
+        conn_data = {
+            "name": "Odoo Connection",
+            "namespace": namesp[0]['id'],
+            "url": icp.get_param('web.base.url', default=None),
+            "header_parameters": [(6, 0, params_ids)]
+        }
+        conn = conn_pool.with_context(local=False).create(conn_data)
 
         hook_data = {
             "name": "Cenit webhook",
             "path": "cenit/push",
-            "namespace": namesp[0],
+            "namespace": namesp[0]['id'],
             "method": "post"
         }
         hook = hook_pool.create(hook_data)
 
         role_data = {
             "namespace": namesp[0]['id'],
-            "name": "My Odoo role",
-            #"connections": [(6, False, [conn['id']])],
-            "webhooks": [(6, False, [hook['id']])],
+            "name": "Odoo Role",
+            "connections": [(6, False, [conn['id']])],
+            "webhooks": [(6, False, [hook['id']])]
         }
         role = role_pool.create(role_data)
-        role_pool.write({"connections": [conn['id']], "id": role['id']})
 
         icp.set_param('cenit.odoo_feedback.hook', hook)
         icp.set_param('cenit.odoo_feedback.conn', conn)
@@ -248,10 +266,10 @@ class CenitAccountSettings(models.TransientModel):
     _name = "cenit.account.settings"
     _inherit = "res.config.settings"
 
-    cenit_email = fields.Char ('Cenit user email')
-    cenit_captcha = fields.Char ('Text in the image')
-    cenit_passwd = fields.Char ('Cenit password')
-    confirm_passwd = fields.Char ('Confirm password')
+    cenit_email = fields.Char('Cenit user email')
+    cenit_captcha = fields.Char('Text in the image')
+    cenit_passwd = fields.Char('Cenit password')
+    confirm_passwd = fields.Char('Confirm password')
 
     ############################################################################
     # Default values getters

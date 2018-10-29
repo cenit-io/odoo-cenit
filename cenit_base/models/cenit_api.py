@@ -69,7 +69,7 @@ class CenitApi(models.AbstractModel):
             self.cenit_model: vals
         }
         if 'namespace' in values[self.cenit_model] and isinstance(values[self.cenit_model]['namespace'], int):
-            values[self.cenit_model]['namespace'] = self.env['cenit.namespace'].search([('id', '=', vals['namespace'])])['name']
+            values[self.cenit_model]['namespace'] = self.namespace.name
         rc = False
         try:
             rc = self.post(path, values)
@@ -79,7 +79,10 @@ class CenitApi(models.AbstractModel):
                 update = self._calculate_update(rc['success'])
                 if isinstance(update, list):
                     update = update[0]
-                rc = self.with_context(local=True).write(update)
+                # rc = self.with_context(local=True).write(update)
+                for key, value in update.items():
+                    self.with_context(local=True)[key] = value
+                rc = True
             else:
                 _logger.error(rc.get('errors'))
                 return False
@@ -253,7 +256,7 @@ class CenitApi(models.AbstractModel):
             _logger.exception(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
         except exceptions.AccessError:
-            raise exceptions.AccessError("Error trying to connect to Cenit.")
+            raise exceptions.AccessError("Error trying to access to Cenit.")
         except Exception as e:
             _logger.exception(e)
             raise exceptions.ValidationError("Cenit returned with errors")

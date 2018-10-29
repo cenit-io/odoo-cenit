@@ -52,19 +52,19 @@ class ImportExport(models.TransientModel):
 
         json_data = json.dumps(datatypes)
         file_c = self.create({
-            'filename': 'mappings.json',
+            'filename': result[0].name + '.json' if len(result) == 1 else 'mappings.json',
             'b_file': json_data
         })
 
         return {
-             'type' : 'ir.actions.act_url',
-             'url': '/web/binary/download_document?file=%s&filename=data_types.json' % (file_c.b_file),
-             'target': 'self',
+            'type': 'ir.actions.act_url',
+            'url': '/web/binary/download/%s/%s/%s/%s' % ('cenit.import_export', file_c.id, 'b_file', 'filename'),
+            'target': 'self',
         }
 
     @api.multi
-    def import_data_types(self):
-        data_file = self[0].b_file
+    def import_data_types(self, json_data):
+        #self.ensure_one()
         irmodel_pool = self.env['ir.model']
         schema_pool = self.env['cenit.schema']
         namespace_pool = self.env['cenit.namespace']
@@ -73,15 +73,7 @@ class ImportExport(models.TransientModel):
         domain_pool = self.env['cenit.data_type.domain_line']
         trigger_pool = self.env['cenit.data_type.trigger']
 
-        try:
-           data_file = base64.decodestring(data_file)
-           print data_file
-           json_data = json.loads(data_file)
-        except Exception as e:
-            _logger.exception('File unsuccessfully imported, due to format mismatch.')
-            raise UserError(_('File not imported due to format mismatch or a malformed file. (Valid format is .json)\n\nTechnical Details:\n%s') % tools.ustr(e))
-
-
+        json_data = json.load(json_data)
         for data in json_data:
             odoo_model = data['model']
             namespace = data['namespace']
@@ -103,7 +95,7 @@ class ImportExport(models.TransientModel):
                 )
             namespace = candidates.id
 
-            domain = [('name', '=', schema)]
+            domain = [('name', '=', schema), ('namespace', '=', namespace)]
             candidates = schema_pool.search(domain)
             if not candidates:
                 raise exceptions.MissingError(
@@ -153,12 +145,20 @@ class ImportExport(models.TransientModel):
 
 
 class Binary(http.Controller):
-    @http.route('/web/binary/download_document', type='http', auth="public")
-    @serialize_exception
-    def download_document(self, file, filename):
-        if not file:
+    @http.route('/web/binary/download/<string:model>/<int:record_id>/<string:binary_field>/<string:filename_field>',
+                type='http',
+                auth="public")
+    def download_document(self, model, record_id, binary_field, filename_field, token=None):
+        if not record_id:
             return request.not_found()
         else:
-            return request.make_response(file,
-                                             [('Content-Type', 'application/octet-stream'),
-                                              ('Content-Disposition', content_disposition(filename))])
+            status, headers, content = binary_content(model=model, id=record_id, field=binary_field,
+                                                      filename_field=filename_field, download=True)
+        if status != 200:
+            response = request.not_found()
+        else:
+            headers.append(('Content-Length', len(content)))
+            response = request.make_response(content, headers)
+        if token:
+            response.set_cookie('fileToken', token)
+        return response
