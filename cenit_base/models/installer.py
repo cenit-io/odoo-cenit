@@ -23,7 +23,7 @@
 #
 
 import logging, os
-import simplejson
+import json
 import base64
 
 from openerp import models, api, exceptions
@@ -754,4 +754,4 @@ class CollectionInstaller(models.TransientModel):
             filepath = os.path.abspath(os.path.join(basepath, "..", "data/mappings.json"))
             with open(filepath) as json_file:
                cenit_import_export = self.env['cenit.import_export']
-               cenit_import_export.import_data_types(json_file)
+               cenit_import_export.import_mappings_data(json.load(json_file))

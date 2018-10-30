@@ -62,9 +62,20 @@ class ImportExport(models.TransientModel):
             'target': 'self',
         }
 
-    @api.multi
-    def import_data_types(self, json_data):
-        #self.ensure_one()
+    @api.one
+    def import_data_types(self):
+        self.ensure_one()
+        try:
+            data_file = base64.b64decode(self.b_file).decode("utf-8")
+            json_data = json.loads(data_file)
+            self.import_mappings_data(json_data)
+        except Exception as e:
+            _logger.exception('File unsuccessfully imported, due to format mismatch.')
+            raise UserError(_(
+                'File not imported due to format mismatch or a malformed file. (Valid format is .json)\n\nTechnical Details:\n%s') % tools.ustr(
+                e))
+
+    def import_mappings_data(self, json_data):
         irmodel_pool = self.env['ir.model']
         schema_pool = self.env['cenit.schema']
         namespace_pool = self.env['cenit.namespace']
@@ -73,7 +84,6 @@ class ImportExport(models.TransientModel):
         domain_pool = self.env['cenit.data_type.domain_line']
         trigger_pool = self.env['cenit.data_type.trigger']
 
-        json_data = json.load(json_data)
         for data in json_data:
             odoo_model = data['model']
             namespace = data['namespace']
@@ -113,12 +123,12 @@ class ImportExport(models.TransientModel):
                 dt = datatype_pool.create(vals)
 
             if updt:
-                    for d in dt.domain:
-                        d.unlink()
-                    for d in dt.triggers:
-                        d.unlink()
-                    for d in dt.lines:
-                        d.unlink()
+                for d in dt.domain:
+                    d.unlink()
+                for d in dt.triggers:
+                    d.unlink()
+                for d in dt.lines:
+                    d.unlink()
 
             for domain in data['domains']:
                 vals = {'data_type': dt.id, 'field': domain['field'], 'value': domain['value'],
