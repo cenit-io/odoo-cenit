@@ -753,9 +753,5 @@ class CollectionInstaller(models.TransientModel):
         if basepath:
             filepath = os.path.abspath(os.path.join(basepath, "..", "data/mappings.json"))
             with open(filepath) as json_file:
-                vals = {
-                        'filename': 'mappings.json',
-                        'b_file': base64.encodebytes(json_file.read().encode("utf-8"))
-                }
-                cenit_import_export = self.env['cenit.import_export'].create(vals)
-                cenit_import_export.import_data_types()
+                cenit_import_export = self.env['cenit.import_export']
+                cenit_import_export.import_mappings_data(json.load(json_file))

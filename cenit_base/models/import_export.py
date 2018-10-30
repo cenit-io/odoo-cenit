@@ -64,6 +64,17 @@ class ImportExport(models.TransientModel):
     @api.one
     def import_data_types(self):
         self.ensure_one()
+        try:
+            data_file = base64.decodebytes(self.b_file).decode("utf-8")
+            json_data = json.loads(data_file)
+            self.import_mappings_data(json_data)
+        except Exception as e:
+            _logger.exception('File unsuccessfully imported, due to format mismatch.')
+            raise UserError(_(
+                'File not imported due to format mismatch or a malformed file. (Valid format is .json)\n\nTechnical Details:\n%s') % tools.ustr(
+                e))
+
+    def import_mappings_data(self, json_data):
         irmodel_pool = self.env['ir.model']
         schema_pool = self.env['cenit.schema']
         namespace_pool = self.env['cenit.namespace']
@@ -71,15 +82,6 @@ class ImportExport(models.TransientModel):
         line_pool = self.env['cenit.data_type.line']
         domain_pool = self.env['cenit.data_type.domain_line']
         trigger_pool = self.env['cenit.data_type.trigger']
-
-        try:
-            data_file = base64.decodebytes(self.b_file).decode("utf-8")
-            json_data = json.loads(data_file)
-        except Exception as e:
-            _logger.exception('File unsuccessfully imported, due to format mismatch.')
-            raise UserError(_(
-                'File not imported due to format mismatch or a malformed file. (Valid format is .json)\n\nTechnical Details:\n%s') % tools.ustr(
-                e))
 
         for data in json_data:
             odoo_model = data['model']
