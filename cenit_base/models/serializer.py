@@ -9,6 +9,7 @@ from odoo import models, api
 from datetime import datetime
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT
 import pytz
+import html2text
 
 _logger = logging.getLogger(__name__)
 re_key = re.compile("\\{(.*?)\\}")
