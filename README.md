@@ -23,12 +23,14 @@ installed on your system. These dependencies can be easily installed using
 
     $ pip install inflect
     $ pip install requests[security]
+    $ pip install html2text
 
 If not using **pip** you should manually install the following Python packages:
 + `inflect`
 + `pyOpenSSL`
 + `ndg-httpsclient`
 + `pyasn1`
++ `html2text`
 
 Actual package names depend on your specific system.
 
