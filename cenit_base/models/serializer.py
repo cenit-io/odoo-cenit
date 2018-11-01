@@ -3,6 +3,7 @@
 import re
 import logging
 import json
+import html2text
 
 from odoo import models, api
 # This imports is for mapping purpose
