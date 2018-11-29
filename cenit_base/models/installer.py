@@ -453,9 +453,10 @@ class CollectionInstaller(models.TransientModel):
                 domain = [('name', '=', hook.get('name')), ('namespace', '=', namesp.id)]
                 rc = hook_pool.search(domain)
                 if not rc:
-                    resr_pool = self.env['cenit.resource']
-                    resource = resr_pool.search([('cenitID', '=', hook.get('resource_id'))])
-                    domain = [('resource_id', '=', resource.id), ('method', '=', hook.get('method'))]
+                    domain = ([('resource_id.namespace', '=', hook['resource']['namespace']),
+                                    ('resource_id.name', '=', hook['resource']['name']),
+                                    ('method', '=', hook.get('method'))]
+)
                     rc = oper_pool.search(domain)
                     if not rc:
                         continue
