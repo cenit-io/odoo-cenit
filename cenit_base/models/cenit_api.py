@@ -32,6 +32,9 @@ API_PATH = "/api/v2"
 
 
 class CenitApi(models.AbstractModel):
+    """
+       Model to connect to Cenit's API
+    """
     _name = "cenit.api"
 
     @api.one

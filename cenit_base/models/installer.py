@@ -32,6 +32,9 @@ _logger = logging.getLogger(__name__)
 
 
 class CollectionInstaller(models.TransientModel):
+    """
+       Class to install Cenit collections
+    """
     _name = "cenit.collection.installer"
 
     @api.model

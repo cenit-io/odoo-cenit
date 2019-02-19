@@ -9,6 +9,9 @@ _logger = logging.getLogger(__name__)
 
 
 class CenitHandler(models.TransientModel):
+    """
+       Handler
+    """
     _name = 'cenit.handler'
 
     @api.model

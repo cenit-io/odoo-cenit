@@ -33,6 +33,9 @@ _logger = logging.getLogger(__name__)
 
 
 class CenitNameSpace(models.Model):
+    """
+       Represents a Cenit's namespace
+    """
     _name = 'cenit.namespace'
     _inherit = 'cenit.api'
 
@@ -101,6 +104,9 @@ class CenitNameSpace(models.Model):
 
 
 class CenitSchema(models.Model):
+    """
+       Represents a Cenit's schema
+    """
 
     @api.one
     def cenit_root(self):
@@ -114,7 +120,7 @@ class CenitSchema(models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-    slug = fields.Char('Slug')  # TODO Crear por defecto este valor de la misma forma que se hace en Cenit
+    slug = fields.Char('Slug')
     schema = fields.Text('Schema')
 
     name = fields.Char('Name', required=True)
@@ -160,6 +166,10 @@ class CenitSchema(models.Model):
 
 
 class CenitDataTypeTrigger(models.Model):
+    """
+       Defines triggers to data types
+    """
+
     _name = "cenit.data_type.trigger"
 
     data_type = fields.Many2one("cenit.data_type", "Data Type")
@@ -294,6 +304,9 @@ class CenitDataTypeTrigger(models.Model):
 
 
 class CenitDataType(models.Model):
+    """
+       Represents Cenit's data type
+    """
 
     @api.onchange('namespace')
     def _on_namespace_changed(self):
@@ -427,6 +440,10 @@ class CenitDataType(models.Model):
 
 
 class CenitDataTypeDomainLine(models.Model):
+    """
+       Defines domains to data types
+    """
+
     _name = 'cenit.data_type.domain_line'
 
     data_type = fields.Many2one('cenit.data_type', 'Data Type')
@@ -453,6 +470,10 @@ class CenitDataTypeDomainLine(models.Model):
 
 
 class CenitDataTypeLine(models.Model):
+    """
+       Data type's lines
+    """
+
     _name = 'cenit.data_type.line'
 
     data_type = fields.Many2one('cenit.data_type', 'Data Type')

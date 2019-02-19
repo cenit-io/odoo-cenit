@@ -16,6 +16,10 @@ re_key = re.compile("\\{(.*?)\\}")
 
 
 class CenitSerializer(models.TransientModel):
+    """
+       Class to serialize objects to be sent to Cenit
+    """
+
     _name = 'cenit.serializer'
 
     @api.model
