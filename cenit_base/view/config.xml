@@ -133,10 +133,10 @@
                         Write the text in the image
                     </p>
                     <div>
-                        <img src="img_data_here" width="150" height="48"/>
+                        <img src="img_data_here" alt="Data" width="150" height="48"/>
                     </div>
                     <group>
-                        <field name="cenit_captcha" placeholder="Your Captcha"/>
+                        <field name="cenit_captcha" alt="Captcha" placeholder="Your Captcha"/>
                     </group>
                 </separator>
             </field>

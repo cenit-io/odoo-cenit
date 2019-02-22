@@ -450,6 +450,7 @@ class CenitConnectionRole(models.Model):
 
 class CenitParameter(models.Model):
     _name = 'cenit.parameter'
+    _description = 'Cenit parameter'
 
     key = fields.Char('Key', required=True)
     value = fields.Char('Value')

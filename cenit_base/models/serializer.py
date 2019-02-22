@@ -21,6 +21,7 @@ class CenitSerializer(models.TransientModel):
     """
 
     _name = 'cenit.serializer'
+    _description = 'Cenit serializer'
 
     @api.model
     def _get_checker(self, schema_type, inlined=False):

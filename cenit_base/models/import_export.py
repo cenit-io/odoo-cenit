@@ -16,6 +16,7 @@ class ImportExport(models.TransientModel):
       Utility to import and export data mappings in json object
     """
     _name = "cenit.import_export"
+    _description = 'Import export'
 
     b_file = fields.Binary('File', help="JSON file to import")
     filename = fields.Char('File Name')

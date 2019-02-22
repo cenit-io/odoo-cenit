@@ -36,6 +36,7 @@ class CollectionInstaller(models.TransientModel):
        Class to install Cenit collections
     """
     _name = "cenit.collection.installer"
+    _description = 'Collection installer'
 
     @api.model
     def _install_namespaces(self, values, data_types_list, snippets_list):

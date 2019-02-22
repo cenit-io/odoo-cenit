@@ -171,6 +171,7 @@ class CenitDataTypeTrigger(models.Model):
     """
 
     _name = "cenit.data_type.trigger"
+    _description = 'Data type trigger'
 
     data_type = fields.Many2one("cenit.data_type", "Data Type")
     name = fields.Selection([
@@ -307,6 +308,7 @@ class CenitDataType(models.Model):
     """
        Represents Cenit's data type
     """
+    _description = 'Data type'
 
     @api.onchange('namespace')
     def _on_namespace_changed(self):
@@ -445,6 +447,7 @@ class CenitDataTypeDomainLine(models.Model):
     """
 
     _name = 'cenit.data_type.domain_line'
+    _description = 'Data type domain line'
 
     data_type = fields.Many2one('cenit.data_type', 'Data Type')
 
@@ -475,6 +478,7 @@ class CenitDataTypeLine(models.Model):
     """
 
     _name = 'cenit.data_type.line'
+    _description = 'Data type line'
 
     data_type = fields.Many2one('cenit.data_type', 'Data Type')
 

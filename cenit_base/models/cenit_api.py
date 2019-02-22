@@ -36,6 +36,7 @@ class CenitApi(models.AbstractModel):
        Model to connect to Cenit's API
     """
     _name = "cenit.api"
+    _description = "Cenit Api"
 
     @api.one
     def _get_values(self):
