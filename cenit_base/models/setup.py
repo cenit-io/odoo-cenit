@@ -456,8 +456,7 @@ class CenitParameter(models.Model):
     value = fields.Char('Value')
 
     conn_url_id = fields.Many2one(
-        'cenit.connection',
-        string='Connection'
+        'cenit.connection'
     )
 
     conn_header_id = fields.Many2one(
@@ -466,23 +465,19 @@ class CenitParameter(models.Model):
     )
 
     conn_template_id = fields.Many2one(
-        'cenit.connection',
-        string='Connection'
+        'cenit.connection'
     )
 
     hook_url_id = fields.Many2one(
-        'cenit.webhook',
-        string='Webhook'
+        'cenit.webhook'
     )
 
     hook_header_id = fields.Many2one(
-        'cenit.webhook',
-        string='Webhook'
+        'cenit.webhook'
     )
 
     hook_template_id = fields.Many2one(
-        'cenit.webhook',
-        string='Webhook'
+        'cenit.webhook'
     )
 
     operation_url_id = fields.Many2one(
@@ -491,18 +486,15 @@ class CenitParameter(models.Model):
     )
 
     resource_url_id = fields.Many2one(
-        'cenit.resource',
-        string='Resource'
+        'cenit.resource'
     )
 
     resource_header_id = fields.Many2one(
-        'cenit.resource',
-        string='Resource'
+        'cenit.resource'
     )
 
     resource_template_id = fields.Many2one(
-        'cenit.resource',
-        string='Resource'
+        'cenit.resource'
     )
 
 
@@ -539,7 +531,7 @@ class CenitResource(models.Model):
                 operations_list += operation_name[1]
         self.operations_list = operations_list
 
-    operations_list = fields.Text(compute="_get_operations_list", string="Operations")
+    operations_list = fields.Text(compute="_get_operations_list", string="Operations List")
     url_parameters = fields.One2many(
         'cenit.parameter',
         'resource_url_id',

@@ -236,7 +236,7 @@
         <record id="todo_wizard_cenit_install_account" model="ir.actions.todo">
             <field name="action_id" ref="action_wizard_cenit_install_account"/>
             <field name="sequence">0</field>
-            <field name="type">automatic</field>
+            <!-- <field name="type">automatic</field> -->
         </record>
 
     </data>
