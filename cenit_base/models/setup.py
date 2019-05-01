@@ -754,7 +754,7 @@ class CenitFlow(models.Model):
         'cenit.data_type', string='Source data type'
     )
     webhook = fields.Reference(string='Webhook',
-                               selection=[('cenit.webhook', 'Plain'), ('cenit.operation', 'Operation')], required=True)
+                               selection=[('cenit.webhook', 'Plain'), ('cenit.operation', 'Operation')])
     connection_role = fields.Many2one(
         'cenit.connection.role', string='Connection role'
     )

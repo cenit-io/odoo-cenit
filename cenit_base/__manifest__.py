@@ -21,6 +21,7 @@
 
 {
     "name": "Cenit IO Integrations Client",
+    "category": "Hidden",
     "version": "0.10.1",
     "application": True,
     "author": "Cenit IO",
