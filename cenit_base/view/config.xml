@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
+<odoo>
     <data>
-
         <menuitem id="menu_cenit_integration" name="Cenit Integration"
                   web_icon="cenit_base,static/description/icon.png"/>
 
@@ -147,7 +146,6 @@
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.account.settings</field>
             <field name="view_id" ref="cenit_sign_up_view"/>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -185,7 +183,6 @@
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.hub.settings</field>
             <field name="view_id" ref="wizard_cenit_install"/>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -228,7 +225,6 @@
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.account.settings</field>
             <field name="view_id" ref="wizard_cenit_install_account"/>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -238,6 +234,5 @@
             <field name="sequence">0</field>
             <!-- <field name="type">automatic</field> -->
         </record>
-
     </data>
-</openerp>
+</odoo>

@@ -22,7 +22,7 @@
 {
     "name": "Cenit IO Integrations Client",
     "category": "Hidden",
-    "version": "0.10.1",
+    "version": "0.13.1",
     "application": True,
     "author": "Cenit IO",
     "website": "https://cenit.io",
@@ -37,10 +37,10 @@
         "python": ["inflect", "pyasn1", "OpenSSL", "ndg"]
     },
     "data": [
-        "security/ir.model.access.csv",
+        # "security/ir.model.access.csv",
         "view/config.xml",
         "view/data_definitions.xml",
-        "view/setup.xml",
+        # "view/setup.xml",
     ],
     "images": [
         "static/screenshots/main.png"

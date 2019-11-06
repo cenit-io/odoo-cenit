@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
+<odoo>
     <data>
-
         <menuitem id="menu_cenit_collections" name="Collections"
                   parent="menu_cenit_integration" sequence="0"/>
 
@@ -33,7 +32,6 @@
             <field name="name">Namespaces</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.namespace</field>
-            <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
         </record>
 
@@ -77,7 +75,6 @@
             <field name="name">Data types</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.schema</field>
-            <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
         </record>
 
@@ -174,14 +171,22 @@
             </field>
         </record>
 
-        <act_window name="Export mappings" res_model="cenit.import_export" view_id="view_export_data_types"
-                    src_model="cenit.data_type"
-                    key2="client_action_multi" view_mode="form" target="new" view_type="form" id="act_new_sub_menu"/>
+        <act_window
+                id="act_new_sub_menu"
+                name="Export mappings"
+                res_model="cenit.import_export"
+                binding_model="cenit.data_type"
+                binding_views="form"
+                view_mode="form"
+        />
+
+        <!--        <act_window name="Export mappings" res_model="cenit.import_export" view_id="view_export_data_types"-->
+        <!--                    src_model="cenit.data_type"-->
+        <!--                    key2="client_action_multi" view_mode="form" target="new" id="act_new_sub_menu"/>-->
 
         <record id="action_cenit_data_type" model="ir.actions.act_window">
             <field name="name">Mappings</field>
             <field name="res_model">cenit.data_type</field>
-            <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_cenit_data_type_tree"/>
         </record>
@@ -197,8 +202,8 @@
             <field name="arch" type="xml">
                 <form>
                     <group>
-                      <field name="b_file" filename="filename"/>
-                      <field name="filename" invisible="1"/>
+                        <field name="b_file" filename="filename"/>
+                        <field name="filename" invisible="1"/>
                     </group>
                     <footer>
                         <button name="import_data_types" type="object" string="_Import" class="btn-primary"/>
@@ -207,13 +212,21 @@
             </field>
         </record>
 
-        <act_window name="Import mappings" res_model="cenit.import_export"
-                    view_id="view_import_data_types" src_model="cenit.data_type"
-                    view_mode="form" target="new" view_type="form" id="action_cenit_import_datatype"/>
+        <act_window
+                id="action_cenit_import_datatype"
+                name="Import mappings"
+                res_model="cenit.import_export"
+                binding_model="cenit.data_type"
+                binding_views="form"
+                view_mode="form"
+        />
+
+        <!--                <act_window name="Import mappings" res_model="cenit.import_export"-->
+        <!--                            view_id="view_import_data_types" src_model="cenit.data_type"-->
+        <!--                            view_mode="form" target="new" view_type="form" id="action_cenit_import_datatype"/>-->
 
         <menuitem id="menu_cenit_datatype_import" name="Import Mappings"
                   parent="menu_cenit_data" sequence="2"
                   action="action_cenit_import_datatype"/>
-
     </data>
-</openerp>
+</odoo>

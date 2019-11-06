@@ -29,6 +29,10 @@ from odoo import models, api, exceptions
 _logger = logging.getLogger(__name__)
 
 API_PATH = "/api/v2"
+# proxies = {
+#  "http": "http://10.10.10.10:8000",
+#  "https": "http://10.10.10.10:8000",
+# }
 
 
 class CenitApi(models.AbstractModel):
@@ -38,7 +42,6 @@ class CenitApi(models.AbstractModel):
     _name = "cenit.api"
     _description = "Cenit Api"
 
-    @api.one
     def _get_values(self):
         vals = self.read([])[0]
         vals.pop('create_uid')
@@ -51,7 +54,6 @@ class CenitApi(models.AbstractModel):
 
         return vals
 
-    @api.one
     def _calculate_update(self, values):
         update = {}
         for k, v in values.items():
@@ -63,7 +65,6 @@ class CenitApi(models.AbstractModel):
 
         return update
 
-    @api.one
     def push_to_cenit(self):
         path = "/setup/push"
         vals = self._get_values()
@@ -95,7 +96,6 @@ class CenitApi(models.AbstractModel):
 
         return rc
 
-    @api.one
     def drop_from_cenit(self):
         path = "/setup/%s/%s" % (self.cenit_model, self.cenitID)
 
@@ -270,7 +270,6 @@ class CenitApi(models.AbstractModel):
 
         return obj
 
-    @api.multi
     def write(self, vals):
         res = super(CenitApi, self).write(vals)
 
@@ -296,7 +295,6 @@ class CenitApi(models.AbstractModel):
 
         return res
 
-    @api.one
     def unlink(self, **kwargs):
         rc = True
         try:

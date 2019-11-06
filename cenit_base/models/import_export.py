@@ -4,7 +4,7 @@ import json
 from odoo import models, fields, http, api, exceptions, tools, _
 
 from odoo.http import request
-from odoo.addons.web.controllers.main import serialize_exception, content_disposition, binary_content
+from odoo.addons.web.controllers.main import serialize_exception, content_disposition
 import base64
 from odoo.exceptions import UserError
 
@@ -21,7 +21,6 @@ class ImportExport(models.TransientModel):
     b_file = fields.Binary('File', help="JSON file to import")
     filename = fields.Char('File Name')
 
-    @api.multi
     def export_data_types(self, context={}):
         datatype_pool = self.env['cenit.data_type']
 
@@ -65,7 +64,6 @@ class ImportExport(models.TransientModel):
             'target': 'self',
         }
 
-    @api.one
     def import_data_types(self):
         self.ensure_one()
         try:

@@ -70,7 +70,6 @@ class CenitConnection(models.Model):
          'The name must be unique for each namespace!'),
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'name': self.name,
@@ -128,7 +127,6 @@ class CenitConnection(models.Model):
 
         return update
 
-    @api.one
     def _get_conn_data(self):
         path = "/setup/connection/%s" % self.cenitID
         rc = self.get(path)
@@ -216,7 +214,6 @@ class CenitWebhook(models.Model):
          'The name must be unique for each namespace!')
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'name': self.name,
@@ -330,7 +327,6 @@ class CenitOperation(models.Model):
          'The method must be unique for each resource!')
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'method': self.method,
@@ -400,7 +396,6 @@ class CenitConnectionRole(models.Model):
          'The name must be unique for each namespace!'),
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'name': self.name,
@@ -518,7 +513,6 @@ class CenitResource(models.Model):
         string='Operations'
     )
 
-    @api.one
     @api.depends('operations')
     def _get_operations_list(self):
         self.ensure_one()
@@ -553,7 +547,6 @@ class CenitResource(models.Model):
          'The name must be unique for each namespace!')
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'name': self.name,
@@ -613,7 +606,6 @@ class CenitResource(models.Model):
             vals['namespace'] = vals['namespace']['id']
         return super(CenitResource, self).create(vals)
 
-    @api.multi
     def write(self, vals):
         res = super(CenitResource, self).write(vals)
         if 'operations' in vals:
@@ -658,7 +650,6 @@ class CenitEvent(models.Model):
          'The name must be unique for each namespace!')
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'namespace': self.namespace.name,
@@ -681,7 +672,6 @@ class CenitEvent(models.Model):
 
         return vals
 
-    @api.one
     def _calculate_update(self, values):
         update = {}
         for k, v in values.items():
@@ -770,7 +760,6 @@ class CenitFlow(models.Model):
          'The name must be unique for each namespace!')
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'namespace': self.namespace.name,
@@ -826,7 +815,6 @@ class CenitFlow(models.Model):
 
         return vals
 
-    @api.one
     def _calculate_update(self, values):
         update = {}
         for k, v in values.items():
@@ -882,7 +870,6 @@ class CenitFlow(models.Model):
             }
         }
 
-    @api.one
     def _get_direction(self):
         my_url = self.env['ir.config_parameter'].get_param(
             'web.base.url', default=''
@@ -901,7 +888,6 @@ class CenitFlow(models.Model):
 
         return rc
 
-    @api.one
     def _get_data_types(self, dt_id):
         dt_pool = self.env['cenit.data_type']
 
@@ -933,7 +919,6 @@ class CenitFlow(models.Model):
 
         return rc
 
-    @api.one
     def set_receive_execution(self):
         return True
 
@@ -970,7 +955,6 @@ class CenitFlow(models.Model):
                 res = True
         return res
 
-    @api.one
     def set_send_execution(self):
         return True
 
@@ -1038,12 +1022,10 @@ class CenitFlow(models.Model):
             return flow._send(data)
         return False
 
-    @api.one
     def _send(self, data):
         method = "http_post"
         return getattr(self, method)(data)
 
-    @api.one
     def http_post(self, data):
         path = "/%s/%s" % (self.schema.namespace.slug, self.schema.slug,)
 
