@@ -29,10 +29,6 @@ from odoo import models, api, exceptions
 _logger = logging.getLogger(__name__)
 
 API_PATH = "/api/v2"
-# proxies = {
-#  "http": "http://10.10.10.10:8000",
-#  "https": "http://10.10.10.10:8000",
-# }
 
 
 class CenitApi(models.AbstractModel):

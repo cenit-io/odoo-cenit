@@ -139,7 +139,8 @@ class ImportExport(models.TransientModel):
             for trigger in data['triggers']:
                 vals = {'data_type': dt.id, 'name': trigger['name'], 'cron_lapse': trigger['cron_lapse'],
                         'cron_units': trigger['cron_units'], 'cron_restrictions': trigger['cron_restrictions'],
-                        'cron_name': trigger['cron_name']}
+                        # 'cron_name': trigger['cron_name']
+                        }
                 trigger_pool.create(vals)
 
             for line in data['lines']:
@@ -163,8 +164,10 @@ class Binary(http.Controller):
         if not record_id:
             return request.not_found()
         else:
-            status, headers, content = binary_content(model=model, id=record_id, field=binary_field,
-                                                      filename_field=filename_field, download=True)
+            status, headers, content = request.env['ir.http'].binary_content(model=model, id=record_id,
+                                                                             field=binary_field,
+                                                                             filename_field=filename_field,
+                                                                             download=True)
         if status != 200:
             response = request.not_found()
         else:

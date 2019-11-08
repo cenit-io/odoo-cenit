@@ -76,7 +76,7 @@
             <field name="name">Connections</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.connection</field>
-            <field name="view_type">form</field>
+<!--            <field name="view_type">form</field>-->
             <field name="view_mode">tree,form</field>
         </record>
 
@@ -143,7 +143,7 @@
             <field name="name">Roles</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.connection.role</field>
-            <field name="view_type">form</field>
+<!--            <field name="view_type">form</field>-->
             <field name="view_mode">tree,form</field>
         </record>
 
@@ -217,7 +217,7 @@
             <field name="name">Webhooks</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.webhook</field>
-            <field name="view_type">form</field>
+<!--            <field name="view_type">form</field>-->
             <field name="view_mode">tree,form</field>
         </record>
 
@@ -271,7 +271,7 @@
             <field name="name">Operations</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.operation</field>
-            <field name="view_type">form</field>
+<!--            <field name="view_type">form</field>-->
             <field name="view_mode">tree,form</field>
         </record>
 
@@ -345,7 +345,7 @@
             <field name="name">Resources</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.resource</field>
-            <field name="view_type">form</field>
+<!--            <field name="view_type">form</field>-->
             <field name="view_mode">tree,form</field>
         </record>
 
@@ -412,7 +412,7 @@
         <record id="action_cenit_flow" model="ir.actions.act_window">
             <field name="name">Flows</field>
             <field name="res_model">cenit.flow</field>
-            <field name="view_type">form</field>
+<!--            <field name="view_type">form</field>-->
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_cenit_flow_tree"/>
         </record>
@@ -459,7 +459,7 @@
             <field name="name">Events</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">cenit.event</field>
-            <field name="view_type">form</field>
+<!--            <field name="view_type">form</field>-->
             <field name="view_mode">tree,form</field>
             <field name="context">{"odoo_editing": True}</field>
             <!--<field name="view_id" ref="view_cenit_event_tree"/>-->
@@ -487,7 +487,7 @@
         <record id="action_cenit_translator" model="ir.actions.act_window">
             <field name="name">Translators</field>
             <field name="res_model">cenit.translator</field>
-            <field name="view_type">form</field>
+<!--            <field name="view_type">form</field>-->
             <field name="view_mode">tree</field>
             <field name="view_id" ref="view_cenit_translator_tree"/>
         </record>

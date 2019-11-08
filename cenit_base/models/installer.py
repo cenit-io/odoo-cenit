@@ -693,7 +693,7 @@ class CollectionInstaller(models.TransientModel):
         if isinstance(rc, list):
             rc = rc[0]
         data = rc
-        if 'collections' in data:
+        if 'collections' in data and len(data['collections']):
             data = data['collections'][0]
 
         if not params:
