@@ -317,7 +317,10 @@ class CenitDataType(models.Model):
 
     @api.depends('schema')
     def _compute_root(self):
-        self.cenit_root = self.schema.cenit_root()[0]
+        if self.schema:
+            self.cenit_root = self.schema.cenit_root()[0]
+        else:
+            self.cenit_root = ''
 
     _name = 'cenit.data_type'
 
