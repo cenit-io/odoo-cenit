@@ -421,14 +421,14 @@ class CenitDataType(models.Model):
         match = False
         # domain = self.get_search_domain()[0]
         domain = self.get_search_domain()
-        if domain:
-            # if isinstance(domain, list) and len(domain) > 1:
-            #     domain = [item for subdomain in domain for item in subdomain]
-            # elif isinstance(domain[0], list):
-            if isinstance(domain[0], list):
-                domain = domain[0]
-            domain.append(("id", "=", obj.id))
-            match = obj.search(domain) or False
+        # if domain:
+        #     # if isinstance(domain, list) and len(domain) > 1:
+        #     #     domain = [item for subdomain in domain for item in subdomain]
+        #     # elif isinstance(domain[0], list):
+        #     if isinstance(domain[0], list):
+        #         domain = domain[0]
+        domain.append(("id", "=", obj.id))
+        match = obj.search(domain) or False
         return match
 
 
