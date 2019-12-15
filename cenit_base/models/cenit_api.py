@@ -293,19 +293,20 @@ class CenitApi(models.AbstractModel):
 
     def unlink(self, **kwargs):
         rc = True
-        try:
-            rc = self.drop_from_cenit()
-        except requests.ConnectionError as e:
-            _logger.exception(e)
-            raise exceptions.AccessError("Error trying to connect to Cenit.")
-        except exceptions.AccessError:
-            raise exceptions.AccessError("Error trying to connect to Cenit.")
-        except Exception as e:
-            _logger.exception(e)
-            raise exceptions.ValidationError("Cenit returned with errors")
+        for record in self:
+            try:
+                rc = record.drop_from_cenit()
+            except requests.ConnectionError as e:
+                _logger.exception(e)
+                raise exceptions.AccessError("Error trying to connect to Cenit.")
+            except exceptions.AccessError:
+                raise exceptions.AccessError("Error trying to connect to Cenit.")
+            except Exception as e:
+                _logger.exception(e)
+                raise exceptions.ValidationError("Cenit returned with errors")
 
-        if not rc:
-            raise exceptions.ValidationError("Cenit returned with errors")
+            if not rc:
+                raise exceptions.ValidationError("Cenit returned with errors")
 
         rc = super(CenitApi, self).unlink(**kwargs)
         return rc

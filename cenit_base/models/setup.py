@@ -753,7 +753,7 @@ class CenitFlow(models.Model):
     @api.depends('webhook')
     def _compute_method(self):
         for record in self:
-            record.method = record.webhook.method
+            record.method = record.webhook.method if record.webhook else ""
 
     method = fields.Char(compute="_compute_method")
 
@@ -835,7 +835,7 @@ class CenitFlow(models.Model):
             },
             "domain": {
                 "connection_role": [
-                    ('webhooks', 'in', self.webhook.id)
+                    ('webhooks', 'in', self.webhook.id if self.webhook else [])
                 ]
             }
         }
@@ -866,8 +866,8 @@ class CenitFlow(models.Model):
             },
             'domain': {
                 'cenit_translator': [
-                    ('schema', 'in', (self.schema.id, False)),
-                    ('type_', '=', {'get': 'Import', }.get(self.webhook.method, 'Export'))
+                    ('schema', 'in', (self.schema.id, False) if self.schema else (False,)),
+                    ('type_', '=', {'get': 'Import', }.get(self.method, 'Export'))
                 ]
             }
         }
