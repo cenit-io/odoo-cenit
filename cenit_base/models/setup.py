@@ -516,15 +516,17 @@ class CenitResource(models.Model):
 
     @api.depends('operations')
     def _get_operations_list(self):
-        self.ensure_one()
-        operations_list = ""
-        for operation in self.operations:
-            if operations_list != "":
-                operations_list += " and "
-            operation_name = operation.name_get()[0]
-            if operation_name:
-                operations_list += operation_name[1]
-        self.operations_list = operations_list
+        #Fixing singleton bug
+        # self.ensure_one()
+        for record in self:
+            operations_list = ""
+            for operation in record.operations:
+                if operations_list != "":
+                    operations_list += " and "
+                operation_name = operation.name_get()[0]
+                if operation_name:
+                    operations_list += operation_name[1]
+            record.operations_list = operations_list
 
     operations_list = fields.Text(compute="_get_operations_list", string="Operations List")
     url_parameters = fields.One2many(
