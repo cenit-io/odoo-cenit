@@ -100,7 +100,6 @@ class CenitSettings(models.TransientModel):
     # Values setters
     ############################################################################
 
-    @api.multi
     def set_values(self):
         super(CenitSettings, self).set_values()
         for record in self:

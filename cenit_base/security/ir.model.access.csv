@@ -15,3 +15,5 @@ access_cenit_namespace_system,cenit.namespace.system,model_cenit_namespace,base.
 access_cenit_data_type_domain_line_system,cenit.data_type.domain.line.system,model_cenit_data_type_domain_line,base.group_user,1,1,1,1
 access_cenit_data_type_trigger_system,cenit.data_type.trigger.system,model_cenit_data_type_trigger,base.group_user,1,1,1,1
 access_ir_config_parameter_system,base.model_ir_config_parameter,base.model_ir_config_parameter,base.group_user,1,0,0,0
+access_cenit_account_settings,cenit.account.settings,model_cenit_account_settings,base.group_user,1,1,1,1
+access_cenit_hub_settings,cenit.hub.settings,model_cenit_hub_settings,base.group_user,1,1,1,1

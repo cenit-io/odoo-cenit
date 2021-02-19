@@ -22,7 +22,7 @@
 import requests
 import json
 import logging
-
+from requests import Request, Session
 from odoo import models, api, exceptions
 
 
@@ -30,11 +30,39 @@ _logger = logging.getLogger(__name__)
 
 API_PATH = "/api/v2"
 
+API_EDITPATH_MAPPER = {
+                    'cenit.namespace': '/setup/namespace/{}.json',
+                    # 'cenit.schema': '/setup/schema.json',
+                    'cenit.schema': '/setup/json_data_type/{}.json',
+                    'cenit.connection': '/setup/connection/{}.json',
+                    'cenit.webhook': '/setup/plain_webhook/{}.json',
+                    'cenit.operation': '/setup/operation/{}.json',
+                    'cenit.connection.role': '/setup/connection_role/{}.json',
+                    'cenit.resource': '/setup/resource/{}.json',
+                    'cenit.flow': '/setup/flow/{}.json'
+                 }
+
+
+API_ADDPATH_MAPPER = {
+                    'cenit.namespace': '/setup/namespace.json',
+                    # 'cenit.schema': '/setup/schema.json',
+                    'cenit.schema': '/setup/json_data_type.json',
+                    'cenit.connection': '/setup/connection.json',
+                    'cenit.webhook': '/setup/plain_webhook.json',
+                    'cenit.operation': '/setup/operation.json',
+                    'cenit.connection.role': '/setup/connection_role.json',
+                    'cenit.resource': '/setup/resource.json',
+                    'cenit.flow': '/setup/flow.json'
+                 }
+
 
 class CenitApi(models.AbstractModel):
+    """
+       Model to connect to Cenit's API
+    """
     _name = "cenit.api"
+    _description = "Cenit Api"
 
-    @api.one
     def _get_values(self):
         vals = self.read([])[0]
         vals.pop('create_uid')
@@ -47,32 +75,31 @@ class CenitApi(models.AbstractModel):
 
         return vals
 
-    @api.one
     def _calculate_update(self, values):
         update = {}
         for k, v in values.items():
             _logger.info("\n\n[K] %s :: [V] %s\n", k, v)
-            if k == "%s" % (self.cenit_models,):
-                update = {
-                    'cenitID': v[0]['id']
-                }
+            # if k == "%s" % (self.cenit_models,):
+            update = {
+                'cenitID': v[0]['id']
+            }
 
         return update
 
-    @api.one
-    def push_to_cenit(self):
-        path = "/setup/push"
+    def push_to_cenit(self, path_param):
+        path = path_param
         vals = self._get_values()
-        if isinstance(vals, list):
-            vals = vals[0]
-        values = {
-            self.cenit_model: vals
-        }
-        if 'namespace' in values[self.cenit_model] and isinstance(values[self.cenit_model]['namespace'], int):
-            values[self.cenit_model]['namespace'] = self.namespace.name
+        # if isinstance(vals, list):
+        #     vals = vals[0]
+        # values = {
+        #     self.cenit_model: vals
+        # }
+        # if 'namespace' in values[self.cenit_model] and isinstance(values[self.cenit_model]['namespace'], int):
+        #     values[self.cenit_model]['namespace'] = self.namespace.name
         rc = False
         try:
-            rc = self.post(path, values)
+            # rc = self.post(path, values)
+            rc = self.post(path, vals)
             _logger.info("\n\nRC:: %s\n", rc)
 
             if rc.get('success', False):
@@ -91,9 +118,9 @@ class CenitApi(models.AbstractModel):
 
         return rc
 
-    @api.one
-    def drop_from_cenit(self):
-        path = "/setup/%s/%s" % (self.cenit_model, self.cenitID)
+    def drop_from_cenit(self, path_param):
+        # path = "/setup/%s/%s" % (self.cenit_model, self.cenitID)
+        path = path_param
 
         rc = self.delete(path)
         return rc
@@ -108,7 +135,21 @@ class CenitApi(models.AbstractModel):
 
         try:
             _logger.info("[POST] %s ? %s {%s}", url, payload, headers)
-            r = requests.post(url, data=payload, headers=headers)
+            # r = requests.post(url, data=payload, headers=headers)
+
+            options = {
+                'headers': headers,
+                'data': payload
+            }
+
+            session = Session()
+            request = Request('POST', url, **options)
+            prepped = request.prepare()
+            r = session.send(prepped)
+
+            print(r.json())
+
+
         except Exception as e:
             _logger.error(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
@@ -166,7 +207,20 @@ class CenitApi(models.AbstractModel):
 
         try:
             _logger.info("[PUT] %s ? %s {%s}", url, payload, headers)
-            r = requests.put(url, data=payload, headers=headers)
+            # r = requests.put(url, data=payload, headers=headers)
+
+            options = {
+                'headers': headers,
+                'data': payload
+            }
+
+            session = Session()
+            request = Request('PUT', url, **options)
+            prepped = request.prepare()
+            r = session.send(prepped)
+
+            print(r.json())
+
         except Exception as e:
             _logger.error(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
@@ -195,7 +249,20 @@ class CenitApi(models.AbstractModel):
 
         try:
             _logger.info("[DEL] %s ? {%s}", url, headers)
-            r = requests.delete(url, headers=headers)
+            """https://cenit.io/json_data_type/5fa194ffb90e8128fe006b8d/simple_delete_data_type"""
+            # r = requests.delete(url, headers=headers)
+
+            options = {
+                'headers': headers,
+            }
+
+            session = Session()
+            request = Request('DELETE', url, **options)
+            prepped = request.prepare()
+            r = session.send(prepped)
+
+            print(r.json())
+
         except Exception as e:
             _logger.error(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
@@ -235,10 +302,15 @@ class CenitApi(models.AbstractModel):
 
     @api.model
     def headers(self, config):
+        # return {
+        #     'Content-Type': 'application/json',
+        #     'X-User-Access-Key': config.get('cenit_user_key'),
+        #     'X-User-Access-Token': config.get('cenit_user_token')
+        # }
         return {
             'Content-Type': 'application/json',
-            'X-User-Access-Key': config.get('cenit_user_key'),
-            'X-User-Access-Token': config.get('cenit_user_token')
+            'X-Tenant-Access-Key': config.get('cenit_user_key'),
+            'X-Tenant-Access-Token': config.get('cenit_user_token')
         }
 
     @api.model
@@ -251,7 +323,8 @@ class CenitApi(models.AbstractModel):
 
         rc = False
         try:
-            rc = obj.push_to_cenit()
+            path_param = API_ADDPATH_MAPPER.get(self._name) or "/setup/push"
+            rc = obj.push_to_cenit(path_param)
         except requests.ConnectionError as e:
             _logger.exception(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
@@ -266,7 +339,6 @@ class CenitApi(models.AbstractModel):
 
         return obj
 
-    @api.multi
     def write(self, vals):
         res = super(CenitApi, self).write(vals)
 
@@ -280,7 +352,8 @@ class CenitApi(models.AbstractModel):
                 return res
 
         try:
-            self.push_to_cenit()
+            path_param = API_EDITPATH_MAPPER.get(self._name).format(self.cenitID) or "/setup/push"
+            self.push_to_cenit(path_param)
         except requests.ConnectionError as e:
             _logger.exception(e)
             raise exceptions.AccessError("Error trying to connect to Cenit.")
@@ -292,22 +365,25 @@ class CenitApi(models.AbstractModel):
 
         return res
 
-    @api.one
     def unlink(self, **kwargs):
         rc = True
-        try:
-            rc = self.drop_from_cenit()
-        except requests.ConnectionError as e:
-            _logger.exception(e)
-            raise exceptions.AccessError("Error trying to connect to Cenit.")
-        except exceptions.AccessError:
-            raise exceptions.AccessError("Error trying to connect to Cenit.")
-        except Exception as e:
-            _logger.exception(e)
-            raise exceptions.ValidationError("Cenit returned with errors")
+        if self._name == 'cenit.schema':
+            raise exceptions.ValidationError("No es posible eliminar registros de este modelo, porque la sincronizacion con el api de CENIT \n para esta funcionalidad no esta disponible.")
+        for record in self:
+            try:
+                path_param = API_EDITPATH_MAPPER.get(self._name).format(self.cenitID) or "/setup/push"
+                rc = record.drop_from_cenit(path_param)
+            except requests.ConnectionError as e:
+                _logger.exception(e)
+                raise exceptions.AccessError("Error trying to connect to Cenit.")
+            except exceptions.AccessError:
+                raise exceptions.AccessError("Error trying to connect to Cenit.")
+            except Exception as e:
+                _logger.exception(e)
+                raise exceptions.ValidationError("Cenit returned with errors")
 
-        if not rc:
-            raise exceptions.ValidationError("Cenit returned with errors")
+            if not rc:
+                raise exceptions.ValidationError("Cenit returned with errors")
 
         rc = super(CenitApi, self).unlink(**kwargs)
         return rc

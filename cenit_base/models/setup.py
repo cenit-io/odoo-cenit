@@ -70,7 +70,6 @@ class CenitConnection(models.Model):
          'The name must be unique for each namespace!'),
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'name': self.name,
@@ -128,7 +127,6 @@ class CenitConnection(models.Model):
 
         return update
 
-    @api.one
     def _get_conn_data(self):
         path = "/setup/connection/%s" % self.cenitID
         rc = self.get(path)
@@ -157,9 +155,10 @@ class CenitWebhook(models.Model):
 
     @api.depends('method')
     def _compute_purpose(self):
-        self.purpose = {
-            'get': 'send'
-        }.get(self.method, 'receive')
+        for record in self:
+            record.purpose = {
+                'get': 'send'
+            }.get(record.method, 'receive')
 
     _name = 'cenit.webhook'
     _inherit = 'cenit.api'
@@ -216,7 +215,6 @@ class CenitWebhook(models.Model):
          'The name must be unique for each namespace!')
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'name': self.name,
@@ -330,7 +328,6 @@ class CenitOperation(models.Model):
          'The method must be unique for each resource!')
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'method': self.method,
@@ -400,7 +397,6 @@ class CenitConnectionRole(models.Model):
          'The name must be unique for each namespace!'),
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'name': self.name,
@@ -450,13 +446,13 @@ class CenitConnectionRole(models.Model):
 
 class CenitParameter(models.Model):
     _name = 'cenit.parameter'
+    _description = 'Cenit parameter'
 
     key = fields.Char('Key', required=True)
     value = fields.Char('Value')
 
     conn_url_id = fields.Many2one(
-        'cenit.connection',
-        string='Connection'
+        'cenit.connection'
     )
 
     conn_header_id = fields.Many2one(
@@ -465,23 +461,19 @@ class CenitParameter(models.Model):
     )
 
     conn_template_id = fields.Many2one(
-        'cenit.connection',
-        string='Connection'
+        'cenit.connection'
     )
 
     hook_url_id = fields.Many2one(
-        'cenit.webhook',
-        string='Webhook'
+        'cenit.webhook'
     )
 
     hook_header_id = fields.Many2one(
-        'cenit.webhook',
-        string='Webhook'
+        'cenit.webhook'
     )
 
     hook_template_id = fields.Many2one(
-        'cenit.webhook',
-        string='Webhook'
+        'cenit.webhook'
     )
 
     operation_url_id = fields.Many2one(
@@ -490,18 +482,15 @@ class CenitParameter(models.Model):
     )
 
     resource_url_id = fields.Many2one(
-        'cenit.resource',
-        string='Resource'
+        'cenit.resource'
     )
 
     resource_header_id = fields.Many2one(
-        'cenit.resource',
-        string='Resource'
+        'cenit.resource'
     )
 
     resource_template_id = fields.Many2one(
-        'cenit.resource',
-        string='Resource'
+        'cenit.resource'
     )
 
 
@@ -525,20 +514,21 @@ class CenitResource(models.Model):
         string='Operations'
     )
 
-    @api.one
     @api.depends('operations')
     def _get_operations_list(self):
-        self.ensure_one()
-        operations_list = ""
-        for operation in self.operations:
-            if operations_list != "":
-                operations_list += " and "
-            operation_name = operation.name_get()[0]
-            if operation_name:
-                operations_list += operation_name[1]
-        self.operations_list = operations_list
+        #Fixing singleton bug
+        # self.ensure_one()
+        for record in self:
+            operations_list = ""
+            for operation in record.operations:
+                if operations_list != "":
+                    operations_list += " and "
+                operation_name = operation.name_get()[0]
+                if operation_name:
+                    operations_list += operation_name[1]
+            record.operations_list = operations_list
 
-    operations_list = fields.Text(compute="_get_operations_list", string="Operations")
+    operations_list = fields.Text(compute="_get_operations_list", string="Operations List")
     url_parameters = fields.One2many(
         'cenit.parameter',
         'resource_url_id',
@@ -560,7 +550,6 @@ class CenitResource(models.Model):
          'The name must be unique for each namespace!')
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'name': self.name,
@@ -568,7 +557,8 @@ class CenitResource(models.Model):
             'description': self.description or '',
             'namespace': self.namespace.name,
             '_type': 'Setup::Resource',
-            '_primary': ['name', 'namespace']
+            # '_primary': ['name', 'namespace']
+            '_primary': ['namespace']
         }
 
         if self.cenitID:
@@ -620,7 +610,6 @@ class CenitResource(models.Model):
             vals['namespace'] = vals['namespace']['id']
         return super(CenitResource, self).create(vals)
 
-    @api.multi
     def write(self, vals):
         res = super(CenitResource, self).write(vals)
         if 'operations' in vals:
@@ -665,7 +654,6 @@ class CenitEvent(models.Model):
          'The name must be unique for each namespace!')
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'namespace': self.namespace.name,
@@ -688,7 +676,6 @@ class CenitEvent(models.Model):
 
         return vals
 
-    @api.one
     def _calculate_update(self, values):
         update = {}
         for k, v in values.items():
@@ -761,14 +748,15 @@ class CenitFlow(models.Model):
         'cenit.data_type', string='Source data type'
     )
     webhook = fields.Reference(string='Webhook',
-                               selection=[('cenit.webhook', 'Plain'), ('cenit.operation', 'Operation')], required=True)
+                               selection=[('cenit.webhook', 'Plain'), ('cenit.operation', 'Operation')])
     connection_role = fields.Many2one(
         'cenit.connection.role', string='Connection role'
     )
 
     @api.depends('webhook')
     def _compute_method(self):
-        self.method = self.webhook.method
+        for record in self:
+            record.method = record.webhook.method if record.webhook else ""
 
     method = fields.Char(compute="_compute_method")
 
@@ -777,7 +765,6 @@ class CenitFlow(models.Model):
          'The name must be unique for each namespace!')
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'namespace': self.namespace.name,
@@ -833,15 +820,14 @@ class CenitFlow(models.Model):
 
         return vals
 
-    @api.one
     def _calculate_update(self, values):
         update = {}
         for k, v in values.items():
-            if k == "%s" % (self.cenit_models,):
-                update = {
-                    'cenitID': v[0]['id'],
+            # if k == "%s" % (self.cenit_models,):
+            update = {
+                'cenitID': v[0]['id'],
 
-                }
+            }
         return update
 
     @api.onchange('webhook')
@@ -852,7 +838,7 @@ class CenitFlow(models.Model):
             },
             "domain": {
                 "connection_role": [
-                    ('webhooks', 'in', self.webhook.id)
+                    ('webhooks', 'in', self.webhook.id if self.webhook else [])
                 ]
             }
         }
@@ -883,13 +869,12 @@ class CenitFlow(models.Model):
             },
             'domain': {
                 'cenit_translator': [
-                    ('schema', 'in', (self.schema.id, False)),
-                    ('type_', '=', {'get': 'Import', }.get(self.webhook.method, 'Export'))
+                    ('schema', 'in', (self.schema.id, False) if self.schema else (False,)),
+                    ('type_', '=', {'get': 'Import', }.get(self.method, 'Export'))
                 ]
             }
         }
 
-    @api.one
     def _get_direction(self):
         my_url = self.env['ir.config_parameter'].get_param(
             'web.base.url', default=''
@@ -908,7 +893,6 @@ class CenitFlow(models.Model):
 
         return rc
 
-    @api.one
     def _get_data_types(self, dt_id):
         dt_pool = self.env['cenit.data_type']
 
@@ -940,7 +924,6 @@ class CenitFlow(models.Model):
 
         return rc
 
-    @api.one
     def set_receive_execution(self):
         return True
 
@@ -977,7 +960,6 @@ class CenitFlow(models.Model):
                 res = True
         return res
 
-    @api.one
     def set_send_execution(self):
         return True
 
@@ -1045,12 +1027,10 @@ class CenitFlow(models.Model):
             return flow._send(data)
         return False
 
-    @api.one
     def _send(self, data):
         method = "http_post"
         return getattr(self, method)(data)
 
-    @api.one
     def http_post(self, data):
         path = "/%s/%s" % (self.schema.namespace.slug, self.schema.slug,)
 

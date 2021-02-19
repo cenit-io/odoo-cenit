@@ -9,7 +9,11 @@ _logger = logging.getLogger(__name__)
 
 
 class CenitHandler(models.TransientModel):
+    """
+       Handler
+    """
     _name = 'cenit.handler'
+    _description = 'Cenit handler'
 
     @api.model
     def _get_checker(self, model, field):

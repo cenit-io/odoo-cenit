@@ -33,6 +33,9 @@ _logger = logging.getLogger(__name__)
 
 
 class CenitNameSpace(models.Model):
+    """
+       Represents a Cenit's namespace
+    """
     _name = 'cenit.namespace'
     _inherit = 'cenit.api'
 
@@ -50,7 +53,6 @@ class CenitNameSpace(models.Model):
         ('slug_uniq', 'UNIQUE(slug)', 'The slug must be unique!')
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
             'name': self.name
@@ -62,20 +64,19 @@ class CenitNameSpace(models.Model):
 
         return vals
 
-    @api.one
     def _calculate_update(self, values):
         update = {}
 
         for k, v in values.items():
-            if k == "%s" % (self.cenit_models,):
-                update = {
-                    'cenitID': v[0]['id'],
-                }
-                path = "/setup/namespace/%s" % (update.get('cenitID'))
-                rc = self.get(path)
-                slug = rc.get('namespace', {}).get('slug', False)
-                if slug:
-                    update.update({'slug': slug})
+            # if k == "%s" % (self.cenit_models,):
+            update = {
+                'cenitID': v[0]['id'],
+            }
+            path = "/setup/namespace/%s" % (update.get('cenitID'))
+            rc = self.get(path)
+            slug = rc.get('namespace', {}).get('slug', False)
+            if slug:
+                update.update({'slug': slug})
 
         return update
 
@@ -88,7 +89,6 @@ class CenitNameSpace(models.Model):
 
         return super(CenitNameSpace, self).create(vals)
 
-    @api.one
     def write(self, vals):
         slug = vals.get("slug", None)
         if not slug and slug is False:
@@ -101,8 +101,10 @@ class CenitNameSpace(models.Model):
 
 
 class CenitSchema(models.Model):
+    """
+       Represents a Cenit's schema
+    """
 
-    @api.one
     def cenit_root(self):
         return self.slug
 
@@ -114,8 +116,8 @@ class CenitSchema(models.Model):
 
     cenitID = fields.Char('Cenit ID')
 
-    slug = fields.Char('Slug')  # TODO Crear por defecto este valor de la misma forma que se hace en Cenit
-    schema = fields.Text('Schema')
+    slug = fields.Char('Slug', default='message')
+    schema = fields.Text('Schema', default='{"type": "object", "properties": {"name": {"type": "string"}}}')
 
     name = fields.Char('Name', required=True)
     namespace = fields.Many2one('cenit.namespace', string='Namespace', required=True,
@@ -128,17 +130,23 @@ class CenitSchema(models.Model):
          'The slug must be unique for each namespace!'),
     ]
 
-    @api.one
     def _get_values(self):
         vals = {
-            'namespace': {
-                '_reference': True,
-                'id': self.namespace.cenitID
-            },
+            "creator_id": {},
+            "updater_id": {},
+            "tenant_id": {},
+            'namespace': self.namespace.name,
+            # 'namespace': {
+            #     '_reference': True,
+            #     'id': self.namespace.cenitID
+            # },
             'name': self.name,
             'slug': self.slug,
-            'schema': self.schema,
-            '_type': 'Setup::JsonDataType',
+            'schema': eval(self.schema) if self.schema else "",
+            # '_type': 'Setup::JsonDataType',
+            "title": "",
+            "snippet_id": {},
+            "discard_additional_properties": False
         }
 
         if self.cenitID:
@@ -146,21 +154,30 @@ class CenitSchema(models.Model):
 
         return vals
 
-    @api.one
     def _calculate_update(self, values):
         update = {}
 
         for k, v in values.items():
-            if k == "%s" % (self.cenit_models,):
-                update = {
-                    'cenitID': v[0]['id'],
-                }
+            # if k == "%s" % (self.cenit_models,):
+            update = {
+                'cenitID': v[0]['id'],
+            }
 
         return update
 
+    @api.model
+    def create(self, vals):
+        obj = super(CenitSchema, self).create(vals)
+        return obj
+
 
 class CenitDataTypeTrigger(models.Model):
+    """
+       Defines triggers to data types
+    """
+
     _name = "cenit.data_type.trigger"
+    _description = 'Data type trigger'
 
     data_type = fields.Many2one("cenit.data_type", "Data Type")
     name = fields.Selection([
@@ -186,7 +203,6 @@ class CenitDataTypeTrigger(models.Model):
 
     last_execution = fields.Datetime()
 
-    @api.one
     def unlink(self):
         if self.cron:
             self.cron.unlink()
@@ -197,7 +213,6 @@ class CenitDataTypeTrigger(models.Model):
 
         return super(CenitDataTypeTrigger, self).unlink()
 
-    @api.one
     def sync(self):
         if not self.data_type.enabled:
             if self.cron:
@@ -294,6 +309,10 @@ class CenitDataTypeTrigger(models.Model):
 
 
 class CenitDataType(models.Model):
+    """
+       Represents Cenit's data type
+    """
+    _description = 'Data type'
 
     @api.onchange('namespace')
     def _on_namespace_changed(self):
@@ -310,7 +329,11 @@ class CenitDataType(models.Model):
 
     @api.depends('schema')
     def _compute_root(self):
-        self.cenit_root = self.schema.cenit_root()[0]
+        for record in self:
+            if record.schema:
+                record.cenit_root = record.schema.cenit_root()[0]
+            else:
+                record.cenit_root = ''
 
     _name = 'cenit.data_type'
 
@@ -322,7 +345,7 @@ class CenitDataType(models.Model):
     namespace = fields.Many2one('cenit.namespace', string='Namespace', required=True,
                                 ondelete='cascade')
 
-    model = fields.Many2one('ir.model', 'Model', required=True)
+    model = fields.Many2one('ir.model', 'Model', required=True, ondelete='cascade')
     schema = fields.Many2one('cenit.schema', 'Schema')
 
     lines = fields.One2many('cenit.data_type.line', 'data_type', 'Mapping')
@@ -336,7 +359,6 @@ class CenitDataType(models.Model):
         ('name_uniq', 'UNIQUE(name)', 'The name must be unique!'),
     ]
 
-    @api.one
     def _get_flows(self):
         flow_pool = self.env['cenit.flow']
         if not self.search([('id', '=', self.id)]):
@@ -348,12 +370,10 @@ class CenitDataType(models.Model):
         ]
         return flow_pool.search(domain) or []
 
-    @api.one
     def sync_rules(self):
         for trigger in self.triggers:
             trigger.sync()
 
-    @api.one
     def trigger_flows(self, obj):
         flow_pool = self.env["cenit.flow"]
         flows = self._get_flows()
@@ -384,7 +404,6 @@ class CenitDataType(models.Model):
 
         return obj
 
-    @api.one
     def write(self, vals):
         res = super(CenitDataType, self).write(vals)
 
@@ -393,7 +412,6 @@ class CenitDataType(models.Model):
 
         return res
 
-    @api.one
     def unlink(self):
         triggers = self.triggers
         res = super(CenitDataType, self).unlink()
@@ -404,30 +422,35 @@ class CenitDataType(models.Model):
 
         return res
 
-    @api.one
     def get_search_domain(self):
         return [x.as_search_domain() for x in self.domain]
 
-    @api.one
     def ensure_object(self, obj):
         rc = self.model.model == obj._name
         if not rc or not self.enabled:
             return False
 
         match = False
-        domain = self.get_search_domain()[0]
-        if domain:
-            if isinstance(domain, list) and len(domain) > 1:
-                domain = [item for subdomain in domain for item in subdomain]
-            elif isinstance(domain[0], list):
-                domain = domain[0]
-            domain.append(("id", "=", obj.id))
-            match = obj.search(domain) or False
+        # domain = self.get_search_domain()[0]
+        domain = self.get_search_domain()
+        # if domain:
+        #     # if isinstance(domain, list) and len(domain) > 1:
+        #     #     domain = [item for subdomain in domain for item in subdomain]
+        #     # elif isinstance(domain[0], list):
+        #     if isinstance(domain[0], list):
+        #         domain = domain[0]
+        domain.append(("id", "=", obj.id))
+        match = obj.search(domain) or False
         return match
 
 
 class CenitDataTypeDomainLine(models.Model):
+    """
+       Defines domains to data types
+    """
+
     _name = 'cenit.data_type.domain_line'
+    _description = 'Data type domain line'
 
     data_type = fields.Many2one('cenit.data_type', 'Data Type')
 
@@ -444,7 +467,6 @@ class CenitDataTypeDomainLine(models.Model):
         'Condition', required=True
     )
 
-    @api.one
     def as_search_domain(self):
         value = self.value
         if self.op in ("in", "not in"):
@@ -453,7 +475,12 @@ class CenitDataTypeDomainLine(models.Model):
 
 
 class CenitDataTypeLine(models.Model):
+    """
+       Data type's lines
+    """
+
     _name = 'cenit.data_type.line'
+    _description = 'Data type line'
 
     data_type = fields.Many2one('cenit.data_type', 'Data Type')
 
