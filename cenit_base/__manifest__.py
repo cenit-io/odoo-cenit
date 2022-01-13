@@ -22,7 +22,7 @@
 {
     "name": "Cenit IO Integrations Client",
     # "category": "Hidden",
-    "version": "0.14.1",
+    "version": "0.15.1",
     "application": True,
     "author": "Cenit IO",
     "website": "https://cenit.io",
