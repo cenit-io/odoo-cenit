@@ -31,7 +31,7 @@ from odoo import models, fields, exceptions, api
 _logger = logging.getLogger(__name__)
 
 COLLECTION_NAME = "basic"
-COLLECTION_VERSION = "1.0.0"
+COLLECTION_VERSION = "0.0.1"
 
 
 class CenitSettings(models.TransientModel):
@@ -266,7 +266,7 @@ class CenitAccountSettings(models.TransientModel):
             confirmation = self.env.context.get('confirmation')
 
             icp = self.env["ir.config_parameter"]
-            hub_host = icp.get_param("odoo_cenit.cenit_url", default='https://cenit.io')
+            hub_host = icp.get_param("odoo_cenit.cenit_url", default='https://server.cenit.io')
             if hub_host.endswith("/"):
                 hub_host = hub_host[:-1]
             path = "/setup/user"
