@@ -31,7 +31,7 @@ from odoo import models, fields, exceptions, api
 _logger = logging.getLogger(__name__)
 
 COLLECTION_NAME = "basic"
-COLLECTION_VERSION = "1.0.0"
+COLLECTION_VERSION = "0.0.1"
 
 
 class CenitSettings(models.TransientModel):

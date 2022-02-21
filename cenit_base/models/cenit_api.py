@@ -221,7 +221,7 @@ class CenitApi(models.AbstractModel):
 
         config = {
             'cenit_url': icp.get_param(
-                "odoo_cenit.cenit_url", default='https://cenit.io'
+                "odoo_cenit.cenit_url", default='https://server.cenit.io'
             ),
             'cenit_user_key': icp.get_param(
                 "odoo_cenit.cenit_user_key", default=None
