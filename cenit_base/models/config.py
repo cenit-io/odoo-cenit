@@ -267,7 +267,7 @@ class CenitAccountSettings(models.TransientModel):
             confirmation = self.env.context.get('confirmation')
 
             icp = self.env["ir.config_parameter"]
-            hub_host = icp.get_param("odoo_cenit.cenit_url", default='https://cenit.io')
+            hub_host = icp.get_param("odoo_cenit.cenit_url", default='https://server.cenit.io')
             if hub_host.endswith("/"):
                 hub_host = hub_host[:-1]
             path = "/setup/user"
