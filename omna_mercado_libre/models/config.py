@@ -37,8 +37,8 @@ class OmnaSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
     cenit_url = fields.Char('Cenit URL', default='https://cenit.io/app/ecapi-v1')
-    mercado_libre_base_url = fields.Char('Mercado Libre Base URL', default='https://sellercenter.Mercado Libre.com.my/')
-    mercado_libre_ws_key = fields.Char('Mercado Libre WS Key')
+    mercado_libre_base_url = fields.Char('Mercado Libre Base URL', default='https://sellercenter.lazada.com.my/')
+    # lazada_ws_key = fields.Char('Mercado Libre WS Key')
 
 
     ############################################################################
@@ -49,8 +49,8 @@ class OmnaSettings(models.TransientModel):
         res = super(OmnaSettings, self).get_values()
         res.update(
             cenit_url=self.env["ir.config_parameter"].sudo().get_param("omna_mercado_libre.cenit_url", default=None),
-            mercado_libre_base_url=self.env["ir.config_parameter"].sudo().get_param("omna_mercado_libre.mercado_libre_base_url", default=None),
-            mercado_libre_ws_key=self.env["ir.config_parameter"].sudo().get_param("omna_mercado_libre.mercado_libre_ws_key", default=None),
+            lazada_base_url=self.env["ir.config_parameter"].sudo().get_param("omna_mercado_libre.mercado_libre_base_url", default=None),
+            # lazada_ws_key=self.env["ir.config_parameter"].sudo().get_param("omna_mercado_libre.lazada_ws_key", default=None),
         )
         return res
 
@@ -63,7 +63,7 @@ class OmnaSettings(models.TransientModel):
         for record in self:
             self.env['ir.config_parameter'].sudo().set_param("omna_mercado_libre.cenit_url", record.cenit_url or '')
             self.env['ir.config_parameter'].sudo().set_param("omna_mercado_libre.mercado_libre_base_url", record.mercado_libre_base_url or '')
-            self.env['ir.config_parameter'].sudo().set_param("omna_mercado_libre.mercado_libre_ws_key", record.mercado_libre_ws_key or '')
+            # self.env['ir.config_parameter'].sudo().set_param("omna_mercado_libre.lazada_ws_key", record.lazada_ws_key or '')
 
 
 class OnmaSignInSettings(models.TransientModel):

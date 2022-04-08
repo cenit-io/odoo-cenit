@@ -60,8 +60,8 @@ class Omna(http.Controller):
         channel_value = integration.channel
         if integration:
             integration.write({'authorized': True, 'channel': channel_value})
-            # redirect = '/web#action=%s&model=omna.integration&view_type=kanban&menu_id=%s' % (request.env.ref('omna_lazada.action_omna_integration').id, request.env.ref('omna_lazada.menu_omna_my_integrations').id)
-            # redirect = '/web#action=%s&cids=1&home=&menu_id=%s&model=omna.integration&view_type=kanban' % (request.env.ref('omna_lazada.action_omna_integration').id, request.env.ref('omna_lazada.menu_omna_my_integrations').id)
+            # redirect = '/web#action=%s&model=omna.integration&view_type=kanban&menu_id=%s' % (request.env.ref('omna_mercado_libre.action_omna_integration').id, request.env.ref('omna_mercado_libre.menu_omna_my_integrations').id)
+            # redirect = '/web#action=%s&cids=1&home=&menu_id=%s&model=omna.integration&view_type=kanban' % (request.env.ref('omna_mercado_libre.action_omna_integration').id, request.env.ref('omna_mercado_libre.menu_omna_my_integrations').id)
             # return werkzeug.utils.redirect(redirect)
             return werkzeug.utils.redirect('/web#action={0}'.format(request.env.ref('omna_mercado_libre.action_omna_integration').id))
             # return http.redirect_with_hash(redirect)

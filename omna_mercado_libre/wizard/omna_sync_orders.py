@@ -14,7 +14,7 @@ class OmnaSyncOrders(models.TransientModel):
 
     sync_type = fields.Selection([('all', 'All'),
                                   ('by_integration', 'By Integration'),
-                                  ('number', 'Number')], 'Import Type', required=True, default='all', help="If you select Number option, you have to provide the Reference value of an Order in Lazada.")
+                                  ('number', 'Number')], 'Import Type', required=True, default='all', help="If you select Number option, you have to provide the Reference value of an Order in Mercado Libre.")
     integration_id = fields.Many2one('omna.integration', 'Integration')
     number = fields.Char("Order Number")
 
@@ -59,46 +59,21 @@ class OmnaSyncOrders(models.TransientModel):
     def do_import(self, orders):
         try:
             for order in orders:
-                # if order['status'] == 'Payment accepted':
                 if order['status']:
-
-                    # line_items = [X for X in order.get('original_raw_data').get('associations').get('order_rows')]
                     line_items = order.get('line_items')
 
                     act_order = self.env['sale.order'].search([('omna_id', '=', order.get('id'))])
 
                     if not act_order:
-
-                        # partner_invoice = self.env['res.partner'].search([('name', '=', '%s %s' % (
-                        #     order.get('original_raw_data').get('customer').get('firstname'),
-                        #     order.get('original_raw_data').get('customer').get('lastname'))),
-                        #     ('email', '=', order.get('original_raw_data').get('customer').get('email'))], limit=1)
-
-                        # partner_related = self.env['res.partner'].search(['&', '&', ('integration_id', '=', self.integration_id.id),
-                        #     ('email', '=', order.get('original_raw_data').get('customer').get('email')),
-                        #     ('omna_id', '=', order.get('original_raw_data').get('customer').get('id'))], limit=1)
-                        #
-                        # if not partner_related:
-                        partner_related = self._create_partner(order.get('original_raw_data'))
-                        # partner_invoice = self._create_partner(order.get('original_raw_data').get('address_invoice'))
-                        # partner_shipping = self._create_partner(order.get('original_raw_data').get('address_delivery'))
-
-                        # partner_shipping = self.env['res.partner'].search([('name', '=', '%s %s' % (
-                        #     order.get('ship_address').get('first_name'), order.get('ship_address').get('last_name')))], limit=1)
-                        # if not partner_shipping:
-                        #     partner_shipping = self._create_partner(order.get('ship_address'))
+                        partner_related = self._create_partner(order)
+                        # partner_invoice = self._create_partner(order.get('ship_address'))
+                        # partner_shipping = self._create_partner(order.get('bill_address'))
 
                         if order.get('integration'):
                             integration = self.env['omna.integration'].search([('integration_id', '=', order.get('integration').get('id'))], limit=1)
-                            # warehouse_delivery = self.env['stock.warehouse'].search([('integration_id', '=', integration.id), ('omna_id', '!=', False)], limit=1)
                             warehouse_delivery = self.env['stock.warehouse'].search([('integration_id', '=', integration.id), ('omna_id', '!=', False)], limit=1)
-                            # tax_result = self.env['account.tax'].search([('integration_id', '=', integration.id),
-                            # ('omna_tax_rule_id', '=', False)], limit=1)
 
                             if integration:
-
-                                partner_invoice = partner_related.child_ids.filtered(lambda X: X.type == 'invoice')
-                                partner_shipping = partner_related.child_ids.filtered(lambda X: X.type == 'delivery')
 
                                 data = {
                                     'omna_id': order.get('id'),
@@ -111,8 +86,8 @@ class OmnaSyncOrders(models.TransientModel):
                                     'date_order': fields.Datetime.to_string(parse(order.get('last_import_date').split('T')[0])),
                                     'create_date': fields.Datetime.to_string(datetime.now(timezone.utc)),
                                     'partner_id': partner_related.id,
-                                    'partner_invoice_id': partner_invoice.id if partner_invoice else partner_related.id,
-                                    'partner_shipping_id': partner_shipping.id if partner_shipping else partner_related.id,
+                                    'partner_invoice_id': partner_related.id,
+                                    'partner_shipping_id': partner_related.id,
                                     'warehouse_id': warehouse_delivery.id,
                                     'pricelist_id': self.env.ref('product.list0').id,
 
@@ -149,78 +124,40 @@ class OmnaSyncOrders(models.TransientModel):
             raise exceptions.AccessError(e)
 
 
-    # Agregar a esta funcionalidad las validaciones para relacionar el res.partner con las direcciones de factura y entrega segun la data que llegue en **kwargs
-    # Esto seria crear y asociar nuevos records en la pestaña de Contacts and Addresses
-    # Ademas de realizar los mapeos para los campos de country_id, state_id, city_id, l10n_pe_district segun la data que llegue de Cenit
     def _create_partner(self, dict_param):
-        partner_related = self.env['res.partner'].search(['&', '&', ('integration_id', '=', self.integration_id.id),
-                                                          ('email', '=', dict_param.get('buyer').get('email')),
-                                                          ('omna_id', '=', dict_param.get('buyer').get('id'))], limit=1)
-        if partner_related:
-            return partner_related
-        else:
-            data = {
-                'name': '%s %s' % (dict_param.get('buyer').get('first_name'), dict_param.get('buyer').get('last_name')),
-                # 'firstname': dict_param.get('buyer').get('first_name'),
-                # 'surname': dict_param.get('buyer').get('last_name'),
-                # 'mother_name': dict_param.get('customer').get('lastname'),
-                'company_type': 'person',
-                'l10n_latam_identification_type_id': self.env.ref('l10n_ar.it_dni').id,
-                # 'vat': dict_param.get('address_invoice').get('vat_number') or dict_param.get('customer').get('dni'),
-                'vat': "1111",
-                'type': 'contact',
-                # 'street': dict_param.get('address_invoice').get('address1'),
-                'street': "AAAAA",
-                # 'street2': dict_param.get('address_invoice').get('address2'),
-                'street2': "BBBBB",
-                # 'city': dict_param.get('address_invoice').get('city'),
-                # 'l10n_pe_ubigeo': dict_param.get('address_invoice').get('postcode'),
-                'email': dict_param.get('buyer').get('email'),
-                'lang': self.env.user.lang,
-                'integration_id': self.integration_id.id,
-                'omna_id':  str(dict_param.get('buyer').get('id')),
-                'prestashop_id': str(dict_param.get('buyer').get('id')),
-                # 'child_ids': [(0, 0,  {'type': 'invoice',
-                #                        'name': '%s %s' % (dict_param.get('address_invoice').get('firstname'), dict_param.get('address_invoice').get('lastname')),
-                #                        'street': dict_param.get('address_invoice').get('address1'),
-                #                        'street2': dict_param.get('address_invoice').get('address2'),
-                #                        'city': dict_param.get('address_invoice').get('city'),
-                #                        'zip': dict_param.get('address_invoice').get('postcode'),
-                #                        'email': dict_param.get('customer').get('email'),
-                #                        'l10n_latam_identification_type_id': self.env.ref('l10n_pe.it_RUC').id if dict_param.get('address_invoice').get('vat_number') else self.env.ref('l10n_pe.it_DNI').id,
-                #                        'vat': dict_param.get('address_invoice').get('vat_number') or dict_param.get('customer').get('dni'),
-                #                       }),
-                #               (0, 0,  {'type': 'delivery',
-                #                        'name': '%s %s' % (dict_param.get('address_delivery').get('firstname'), dict_param.get('address_delivery').get('lastname')),
-                #                        'street': dict_param.get('address_delivery').get('address1'),
-                #                        'street2': dict_param.get('address_delivery').get('address2'),
-                #                        'city': dict_param.get('address_delivery').get('city'),
-                #                        'zip': dict_param.get('address_delivery').get('postcode'),
-                #                        'email': dict_param.get('customer').get('email'),
-                #                        'l10n_latam_identification_type_id': self.env.ref('l10n_pe.it_RUC').id if dict_param.get('address_delivery').get('vat_number') else self.env.ref('l10n_pe.it_DNI').id,
-                #                        'vat': dict_param.get('address_delivery').get('vat_number') or dict_param.get('customer').get('dni'),
-                #                })]
-            }
+        if not dict_param:
+            return False
+        dict_key = dict_param.get('bill_address') or dict_param.get('ship_address') or dict_param.get('customer')
+        # partner_related = self.env['res.partner'].search(['&', '&', '&', '&', ('integration_id', '=', self.integration_id.id),
+        #                                                   ('email', '=', dict_key.get('email')),
+        #                                                   ('omna_id', '=', dict_key.get('phone')),
+        #                                                   ('name', '=', '%s %s' % (dict_key.get('first_name') , dict_key.get('last_name'))),
+        #                                                   ('omna_id', '=', dict_key.get('last_name'))], limit=1)
+        # if partner_related:
+        #     return partner_related
+        # else:
+        data = {
+            'name': '%s %s' % (dict_key.get('first_name'), dict_key.get('last_name')),
+            'company_type': 'person',
+            'type': 'contact',
+            'email': dict_key.get('email'),
+            'lang': self.env.user.lang,
+            'integration_id': self.integration_id.id,
+            'phone':  dict_key.get('phone'),
+            # 'country_id':  self.env['res.country'].search([('code', '=', dict_key.get('country').lower())]).id,
+            # 'omna_id':  str(dict_key.get('id'))
+        }
 
-            # state_manager = self.env['res.country.state']
-            # district_manager = self.env['l10n_pe.res.city.district']
-            data['country_id'] = self.env.ref('base.ar').id
-            # state = state_manager.search([('code', '=', dict_param.get('address_invoice').get('state_iso_code')), ('country_id', '=', country.id)], limit=1)
-            # district = district_manager.search([('code', '=', dict_param.get('address_invoice').get('state_iso_code'))])
-            # district.city_id.state_id.id
-            # state = state_manager.search([('code', '=', dict_param.get('address_invoice').get('state_iso_code'))])
-            # if district:
-            #     data['state_id'] = district.city_id.state_id.id
-            return self.env['res.partner'].create(data)
+        # data['country_id'] = self.env.ref('base.ar').id
+        return self.env['res.partner'].create(data)
 
 
-    # def _create_orderline(self, omna_order, line_item, currency):
     def _create_orderline(self, line_item, currency):
         currency = self.env['res.currency'].search([('name', '=', currency)], limit=1)
         if not currency:
             currency = self.env['res.currency'].search([('name', '=', 'USD')], limit=1)
 
-        product = self.env['product.product'].search([('default_code', '=', line_item.get('product_reference'))], limit=1)
+        product = self.env['product.product'].search([('default_code', '=', line_item.get('sku'))], limit=1)
 
         data = {
             # 'order_id': omna_order.id,

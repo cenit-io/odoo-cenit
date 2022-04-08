@@ -26,18 +26,16 @@ class OmnaMassiveProductOpt(models.TransientModel):
 
 
     def execute_function(self):
-        if self.function_selection == "create_products":
-            self.create_products()
-        if self.function_selection == "link_products":
-            self.link_products()
-        if self.function_selection == "unlink_products":
-            self.unlink_products()
-        if self.function_selection == "update_products":
-            self.update_products()
-        if self.function_selection == "publish_products":
-            self.publish_products()
-
-        # form_view_id = self.env.ref('omna_lazada.view_omna_utilities_wizard').id
+        # if self.function_selection == "create_products":
+        #     self.create_products()
+        # if self.function_selection == "link_products":
+        #     self.link_products()
+        # if self.function_selection == "unlink_products":
+        #     self.unlink_products()
+        # if self.function_selection == "update_products":
+        #     self.update_products()
+        # if self.function_selection == "publish_products":
+        #     self.publish_products()
 
         return {'type': 'ir.actions.act_window_close'}
 
@@ -213,14 +211,14 @@ class OmnaMassiveProductOpt(models.TransientModel):
                 "data": [{
                     "product_id": item.omna_product_id,
                     "properties": [
-                        {
-                            "id": "category_id",
-                            "value": item.category_ids[0].omna_category_id
-                        },
-                        {
-                            "id": "other_categories",
-                            "value": [X.omna_category_id for X in item.category_ids]
-                        },
+                        # {
+                        #     "id": "category_id",
+                        #     "value": item.category_ids[0].omna_category_id
+                        # },
+                        # {
+                        #     "id": "other_categories",
+                        #     "value": [X.omna_category_id for X in item.category_ids]
+                        # },
                         {
                             "id": "brand_id",
                             # "value": self.product_template_id.brand_ids.omna_brand_id

@@ -39,7 +39,7 @@ class OmnaExtraImport(models.TransientModel):
         if self.function_selection == "import_carriers":
             self.import_carriers()
 
-        # form_view_id = self.env.ref('omna_lazada.view_omna_extra_import_wizard').id
+        # form_view_id = self.env.ref('omna_mercado_libre.view_omna_extra_import_wizard').id
 
         # return {'type': 'ir.actions.act_window_close'}
 
@@ -189,10 +189,10 @@ class OmnaExtraImport(models.TransientModel):
             response = self.get('stock/items', {'limit': limit, 'offset': offset, 'integration_id': self.integration_id.integration_id})
             data = response.get('data')
 
-            filtered = filter(lambda item: item.get('count_on_hand') > 0, data)
-            stock_items.extend(list(filtered))
+            # filtered = filter(lambda item: item.get('count_on_hand') > 0, data)
+            # stock_items.extend(list(filtered))
 
-            # stock_items.extend(data)
+            stock_items.extend(data)
             if len(data) < limit:
                 flag = False
             else:

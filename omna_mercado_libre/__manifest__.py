@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'OMNA Ecommerce Mercado Libre',
-    'version': '1.0.20220316',
+    'version': '13.0.20220408',
     'category': 'Sales',
     'summary': 'Integration: Mercado Libre',
     'description': 'Integrate global online marketplaces & web-stores with Odoo. Sync products, inventory and orders from multiple channels',
@@ -36,6 +36,7 @@
         'views/stock_location_inherit_views.xml',
         'views/stock_extra_views.xml',
         'views/product_attribute_inherit_views.xml',
+        # 'views/product_brand_view.xml',
         # wizard
         'wizard/omna_sync_products_view.xml',
         'wizard/omna_sync_variant_view.xml',
@@ -56,7 +57,7 @@
         'wizard/omna_update_variant_in_integration.xml',
         'wizard/wizard_create_variant.xml',
         'wizard/omna_sync_categories_view.xml',
-        'wizard/omna_sync_brands_view.xml',
+        # 'wizard/omna_sync_brands_view.xml',
         'wizard/omna_sync_doc_orders_view.xml',
         # 'wizard/properties_list_values_view.xml',
         'wizard/link_variant_wizard_view.xml',
@@ -73,7 +74,7 @@
         'data/dow.xml',
         'data/wom.xml',
         'data/moy.xml',
-        # 'data/omna_services_delayed.xml',
+        'data/resource_data.xml',
 
     ],
     'qweb': [

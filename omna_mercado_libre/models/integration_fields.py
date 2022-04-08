@@ -25,8 +25,8 @@ class PropertiesValuesOptionsProduct(models.Model):
 
 
     property_value_product_id = fields.Many2one('properties.values.product', string='Property', ondelete='cascade')
-    option_value = fields.Char(string='Value', required=True)
-    option_label = fields.Char(string='Label', required=True)
+    option_value = fields.Char(string='Value')
+    option_label = fields.Char(string='Label')
     property_name = fields.Char(related='property_value_product_id.property_name', store=True)
 
 
@@ -40,7 +40,7 @@ class PropertiesValuesProduct(models.Model):
 
     property_name = fields.Char('Property Name', required=True)
     property_type = fields.Char('Property Type', required=True, default='string')
-    integration_id = fields.Many2one('omna.integration', 'Integration', required=True)
+    integration_id = fields.Many2one('omna.integration', 'Integration', required=True, ondelete='cascade')
     property_label = fields.Char('Property Label', required=True)
     property_required = fields.Boolean('Required Property')
     property_readonly = fields.Boolean('ReadOnly Property')
@@ -115,8 +115,8 @@ class PropertiesValuesOptionsVariant(models.Model):
 
 
     property_value_variant_id = fields.Many2one('properties.values.variant', string='Property', ondelete='cascade')
-    option_value = fields.Char(string='Value', required=True)
-    option_label = fields.Char(string='Label', required=True)
+    option_value = fields.Char(string='Value')
+    option_label = fields.Char(string='Label')
     property_name = fields.Char(related='property_value_variant_id.property_name', store=True)
 
 
@@ -129,14 +129,14 @@ class PropertiesValuesVariant(models.Model):
 
     property_name = fields.Char('Property Name', required=True)
     property_type = fields.Char('Property Type', required=True, default='string')
-    integration_id = fields.Many2one('omna.integration', 'Integration', required=True)
+    integration_id = fields.Many2one('omna.integration', 'Integration', required=True, ondelete='cascade')
     property_label = fields.Char('Property Label', required=True)
     property_required = fields.Boolean('Required Property')
     property_readonly = fields.Boolean('ReadOnly Property')
     property_options = fields.Char('Property Options')
     value_option_ids = fields.One2many('properties.values.options.variant', 'property_value_variant_id', 'Values X Property')
     # ------------------------------------------------------------------------------------------------------------------
-    product_product_id = fields.Many2one('product.product', string='Product Variant', required=True)
+    product_product_id = fields.Many2one('product.product', string='Product Variant', required=True, ondelete='cascade')
     property_value = fields.Char(string='Value')
     property_integer_value = fields.Integer(string='Integer Value')
     property_float_value = fields.Float(string='Float Value')

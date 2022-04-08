@@ -516,25 +516,53 @@ class OmnaIntegrationProduct(models.Model):
                     self.env['omna.integration_variant'].create(create_value_list)
 
 
-            # https://cenit.io/app/ecapi-v1/products/{product_id}/stock/items
-            query_result = self.get('products/%s/stock/items' % (self.product_template_id.omna_product_id,))
-            list_data = query_result.get('data')
-            list_aux = []
-            for query_data in list_data:
-                stock_location_id = self.env['stock.location'].search([('omna_id', '=', query_data.get('stock_location').get('id'))])
-                stock_data = {
-                    'omna_id': query_data.get('id', False),
-                    'integration_id': self.integration_ids.id,
-                    'stock_location_id': stock_location_id.id,
-                    'product_product_name': "[%s]" % query_data.get('product').get('name'),
-                    'product_template_name': query_data.get('product').get('name'),
-                    # 'product_product_omna_id': product.get('product').get('variant').get('id'),
-                    'product_template_omna_id': self.product_template_id.omna_product_id,
-                    'count_on_hand': query_data.get('count_on_hand', 0),
-                }
-                list_aux.append(stock_data)
 
-            self.env['omna.stock.items'].create(list_aux)
+            # if not self.product_template_id.property_ids:
+            #     temp_product = {"data": {"properties": [{"id": "category_id", "value": self.product_template_id.categ_id.omna_category_id}]}}
+            #     temp_product["data"]["properties"].append(
+            #         {"id": "category_id", "value": self.product_template_id.categ_id.omna_category_id})
+            #
+            #     response2 = self.post('integrations/%s/products/%s' % (
+            #     self.integration_ids.integration_id, self.product_template_id.omna_product_id), temp_product)
+            #     # https://cenit.io/app/ecapi-v1/integrations/{integration_id}/categories/{category_id}/product/properties
+            #     prop_response = self.get('integrations/%s/categories/%s/product/properties' % (self.integration_ids.integration_id, self.product_template_id.categ_id.omna_category_id,))
+            #     list_properties = prop_response.get('data')
+            #     list_data = []
+            #     for item in list_properties:
+            #         if not item.get('id') in ['category_id', 'brand']:
+            #             list_data.append({
+            #                 'property_name': item.get('id'),
+            #                 'property_type': item.get('input_type'),
+            #                 'integration_id': self.integration_ids.id,
+            #                 'property_label': item.get('label'),
+            #                 'product_template_id': self.product_template_id.id,
+            #                 'property_required': item.get('required'),
+            #                 'value_option_ids': [
+            #                     (0, 0, {'option_value': X, 'option_label': X}) if isinstance(X, str) else (
+            #                     0, 0, {'option_value': X.get('value'), 'option_label': X.get('label')}) for X in
+            #                     item.get('options')],
+            #             })
+            #     self.env['properties.values.product'].create(list_data)
+
+            # # https://cenit.io/app/ecapi-v1/products/{product_id}/stock/items
+            # query_result = self.get('products/%s/stock/items' % (self.product_template_id.omna_product_id,))
+            # list_data = query_result.get('data')
+            # list_aux = []
+            # for query_data in list_data:
+            #     stock_location_id = self.env['stock.location'].search([('omna_id', '=', query_data.get('stock_location').get('id'))])
+            #     stock_data = {
+            #         'omna_id': query_data.get('id', False),
+            #         'integration_id': self.integration_ids.id,
+            #         'stock_location_id': stock_location_id.id,
+            #         'product_product_name': "[%s]" % query_data.get('product').get('name'),
+            #         'product_template_name': query_data.get('product').get('name'),
+            #         # 'product_product_omna_id': product.get('product').get('variant').get('id'),
+            #         'product_template_omna_id': self.product_template_id.omna_product_id,
+            #         'count_on_hand': query_data.get('count_on_hand', 0),
+            #     }
+            #     list_aux.append(stock_data)
+            #
+            # self.env['omna.stock.items'].create(list_aux)
             self.env.cr.commit()
             self.env.user.notify_channel('info', _(
                 'The task to link product with integration have been created, please go to "System\Tasks" to check out the task status.'),
@@ -610,7 +638,8 @@ class OmnaIntegrationProduct(models.Model):
             }
         }
 
-        # temp_product["data"]["properties"].append({"id": "brand_id", "value": self.product_template_id.product_brand_id.omna_brand_id})
+        # temp_product["data"]["properties"].append({"id": "brand", "value": self.product_template_id.product_brand_id.omna_brand_id})
+        temp_product["data"]["properties"].append({"id": "category_id", "value": self.product_template_id.categ_id.omna_category_id})
 
         response2 = self.post('integrations/%s/products/%s' % (self.integration_ids.integration_id, self.product_template_id.omna_product_id), temp_product)
 
@@ -648,26 +677,16 @@ class OmnaIntegrationProduct(models.Model):
 
 
     def action_update(self):
-        temp_product = {
-            "data": {
-                "properties": [
-                    {
-                        "id": "category_id",
-                        "value": self.product_template_id.category_ids.omna_category_id
-                    }
-                ]
-            }
-        }
-
-        # new_price = 0
-        #
-        # if self.product_template_id.taxes_id.price_include:
-        #     aux_price = self.product_template_id.omna_tax_id.amount + 100
-        #     to_round = self.product_template_id.list_price / (aux_price / 100)
-        #     formatted_string = str(truncate(to_round, 6))
-        #     new_price = round(to_round, 5) if int(formatted_string[-1]) <= 5 else round(to_round, 6)
-        # if not self.product_template_id.taxes_id.price_include:
-        #     new_price = self.product_template_id.list_price
+        # temp_product = {
+        #     "data": {
+        #         "properties": [
+        #             {
+        #                 "id": "category_id",
+        #                 "value": self.product_template_id.categ_id.omna_category_id
+        #             }
+        #         ]
+        #     }
+        # }
 
         data = {
             'name': self.product_template_id.name,
@@ -682,29 +701,80 @@ class OmnaIntegrationProduct(models.Model):
         }
 
         response1 = self.post('products/%s' % self.product_template_id.omna_product_id, {'data': data})
-        response2 = self.post('integrations/%s/products/%s' % (self.integration_ids.integration_id, self.product_template_id.omna_product_id), temp_product)
 
         if not self.product_template_id.property_ids:
-            list_properties = response2.get('data').get('integration').get('product').get('properties')
+            temp_01 = {"data": {"properties": [{"id": "category_id", "value": self.product_template_id.categ_id.omna_category_id}]}}
+
+            prop_response = self.post('integrations/%s/products/%s' % (self.integration_ids.integration_id, self.product_template_id.omna_product_id), temp_01)
+            # https://cenit.io/app/ecapi-v1/integrations/{integration_id}/categories/{category_id}/product/properties
+            # prop_response = self.get('integrations/%s/categories/%s/product/properties' % (self.integration_ids.integration_id, self.product_template_id.categ_id.omna_category_id,))
+            list_properties = prop_response.get('data').get('integration').get('product').get('properties')
             list_data = []
             for item in list_properties:
-                if not item.get('id') in ['category_id', 'brand']:
+                # if not item.get('id') in ['category_id', 'brand']:
+                if item.get('id') != 'category_id':
                     list_data.append({
-                    'property_name': item.get('id'),
-                    'property_type': item.get('input_type'),
-                    'integration_id': self.integration_ids.id,
-                    'property_label': item.get('label'),
-                    'product_template_id': self.product_template_id.id,
-                    'property_required': item.get('required'),
-                    'value_option_ids': [(0, 0, {'option_value': X, 'option_label': X}) if isinstance(X, str) else (0, 0, {'option_value': X.get('value'), 'option_label': X.get('label')}) for X in item.get('options') ],
+                        'property_name': item.get('id'),
+                        'property_type': item.get('input_type'),
+                        'integration_id': self.integration_ids.id,
+                        'property_label': item.get('label'),
+                        'product_template_id': self.product_template_id.id,
+                        'property_required': item.get('required'),
+                        'value_option_ids': [
+                            (0, 0, {'option_value': X, 'option_label': X}) if isinstance(X, str) else (
+                                0, 0, {'option_value': X.get('value'), 'option_label': X.get('label')}) for X in
+                            item.get('options')],
                     })
             self.env['properties.values.product'].create(list_data)
+            self.env.cr.commit()
 
-        # self.env['omna.integration_variant'].variant_update_ecommerce(self.integration_ids.integration_id, self.product_template_id, self.product_template_id.product_variant_ids)
+        else:
+            temp_product = {
+                "data": {
+                    "properties": [{"id": X.property_name, "value": X.property_stored_value} for X in self.product_template_id.property_ids]
+                }
+            }
 
-        self.env.user.notify_channel('info', _(
-            'The task to update all product data on marketplace have been created, please go to "System\Tasks" to check out the task status.'),
-                                     _("Information"), True)
+            # temp_product["data"]["properties"].append({"id": "brand", "value": self.product_template_id.product_brand_id.omna_brand_id})
+            # temp_product["data"]["properties"].append({"id": "brand", "value": "124213044"})
+            temp_product["data"]["properties"].append({"id": "category_id", "value": self.product_template_id.categ_id.omna_category_id})
+
+            response2 = self.post('integrations/%s/products/%s' % (self.integration_ids.integration_id, self.product_template_id.omna_product_id), temp_product)
+
+            # new_price = 0
+            #
+            # if self.product_template_id.taxes_id.price_include:
+            #     aux_price = self.product_template_id.omna_tax_id.amount + 100
+            #     to_round = self.product_template_id.list_price / (aux_price / 100)
+            #     formatted_string = str(truncate(to_round, 6))
+            #     new_price = round(to_round, 5) if int(formatted_string[-1]) <= 5 else round(to_round, 6)
+            # if not self.product_template_id.taxes_id.price_include:
+            #     new_price = self.product_template_id.list_price
+
+
+            # response2 = self.post('integrations/%s/products/%s' % (self.integration_ids.integration_id, self.product_template_id.omna_product_id), temp_product)
+
+            # if not self.product_template_id.property_ids:
+            #     list_properties = response2.get('data').get('integration').get('product').get('properties')
+            #     list_data = []
+            #     for item in list_properties:
+            #         if not item.get('id') in ['category_id', 'brand']:
+            #             list_data.append({
+            #             'property_name': item.get('id'),
+            #             'property_type': item.get('input_type'),
+            #             'integration_id': self.integration_ids.id,
+            #             'property_label': item.get('label'),
+            #             'product_template_id': self.product_template_id.id,
+            #             'property_required': item.get('required'),
+            #             'value_option_ids': [(0, 0, {'option_value': X, 'option_label': X}) if isinstance(X, str) else (0, 0, {'option_value': X.get('value'), 'option_label': X.get('label')}) for X in item.get('options') ],
+            #             })
+            #     self.env['properties.values.product'].create(list_data)
+
+            self.env['omna.integration_variant'].variant_update_ecommerce(self.integration_ids.integration_id, self.product_template_id, self.product_template_id.product_variant_ids)
+
+            self.env.user.notify_channel('info', _(
+                'The task to update all product data on marketplace have been created, please go to "System\Tasks" to check out the task status.'),
+                                         _("Information"), True)
 
 
 
@@ -859,6 +929,9 @@ class OmnaIntegrationVariant(models.Model):
             }
         }
 
+        temp_product["data"]["properties"].append({"id": "price_adjustment", "value": self.product_product_id.price_adjustment})
+        temp_product["data"]["properties"].append({"id": "price_adjustment_type", "value": self.product_product_id.price_adjustment_type})
+
         response2 = self.post('integrations/%s/products/%s/variants/%s' % (self.integration_ids.integration_id, self.product_product_id.product_tmpl_id.omna_product_id, self.product_product_id.omna_variant_id), temp_product)
 
 
@@ -879,12 +952,12 @@ class OmnaIntegrationVariant(models.Model):
         if self.product_product_id.property_ids:
             self.action_publish()
         else:
-            temp = {
-                # "variant_id": self.product_product_id.omna_variant_id,
-                "properties": [
-                    {"id": "price_adjustment", "value": self.product_product_id.price_adjustment},
-                    {"id": "price_adjustment_type", "value": self.product_product_id.price_adjustment_type}]
-            }
+            # temp = {
+            #     # "variant_id": self.product_product_id.omna_variant_id,
+            #     "properties": [
+            #         {"id": "price_adjustment", "value": self.product_product_id.price_adjustment},
+            #         {"id": "price_adjustment_type", "value": self.product_product_id.price_adjustment_type}]
+            # }
 
             # new_price = 0
             #
@@ -910,24 +983,45 @@ class OmnaIntegrationVariant(models.Model):
             }
 
             response1 = self.post('products/%s/variants/%s' % (self.product_product_id.product_tmpl_id.omna_product_id, self.product_product_id.omna_variant_id), {'data': data})
-            response2 = self.post('integrations/%s/products/%s/variants/%s' % (self.integration_ids.integration_id, self.product_product_id.product_tmpl_id.omna_product_id, self.product_product_id.omna_variant_id), {'data': temp})
+            # response2 = self.post('integrations/%s/products/%s/variants/%s' % (self.integration_ids.integration_id, self.product_product_id.product_tmpl_id.omna_product_id, self.product_product_id.omna_variant_id), {'data': temp})
 
-            list_properties = response2.get('data').get('integration').get('variant').get('properties')
-            list_data = []
-            for item in list_properties:
-                if not item.get('id') in ['category_id', 'brand']:
-                    list_data.append({
-                        'property_name': item.get('id'),
-                        'property_type': item.get('input_type'),
-                        'integration_id': self.integration_ids.id,
-                        'property_label': item.get('label'),
-                        'product_product_id': self.product_product_id.id,
-                        'property_required': item.get('required'),
-                        'value_option_ids': [(0, 0, {'option_value': X, 'option_label': X}) if isinstance(X, str) else (0, 0, {'option_value': X.get('value'), 'option_label': X.get('label')}) for X in item.get('options') ],
-                    })
-            self.env['properties.values.variant'].create(list_data)
+            if not self.product_product_id.property_ids:
+                # https://cenit.io/app/ecapi-v1/integrations/{integration_id}/categories/{category_id}/product/properties
+                prop_response = self.get('integrations/%s/categories/%s/variant/properties' % (self.integration_ids.integration_id, self.product_product_id.categ_id.omna_category_id))
+                list_properties = prop_response.get('data')
+                list_data = []
+                for item in list_properties:
+                    if not item.get('id') in ['category_id', 'brand']:
+                        list_data.append({
+                            'property_name': item.get('id'),
+                            'property_type': item.get('input_type'),
+                            'integration_id': self.integration_ids.id,
+                            'property_label': item.get('label'),
+                            'product_product_id': self.product_product_id.id,
+                            'property_required': item.get('required'),
+                            'value_option_ids': [
+                                (0, 0, {'option_value': X, 'option_label': X}) if isinstance(X, str) else (
+                                0, 0, {'option_value': X.get('value'), 'option_label': X.get('label')}) for X in
+                                item.get('options')],
+                        })
+                self.env['properties.values.variant'].create(list_data)
 
-            if (not response1.get('data').get('id')) or (not response2.get('data').get('id')):
+            # list_properties = response2.get('data').get('integration').get('variant').get('properties')
+            # list_data = []
+            # for item in list_properties:
+            #     if not item.get('id') in ['category_id', 'brand']:
+            #         list_data.append({
+            #             'property_name': item.get('id'),
+            #             'property_type': item.get('input_type'),
+            #             'integration_id': self.integration_ids.id,
+            #             'property_label': item.get('label'),
+            #             'product_product_id': self.product_product_id.id,
+            #             'property_required': item.get('required'),
+            #             'value_option_ids': [(0, 0, {'option_value': X, 'option_label': X}) if isinstance(X, str) else (0, 0, {'option_value': X.get('value'), 'option_label': X.get('label')}) for X in item.get('options') ],
+            #         })
+            # self.env['properties.values.variant'].create(list_data)
+
+            if not response1.get('data').get('id'):
                 raise exceptions.AccessError(_("Error trying to update product variant in Omna's API."))
             else:
                 self.env.user.notify_channel('info', _(
@@ -979,10 +1073,11 @@ class OmnaIntegrationVariant(models.Model):
             if item.omna_variant_id:
                 data2 = {
                     "variant_id": item.omna_variant_id,
-                    "properties": [
-                        {"id": "price_adjustment", "value": self.product_product_id.price_adjustment},
-                        {"id": "price_adjustment_type", "value": self.product_product_id.price_adjustment_type}]
+                    "properties": [{"id": X.property_name, "value": X.property_stored_value} for X in item.property_ids]
                 }
+
+                data2["properties"].append({"id": "price_adjustment", "value": item.price_adjustment})
+                data2["properties"].append({"id": "price_adjustment_type", "value": item.price_adjustment_type})
                 # data2 = {
                 #     "variant_id": item.omna_variant_id,
                 #     "properties": [{"id": int(item2.attribute_id.omna_attribute_id),
@@ -1029,7 +1124,7 @@ class ProductTemplate(models.Model):
     simple_product = fields.Boolean('Simple product', default=False)
     integration_linked_ids = fields.Many2many('omna.integration', 'omna_integration_product_template_rel', string='Linked Integrations')
     # category_ids = fields.Many2many('product.category', string='Sale Categories')
-    category_ids = fields.Many2one('product.category', string='Sale Categories')
+    # category_ids = fields.Many2one('product.category', string='Sale Categories')
     peso = fields.Float('Weight (Kg)', digits=(16, 2), default=0)
     alto = fields.Float('Height (Cm)', digits=(16, 2), default=0)
     longitud = fields.Float('Length (Cm)', digits=(16, 2), default=0)
@@ -1048,41 +1143,76 @@ class ProductTemplate(models.Model):
 
     @api.model
     def create(self, vals_list):
-        if (not self._context.get('synchronizing')) and (not self._context.get('import_file')):
-            data = {
-                'name': vals_list.get('name'),
-                'price': vals_list.get('list_price', 0),
-                'description': vals_list.get('description', "No definido"),
-                'package': {'weight': vals_list.get('peso', 0), 'height': vals_list.get('alto', 0), 'length': vals_list.get('longitud', 0),
-                            'width': vals_list.get('ancho', 0), 'content': "No definido"}
-            }
-
-            response = self.post('products', {'data': data})
-            if response.get('data').get('id'):
-                product = response.get('data')
-
-                vals_list['omna_product_id'] = response.get('data').get('id')
-                integrations = []
-                aux = []
-                for integration in product.get('integrations'):
-                    integrations.append(integration.get('id'))
-                    integration_id = self.env['omna.integration'].search([('integration_id', '=', integration.get('id'))])
-                    aux.append((0, 0, {'integration_ids': integration_id.id,
-                                       'remote_product_id': integration.get('product').get('remote_product_id'),
-                                       'delete_from_integration': True}))
-
-                omna_integration = self.env['omna.integration'].search([('integration_id', 'in', integrations)])
-                vals_list['integration_linked_ids'] = [(6, 0, omna_integration.ids)]
-                vals_list['integration_ids'] = aux
-                return super(ProductTemplate, self).create(vals_list)
-            else:
-                raise exceptions.AccessError(_("Error trying to push product to Omna's API."))
+        if self.env.context.get('from_omna_api'):
+            return super(ProductTemplate, self).create(vals_list)
         else:
+            if isinstance(vals_list, list):
+                for item in vals_list:
+                    if isinstance(item, dict):
+                        data = {
+                            'name': item.get('name'),
+                            'price': item.get('list_price', 0),
+                            'description': item.get('description', "No definido"),
+                            'package': {'weight': item.get('peso', 0), 'height': item.get('alto', 0), 'length': item.get('longitud', 0),
+                                        'width': item.get('ancho', 0), 'content': "No definido"}
+                        }
+
+                        response = self.post('products', {'data': data})
+                        if response.get('data').get('id'):
+                            product = response.get('data')
+
+                            vals_list['omna_product_id'] = response.get('data').get('id')
+                            integrations = []
+                            aux = []
+                            for integration in product.get('integrations'):
+                                integrations.append(integration.get('id'))
+                                integration_id = self.env['omna.integration'].search([('integration_id', '=', integration.get('id'))])
+                                aux.append((0, 0, {'integration_ids': integration_id.id,
+                                                   'remote_product_id': integration.get('product').get('remote_product_id'),
+                                                   'delete_from_integration': True}))
+
+                            omna_integration = self.env['omna.integration'].search([('integration_id', 'in', integrations)])
+                            vals_list['integration_linked_ids'] = [(6, 0, omna_integration.ids)]
+                            vals_list['integration_ids'] = aux
+                        else:
+                            raise exceptions.AccessError(_("Error trying to push product to Omna's API."))
+            else:
+                data = {
+                    'name': vals_list.get('name'),
+                    'price': vals_list.get('list_price', 0),
+                    'description': vals_list.get('description', "No definido"),
+                    'package': {'weight': vals_list.get('peso', 0), 'height': vals_list.get('alto', 0),
+                                'length': vals_list.get('longitud', 0),
+                                'width': vals_list.get('ancho', 0), 'content': "No definido"}
+                }
+
+                response = self.post('products', {'data': data})
+                if response.get('data').get('id'):
+                    product = response.get('data')
+
+                    vals_list['omna_product_id'] = response.get('data').get('id')
+                    integrations = []
+                    aux = []
+                    for integration in product.get('integrations'):
+                        integrations.append(integration.get('id'))
+                        integration_id = self.env['omna.integration'].search([('integration_id', '=', integration.get('id'))])
+                        aux.append((0, 0, {'integration_ids': integration_id.id,
+                                           'remote_product_id': integration.get('product').get('remote_product_id'),
+                                           'delete_from_integration': True}))
+
+                    omna_integration = self.env['omna.integration'].search([('integration_id', 'in', integrations)])
+                    vals_list['integration_linked_ids'] = [(6, 0, omna_integration.ids)]
+                    vals_list['integration_ids'] = aux
+                else:
+                    raise exceptions.AccessError(_("Error trying to push product to Omna's API."))
+
             return super(ProductTemplate, self).create(vals_list)
 
 
     def write(self, vals):
-        if (not self._context.get('synchronizing')) and (not self._context.get('import_file')):
+        if self.env.context.get('from_omna_api'):
+            return super(ProductTemplate, self).write(vals)
+        else:
             for record in self:
                 if "create_product_product" in self._context:
                     vals['name'] = record.name
@@ -1102,8 +1232,7 @@ class ProductTemplate(models.Model):
                     raise exceptions.AccessError(_("Error trying to update products in Omna's API."))
 
             return super(ProductTemplate, self).write(vals)
-        else:
-            return super(ProductTemplate, self).write(vals)
+
 
 
     def unlink(self):
@@ -1128,7 +1257,7 @@ class ProductTemplate(models.Model):
         #     }
         #
         #     response1 = self.delete('products/link', data)
-        #     record_id = self.env.ref('omna_lazada.delete_unlinked_products_cron').id
+        #     record_id = self.env.ref('omna_mercado_libre.delete_unlinked_products_cron').id
         #     data = {'active': True, 'nextcall': (datetime.now() + timedelta(minutes=3)).strftime('%Y-%m-%d %H:%M:%S'), 'user_id': self.env.uid}
         #     self.env['ir.cron'].browse(record_id).write(data)
 
@@ -1140,83 +1269,59 @@ class ProductTemplate(models.Model):
         return True
 
 
-    def category_tree(self, arr, parent_id, category_id, integration_id, category_obj, list_category):
-        # integration_id = self.env['omna.integration'].search([('name', '=', integration_category_name)])
-        if len(arr) == 1:
-            name = arr[0]
-            c = category_obj.search(['|', ('omna_category_id', '=', category_id), '&',
-                                     ('name', '=', name), ('parent_id', '=', parent_id),
-                                     ('integration_id', '=', integration_id)], limit=1)
-            if not c:
-                c = category_obj.create({'name': name, 'omna_category_id': category_id,
-                                         'parent_id': parent_id,
-                                         'integration_id': integration_id})
-
-            else:
-                c.write({'name': name, 'parent_id': parent_id})
-
-            list_category.append(c.id)
-            return list_category
-
-        elif len(arr) > 1:
-            name = arr[0]
-            c = category_obj.search(
-                [('name', '=', name), ('integration_category_name', '=', integration_id)], limit=1)
-            if not c:
-                c = category_obj.create(
-                    {'name': name, 'parent_id': parent_id, 'integration_category_name': integration_id})
-
-            list_category.append(c.id)
-            self.category_tree(arr[1:], c.id if c else False, category_id, integration_id, category_obj,
-                               list_category)
+    # def category_tree(self, arr, parent_id, category_id, integration_id, category_obj, list_category):
+    #     # integration_id = self.env['omna.integration'].search([('name', '=', integration_category_name)])
+    #     if len(arr) == 1:
+    #         name = arr[0]
+    #         c = category_obj.search(['|', ('omna_category_id', '=', category_id), '&',
+    #                                  ('name', '=', name), ('parent_id', '=', parent_id),
+    #                                  ('integration_id', '=', integration_id)], limit=1)
+    #         if not c:
+    #             c = category_obj.create({'name': name, 'omna_category_id': category_id,
+    #                                      'parent_id': parent_id,
+    #                                      'integration_id': integration_id})
+    #
+    #         else:
+    #             c.write({'name': name, 'parent_id': parent_id})
+    #
+    #         list_category.append(c.id)
+    #         return list_category
+    #
+    #     elif len(arr) > 1:
+    #         name = arr[0]
+    #         c = category_obj.search(
+    #             [('name', '=', name), ('integration_category_name', '=', integration_id)], limit=1)
+    #         if not c:
+    #             c = category_obj.create(
+    #                 {'name': name, 'parent_id': parent_id, 'integration_category_name': integration_id})
+    #
+    #         list_category.append(c.id)
+    #         self.category_tree(arr[1:], c.id if c else False, category_id, integration_id, category_obj,
+    #                            list_category)
 
 
 
     def read(self, fields=None, load='_classic_read'):
-        brand_id = False
-        brand_result = False
-        category_ids = []
-        categ_ids_result = []
         category_id = False
         categ_result = False
-        omna_tax_rule_id = False
-        omna_tax_rule_result = False
         vals = {}
 
-        if (len(self) <= 1) and self.integration_linked_ids and not (self.category_ids and self.product_brand_id):
-            response = self.get(
-                'integrations/%s/products/%s' % (self.integration_linked_ids.integration_id, self.omna_product_id),
-                {'with_details': True})
+        if (len(self) <= 1) and self.integration_linked_ids and not (self.categ_id.omna_category_id):
+        # if (len(self) <= 1) and self.integration_linked_ids and self.omna_product_id:
+            response = self.get('integrations/%s/products/%s' % (self.integration_linked_ids.integration_id, self.omna_product_id), {'with_details': True})
             data = response.get('data')
             category_or_brands = data.get('integration').get('product').get('properties', [])
             for cat_br in category_or_brands:
-                if (cat_br.get('id') == 'id_tax_rules_group') and (cat_br.get('options')):
-                    omna_tax_rule_id = cat_br.get('value')
-                if (cat_br.get('id') == 'brand_id') and (cat_br.get('options')):
-                    brand_id = cat_br.get('value')
                 if (cat_br.get('id') == 'category_id') and (cat_br.get('options')):
                     category_id = cat_br.get('value')
-                if (cat_br.get('id') == 'other_categories') and (cat_br.get('options')):
-                    category_ids = cat_br.get('value')
-            if omna_tax_rule_id:
-                omna_tax_rule_result = self.env['account.tax'].search([('omna_tax_rule_id', '=', omna_tax_rule_id)])
+
             if category_id:
                 categ_result = self.env['product.category'].search([('omna_category_id', '=', category_id)])
-            if category_ids:
-                categ_ids_result = self.env['product.category'].search([('omna_category_id', 'in', category_ids)])
-            if brand_id:
-                brand_result = self.env['product.brand'].search([('omna_brand_id', '=', brand_id)])
 
-            if categ_ids_result:
-                vals.update({'category_ids': [(6, 0, categ_ids_result.ids)]})
             if categ_result:
                 vals.update({'categ_id': categ_result.id})
-            if brand_result:
-                vals.update({'product_brand_id': brand_result.id})
-            if omna_tax_rule_result:
-                vals.update({'omna_tax_id': omna_tax_rule_result.id})
 
-            self.with_context(synchronizing=True).write(vals)
+            self.with_context(from_omna_api=True).write(vals)
             self.env.cr.commit()
 
         return super(ProductTemplate, self).read(fields=fields, load=load)
@@ -1251,8 +1356,8 @@ class ProductProduct(models.Model):
     integration_ids = fields.One2many('omna.integration_variant', 'product_product_id', 'Integrations')
     variant_integrations_data = fields.Char('Integrations data')
     integration_linked_ids = fields.Many2many('omna.integration', 'omna_integration_product_product_rel', string='Linked Integrations')
-    brand_ids = fields.Many2many('product.brand', string='Brand')
-    category_ids = fields.Many2many('product.category', string='Category')
+    # brand_ids = fields.Many2many('product.brand', string='Brand')
+    # category_ids = fields.Many2many('product.category', string='Category')
     quantity = fields.Integer('Quantity')
     peso = fields.Float('Weight (Kg)', digits=(16, 2), default=0)
     alto = fields.Float('Height (Cm)', digits=(16, 2), default=0)
@@ -1267,6 +1372,7 @@ class ProductProduct(models.Model):
                                   ('percent', 'Percent ( % )'),
                                   ('replace', 'Replace')], 'Price adjustment type', default='none')
     property_ids = fields.One2many('properties.values.variant', 'product_product_id', 'Properties')
+    omna_variant_id_related = fields.Char(related='product_template_attribute_value_ids.product_attribute_value_id.omna_attribute_value_id', store=True)
 
 
 
@@ -1280,73 +1386,60 @@ class ProductProduct(models.Model):
     # Es lo correspondiente a esta validación  if self._context.get('omna_import_info'):
     # Para los escenarios de importación implementados en el wizard 'omna.sync_variant_wizard'
     def create(self, vals_list):
-        if self._context.get('omna_import_info'):
-            product_tmpl_id = vals_list[0].get('product_tmpl_id') if isinstance(vals_list, list) else vals_list.get('product_tmpl_id')
-            template_id = self.env['product.template'].search([('id', '=', product_tmpl_id)])
-            omna_import_info = self._context.get('omna_import_info')
-
-            for item in vals_list:
-                if item.get('product_template_attribute_value_ids')[0][2]:
-                    # product_attribute_value = self.env['product.attribute.value'].search([('id', '=', item.get('product_template_attribute_value_ids')[0][2])])
-                    product_template_attribute_value = self.env['product.template.attribute.value'].search([('id', '=', item.get('product_template_attribute_value_ids')[0][2])])
-                    aux = [k for k, v in omna_import_info.items() if [x for x, y in v.items() if str(y[0]) == product_template_attribute_value.product_attribute_value_id.omna_attribute_value_id]]
-                    # aux = product_attribute.value_ids.filtered(lambda X: X.omna_attribute_value_id in str(value))
-                    item['omna_variant_id'] = aux[0]
-
-
+        # if self._context.get('omna_import_info'):
+        if self.env.context.get('from_omna_api'):
             return super(ProductProduct, self).create(vals_list)
 
-        elif (not self._context.get('synchronizing')) and (not self._context.get('import_file')):
+        else:
             product_tmpl_id = vals_list[0].get('product_tmpl_id') if isinstance(vals_list, list) else vals_list.get('product_tmpl_id')
             template_id = self.env['product.template'].search([('id', '=', product_tmpl_id)])
 
             for item in vals_list:
                 if isinstance(item, dict):
-                    if item.get('product_template_attribute_value_ids')[0][2]:
-                        if template_id:
-                            # rand_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=len(template_id.default_code)))
-                            rand_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=15))
-                            data = {
-                                "sku": item.get('default_code', rand_str),
-                                "price": item.get('lst_price', template_id.list_price),
-                                # "original_price": item.get('standard_price', 0),
-                                "package": {
-                                    "weight": item.get('peso', 0),
-                                    "height": item.get('alto', 0),
-                                    "length": item.get('longitud', 0),
-                                    "width": item.get('ancho', 0),
-                                    "content": "No definido"
-                                }
+                    # if item.get('product_template_attribute_value_ids')[0][2]:
+                    if template_id:
+                        # rand_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=len(template_id.default_code)))
+                        rand_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=15))
+                        data = {
+                            "sku": item.get('default_code', rand_str),
+                            "price": item.get('lst_price', template_id.list_price),
+                            # "original_price": item.get('standard_price', 0),
+                            "package": {
+                                "weight": item.get('peso', 0),
+                                "height": item.get('alto', 0),
+                                "length": item.get('longitud', 0),
+                                "width": item.get('ancho', 0),
+                                "content": "No definido"
                             }
-                            item['default_code'] = data.get('sku')
+                        }
+                        item['default_code'] = data.get('sku')
 
-                            response = self.post('products/%s/variants' % template_id.omna_product_id, {'data': data})
-                            if response.get('data').get('id'):
-                                product = response.get('data')
-                                item['product_tmpl_id'] = template_id.id
-                                item['omna_variant_id'] = product.get('id')
-                                # item['contenido'] = template_id.contenido
-                                item['peso'] = template_id.peso
-                                item['alto'] = template_id.alto
-                                item['longitud'] = template_id.longitud
-                                item['ancho'] = template_id.ancho
-                                # item['custom_description'] = template_id.contenido
+                        response = self.post('products/%s/variants' % template_id.omna_product_id, {'data': data})
+                        if response.get('data').get('id'):
+                            product = response.get('data')
+                            item['product_tmpl_id'] = template_id.id
+                            item['omna_variant_id'] = product.get('id')
+                            # item['contenido'] = template_id.contenido
+                            item['peso'] = template_id.peso
+                            item['alto'] = template_id.alto
+                            item['longitud'] = template_id.longitud
+                            item['ancho'] = template_id.ancho
+                            # item['custom_description'] = template_id.contenido
 
-                            else:
-                                raise exceptions.AccessError("Error trying to push variants to Omna's API.")
+                        else:
+                            raise exceptions.AccessError("Error trying to push variants to Omna's API.")
 
-            return super(ProductProduct, self).create(vals_list)
-
-        else:
             return super(ProductProduct, self).create(vals_list)
 
 
     def write(self, vals):
-        if (not self._context.get('synchronizing')) and (not self._context.get('import_file')):
+        if self.env.context.get('from_omna_api'):
+            return super(ProductProduct, self).write(vals)
+        else:
             for record in self:
                 if record.omna_variant_id:
                     data = {
-                        'price': -(record.price_extra) or 0,
+                        'price': record.price_extra,
                         'sku': vals.get('default_code', record.default_code),
                         'package': {'weight': vals.get('peso', record.peso),
                                     'height': vals.get('alto', record.alto),
@@ -1359,10 +1452,6 @@ class ProductProduct(models.Model):
                     response = self.post('products/%s/variants/%s' % (record.product_tmpl_id.omna_product_id, record.omna_variant_id), {'data': data})
                     if not response.get('data').get('id'):
                         raise exceptions.AccessError(_("Error trying to update product variant in Omna's API."))
-
-            return super(ProductProduct, self).write(vals)
-
-        else:
 
             return super(ProductProduct, self).write(vals)
 
@@ -1385,7 +1474,7 @@ class ProductProduct(models.Model):
         #             response = rec.delete('products/%s/variants/%s/link' % (rec.product_tmpl_id.omna_product_id, rec.omna_variant_id), {'data': data})
         #         except Exception as e:
         #             _logger.error(e)
-        #     record_id = self.env.ref('omna_lazada.delete_unlinked_variants_cron').id
+        #     record_id = self.env.ref('omna_mercado_libre.delete_unlinked_variants_cron').id
         #     data = {'active': True,
         #             'nextcall': (datetime.now() + timedelta(minutes=3)).strftime('%Y-%m-%d %H:%M:%S'),
         #             'user_id': self.env.uid,
@@ -1851,62 +1940,6 @@ class ProductCategory(models.Model):
     omna_category_id = fields.Char("Category identifier in OMNA", index=True)
     integration_id = fields.Many2one('omna.integration', 'OMNA Integration')
     integration_category_name = fields.Char(related='integration_id.name', readonly=False, store=True)
-    product_count_cat = fields.Integer('# Products', compute='_compute_product_count_cat')
-    product_category_ids = fields.Many2many(
-        comodel_name='product.template',
-        string='Product')
-
-    def _compute_product_count_cat(self):
-        for category in self:
-            category.product_count_cat = self.env['product.template'].search_count(
-                [('category_ids', '=', category.id)])
-
-    def view_product_category(self):
-        self.ensure_one()
-        return {
-            'name': 'Product',
-            'type': 'ir.actions.act_window',
-            'res_model': 'product.template',
-            'view_mode': 'kanban,tree,form,activity',
-            'domain': [('id', 'in', self.product_category_ids.ids)]
-
-        }
-
-
-
-class ProductBrand(models.Model):
-    _name = 'product.brand'
-    _inherit = 'product.brand'
-
-
-    @api.model
-    def _current_tenant(self):
-        current_tenant = self.env['omna.tenant'].search([('id', '=', self.env.user.context_omna_current_tenant.id)],
-                                                        limit=1)
-        if current_tenant:
-            return current_tenant.id
-        else:
-            return None
-
-    omna_tenant_id = fields.Many2one('omna.tenant', 'Tenant', default=_current_tenant)
-    omna_brand_id = fields.Char("Brand identifier in OMNA", index=True)
-    integration_id = fields.Many2one('omna.integration', 'OMNA Integration')
-    integration_brand_name = fields.Char(related='integration_id.name', readonly=False)
-    product_brand_ids = fields.Many2many(
-        comodel_name='product.template',
-        string='Product')
-
-
-    def view_product_brand(self):
-        self.ensure_one()
-        return {
-            'name': 'Product',
-            'type': 'ir.actions.act_window',
-            'res_model': 'product.template',
-            'view_mode': 'kanban,tree,form,activity',
-            'domain': [('id', 'in', self.product_brand_ids.ids)]
-
-        }
 
 
 
@@ -1970,6 +2003,4 @@ class ResPartner(models.Model):
 
     integration_id = fields.Many2one('omna.integration', 'OMNA Integration')
     omna_id = fields.Char("OMNA Customer Ref.")
-    prestashop_id = fields.Char("Prestashop Customer ID")
-
 
