@@ -25,7 +25,7 @@ class OmnaSyncIntegrations(models.TransientModel):
             integrations = []
             while requester:
                 response = self.get('integrations', {'limit': limit, 'offset': offset, 'with_details': 'true'})
-                data = list(filter(lambda d: 'Mercado Libre' in d['channel'], response.get('data')))
+                data = list(filter(lambda d: 'MercadoLibre' in d['channel'], response.get('data')))
                 integrations.extend(data)
                 if len(data) < limit:
                     requester = False
@@ -50,6 +50,7 @@ class OmnaSyncIntegrations(models.TransientModel):
                         'authorized': integration.get('authorized')
                     }
                     act_integration = integration_obj.with_context(synchronizing=True).create(data)
+            self.env.cr.commit()
             return {
                 'type': 'ir.actions.client',
                 'tag': 'reload'

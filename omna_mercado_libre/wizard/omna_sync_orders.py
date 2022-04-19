@@ -21,7 +21,7 @@ class OmnaSyncOrders(models.TransientModel):
 
     def sync_orders(self):
         try:
-            limit = 10
+            limit = 100
             offset = 0
             requester = True
             orders = []

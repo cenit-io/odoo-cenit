@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'OMNA Ecommerce Mercado Libre',
-    'version': '13.0.20220408',
+    'name': 'ECAPI Ecommerce Mercado Libre',
+    'version': '13.0.20220419',
     'category': 'Sales',
     'summary': 'Integration: Mercado Libre',
     'description': 'Integrate global online marketplaces & web-stores with Odoo. Sync products, inventory and orders from multiple channels',
@@ -68,6 +68,7 @@
         'wizard/omna_extra_import_view.xml',
         'wizard/omna_massive_product_opt.xml',
         'wizard/omna_massive_variant_opt.xml',
+        'wizard/wizard_stock_item_mov.xml',
 
 
         # initial data

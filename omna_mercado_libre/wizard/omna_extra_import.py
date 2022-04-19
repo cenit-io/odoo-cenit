@@ -201,7 +201,7 @@ class OmnaExtraImport(models.TransientModel):
         stock_items_obj = self.env['omna.stock.items']
         aux_list = []
         query_items = stock_items_obj.search([]).mapped('omna_id')
-        stock_location_id = self.env['stock.location'].search([('omna_id', '!=', False)])
+        stock_warehouse_id = self.env['stock.warehouse'].search([('integration_id', '=', self.integration_id.id)])
         result = [X for X in stock_items if X.get('id') not in query_items]
 
         for item in result:
@@ -221,7 +221,7 @@ class OmnaExtraImport(models.TransientModel):
             data = {
                 'omna_id': item.get('id', False),
                 'integration_id': self.integration_id.id,
-                'stock_location_id': stock_location_id.id,
+                'stock_warehouse_id': stock_warehouse_id.id,
                 'product_product_name': "%s [%s]" % (item.get('product').get('name'), item.get('product').get('variant').get('sku')),
                 'product_template_name': item.get('product').get('name'),
                 'product_product_omna_id': item.get('product').get('variant').get('id'),

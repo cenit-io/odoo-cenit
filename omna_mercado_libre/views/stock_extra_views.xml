@@ -10,7 +10,8 @@
                 <field name="product_product_sku"/>
                 <field name="count_on_hand"/>
                 <field name="integration_id"/>
-                <field name="stock_location_id"/>
+                <field name="stock_warehouse_id"/>
+                <button string='Actualizar' name="update_omna_stock" type="object" class="btn-primary"/>
             </tree>
         </field>
     </record>
@@ -26,7 +27,7 @@
                 <field name="product_product_omna_id"/>
                 <field name="product_template_omna_id"/>
                 <field name="integration_id"/>
-                <field name="stock_location_id"/>
+                <field name="stock_warehouse_id"/>
                 <field name="omna_id"/>
             </search>
         </field>
