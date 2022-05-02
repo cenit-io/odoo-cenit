@@ -9,7 +9,7 @@
                 <form string="Import Integrations">
                     <group>
                         <div>
-                            Wizard to import integrations from CENIT.
+                            Wizard to import integrations from ECAPI.
                         </div>
                     </group>
                     <footer>

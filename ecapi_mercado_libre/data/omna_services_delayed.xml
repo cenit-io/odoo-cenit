@@ -61,7 +61,7 @@
 
 <!--    Estos records son para implementar de forma automática y en background la importación de órdenes desde Cenit para Odoo-->
     <record id="all_resources_prestashop_cenit_import_cron" model="ir.cron">
-        <field name="name">Tarea para importar ordenes desde Cenit para Odoo</field>
+        <field name="name">Tarea para importar ordenes desde Ecapi para Odoo</field>
         <field name="model_id" ref="model_omna_sync_orders_wizard"/>
         <field name="state">code</field>
         <field name="code">model.background_import_orders()</field>
@@ -76,7 +76,7 @@
 
 <!--    Estos records son para implementar en background la actualizacion de los registros de inventario tanto en Cenit, como en Prestashop-->
     <record id="ecapi_mercado_libre_inventory_cron" model="ir.cron">
-        <field name="name">Tarea para sincronizar y ajustar los registros de inventario en Cenit y Prestashop</field>
+        <field name="name">Tarea para sincronizar y ajustar los registros de inventario en Ecapi y Mercado Libre</field>
         <field name="model_id" ref="model_omna_stock_items"/>
         <field name="state">code</field>
         <field name="code">model.update_omna_stock([])</field>

@@ -155,8 +155,8 @@ class OmnaExtraImport(models.TransientModel):
 
         for location in result:
             data = {
-                'name': location.get('name'),
-                'code': location.get('name'),
+                'name': location.get('name') + "[" + self.integration_id.integration_id + "]",
+                'code': self.integration_id.integration_id,
                 'omna_id': location.get('id'),
                 'integration_id': self.integration_id.id,
 
@@ -224,13 +224,15 @@ class OmnaExtraImport(models.TransientModel):
                 'omna_id': item.get('id', False),
                 'integration_id': self.integration_id.id,
                 'stock_warehouse_id': stock_warehouse_id.id,
-                'product_product_name': "%s [%s]" % (item.get('product').get('name'), item.get('product').get('variant').get('sku')),
+                'product_product_name': item.get('product').get('variant').get('name'),
                 'product_template_name': item.get('product').get('name'),
                 'product_product_omna_id': item.get('product').get('variant').get('id'),
                 'product_template_omna_id': item.get('product').get('id'),
+                'product_product_sku': item.get('product').get('variant').get('sku'),
+                'product_template_sku': item.get('product').get('sku'),
                 'count_on_hand': item.get('count_on_hand', 0),
+                'previous_quantity': item.get('count_on_hand', 0),
             }
-
             aux_list.append(data)
 
         stock_items_obj.create(aux_list)
@@ -351,7 +353,7 @@ class OmnaExtraImport(models.TransientModel):
 
 
     def import_order_statuses(self):
-        limit = 20
+        limit = 50
         offset = 0
         flag = True
         statuses = []

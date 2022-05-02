@@ -9,7 +9,7 @@
                 <form string="Import Categories">
                     <group>
                         <div>
-                            Wizard to import categories from CENIT.
+                            Wizard to import categories from ECAPI.
                         </div>
                     </group>
                     <group>

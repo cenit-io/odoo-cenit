@@ -9,7 +9,7 @@
                 <form string="Import Product Variants">
                     <group>
                         <div>
-                            Wizard to import product variants from CENIT.
+                            Wizard to import product variants from ECAPI.
                         </div>
                     </group>
                     <group>

@@ -1118,7 +1118,7 @@ class ProductTemplate(models.Model):
                                 domain=['&', '&', ('type_tax_use', '=', 'sale'), ('omna_tax_rule_id', '=', False), ('integration_id', '=', False)],
                                 default=lambda self: self.env.company.account_sale_tax_id)
     omna_tenant_id = fields.Many2one('omna.tenant', 'Tenant', default=_current_tenant)
-    omna_product_id = fields.Char("Product identifier in OMNA", index=True)
+    omna_product_id = fields.Char("Cenit ID", index=True)
     integration_ids = fields.One2many('omna.integration_product', 'product_template_id', 'Integrations')
     integrations_data = fields.Char('Integrations data')
     simple_product = fields.Boolean('Simple product', default=False)
@@ -1134,6 +1134,7 @@ class ProductTemplate(models.Model):
     locking_default_code = fields.Boolean('Overwrite package information in all variants', compute='_locking_default_code', store=True)
     omna_variant_qty = fields.Integer('Omna Variant Qty', default=0)
     property_ids = fields.One2many('properties.values.product', 'product_template_id', 'Properties')
+    remote_product_id = fields.Char("ML Product ID", index=True)
 
 
     def _create_variant_ids(self):
@@ -1554,6 +1555,29 @@ class SaleOrder(models.Model):
     doc_omna = fields.One2many('omna.sale.doc', 'sale_order_doc', string='Omna doc')
     amount_total = fields.Monetary(string='Total', store=True, readonly=True, compute='_amount_all', tracking=4)
     omna_remote_state = fields.Char("Estado de Orden")
+    #Ship Address
+    ship_first_name = fields.Char("Nombre")
+    ship_last_name = fields.Char("Apellidos")
+    ship_country = fields.Char("Pais")
+    ship_state = fields.Char("Estado")
+    ship_city = fields.Char("Ciudad")
+    ship_district = fields.Char("Distrito")
+    ship_town = fields.Char("Localidad / Barrio")
+    ship_phone = fields.Char("Telefono")
+    ship_zip_code = fields.Char("Codigo postal")
+    ship_address = fields.Char("Direccion")
+    #Bill Address
+    bill_first_name = fields.Char("Nombre")
+    bill_last_name = fields.Char("Apellidos")
+    bill_country = fields.Char("Pais")
+    bill_state = fields.Char("Estado")
+    bill_city = fields.Char("Ciudad")
+    bill_district = fields.Char("Distrito")
+    bill_town = fields.Char("Localidad / Barrio")
+    bill_phone = fields.Char("Telefono")
+    bill_zip_code = fields.Char("Codigo postal")
+    bill_address = fields.Char("Direccion")
+    order_payment_ids = fields.One2many('order.payment.items', 'order_id', string='Payments')
 
 
     def action_cancel(self):
@@ -1703,6 +1727,8 @@ class OmnaTask(models.Model):
     task_updated_at = fields.Datetime('Updated At')
     task_execution_ids = fields.One2many('omna.task.execution', 'task_id', 'Executions')
     task_notification_ids = fields.One2many('omna.task.notification', 'task_id', 'Notifications')
+    task_executions_text = fields.Html('Executions')
+    task_notifications_text = fields.Html('Notifications')
 
     def read(self, fields_read=None, load='_classic_read'):
         result = []
@@ -1724,24 +1750,49 @@ class OmnaTask(models.Model):
                 'task_updated_at': fields.Datetime.to_string(
                     dateutil.parser.parse(data.get('updated_at'), tzinfos=tzinfos).astimezone(pytz.utc)) if data.get(
                     'updated_at') else None,
-                'task_execution_ids': [],
-                'task_notification_ids': []
+                'task_executions_text': "",
+                'task_notifications_text': ""
             }
+
+            ul1 = '<ul class="list-group">'
             for execution in data.get('executions', []):
-                res['task_execution_ids'].append((0, 0, {
-                    'status': execution.get('status'),
-                    'exec_started_at': fields.Datetime.to_string(
+                started = fields.Datetime.to_string(
                         dateutil.parser.parse(execution.get('started_at'), tzinfos=tzinfos).astimezone(
-                            pytz.utc)) if execution.get('started_at') else None,
-                    'exec_completed_at': fields.Datetime.to_string(
+                            pytz.utc))
+                completed = fields.Datetime.to_string(
                         dateutil.parser.parse(execution.get('completed_at'), tzinfos=tzinfos).astimezone(
-                            pytz.utc)) if execution.get('completed_at') else None,
-                }))
+                            pytz.utc))
+                var_text = "Status: %s  Start Date: %s  Complete Date: %s \n" % (execution.get('status'), started, completed)
+                if execution.get('status') == "completed":
+                    ul1 += '<li class="list-group-item list-group-item-success">' + var_text + '</li>'
+                if execution.get('status') == "failed":
+                    ul1 += '<li class="list-group-item list-group-item-danger">' + var_text + '</li>'
+            ul1 += '</ul>'
+            res['task_executions_text'] = ul1
+                # res['task_execution_ids'].append((0, 0, {
+                #     'status': execution.get('status'),
+                #     'exec_started_at': fields.Datetime.to_string(
+                #         dateutil.parser.parse(execution.get('started_at'), tzinfos=tzinfos).astimezone(
+                #             pytz.utc)) if execution.get('started_at') else None,
+                #     'exec_completed_at': fields.Datetime.to_string(
+                #         dateutil.parser.parse(execution.get('completed_at'), tzinfos=tzinfos).astimezone(
+                #             pytz.utc)) if execution.get('completed_at') else None,
+                # }))
+
+            ul2 = '<ul class="list-group">'
             for notification in data.get('notifications', []):
-                res['task_notification_ids'].append((0, 0, {
-                    'status': notification.get('status'),
-                    'message': notification.get('message')
-                }))
+                # var_text = "Status: %s  Message: %s" % (notification.get('status'), notification.get('message'))
+                if data.get('status') == "completed":
+                    ul2 += '<li class="list-group-item list-group-item-success">' + notification.get('message') + '</li>'
+                if data.get('status') == "failed":
+                    ul2 += '<li class="list-group-item list-group-item-danger">' + notification.get('message') + '</li>'
+                # '<ul>\n' + '\n'.join(['<li>'.rjust(8) + var_text + '</li>' for name in elements]) + '\n</ul>'
+            ul2 += '</ul>'
+            res['task_notifications_text'] = ul2
+                # res['task_notification_ids'].append((0, 0, {
+                #     'status': notification.get('status'),
+                #     'message': notification.get('message')
+                # }))
             result.append(res)
 
         return result
@@ -2015,4 +2066,26 @@ class OrderStatuses(models.Model):
     integration_id = fields.Many2one('omna.integration', 'Integration')
     remote_id = fields.Char("ID")
     remote_name = fields.Char("Name")
+
+
+
+class EcapiImportLog(models.Model):
+    _name = 'ecapi.import.log'
+
+
+    integration_id = fields.Many2one('omna.integration', 'Integration')
+    message = fields.Text("Message")
+
+
+
+class OrderPaymentItems(models.Model):
+    _name = 'order.payment.items'
+
+
+    integration_id = fields.Many2one('omna.integration', string='Integration')
+    order_id = fields.Many2one('sale.order', string='Order ID', required=True, ondelete='cascade')
+    currency = fields.Char("Currency")
+    payment_method = fields.Char("Payment Method")
+    payment_ml_id = fields.Char("Payment ID")
+    total_paid_amount = fields.Float("Total Paid Amount")
 

@@ -36,7 +36,7 @@ class OmnaSettings(models.TransientModel):
     _name = 'omna.settings'
     _inherit = 'res.config.settings'
 
-    cenit_url = fields.Char('Cenit URL', default='https://cenit.io/app/ecapi-v1')
+    cenit_url = fields.Char('Ecapi URL', default='https://cenit.io/app/ecapi-v1')
     mercado_libre_base_url = fields.Char('Mercado Libre Base URL', default='https://sellercenter.lazada.com.my/')
     # lazada_ws_key = fields.Char('Mercado Libre WS Key')
 

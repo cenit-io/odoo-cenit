@@ -41,6 +41,11 @@
             <field name="priority">2</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
+<!--                <xpath expr="//form" position="attributes">-->
+<!--                    <attribute name="create">false</attribute>-->
+<!--                    <attribute name="edit">false</attribute>-->
+<!--                </xpath>-->
+
                 <field name="payment_term_id" position="after">
                     <field name="integration_name"/>
                 </field>
@@ -79,7 +84,48 @@
                 <xpath expr="//page[@name='order_lines']" position="after">
                     <page name="document" string="Document">
                         <group>
-                            <field name="doc_omna"/>
+                            <field name="doc_omna" nolabel="1"/>
+                        </group>
+                    </page>
+                    <page name="ship_bill_page" string="Ship and Bill Data">
+                        <group>
+                                <group name="ship_address" string="Ship Address">
+                                    <field name="ship_first_name" readonly="1"/>
+                                    <field name="ship_last_name" readonly="1"/>
+                                    <field name="ship_country" readonly="1"/>
+                                    <field name="ship_state" readonly="1"/>
+                                    <field name="ship_city" readonly="1"/>
+                                    <field name="ship_district" readonly="1"/>
+                                    <field name="ship_town" readonly="1"/>
+                                    <field name="ship_phone" readonly="1"/>
+                                    <field name="ship_zip_code" readonly="1"/>
+                                    <field name="ship_address" readonly="1"/>
+                                </group>
+                                <group name="bill_address" string="Bill Address">
+                                    <field name="bill_first_name" readonly="1"/>
+                                    <field name="bill_last_name" readonly="1"/>
+                                    <field name="bill_country" readonly="1"/>
+                                    <field name="bill_state" readonly="1"/>
+                                    <field name="bill_city" readonly="1"/>
+                                    <field name="bill_district" readonly="1"/>
+                                    <field name="bill_town" readonly="1"/>
+                                    <field name="bill_phone" readonly="1"/>
+                                    <field name="bill_zip_code" readonly="1"/>
+                                    <field name="bill_address" readonly="1"/>
+                                </group>
+                        </group>
+                    </page>
+                    <page name="order_payments" string="Payments">
+                        <group>
+                            <field name="order_payment_ids" nolabel="1" readonly="1">
+                                <tree>
+                                    <field name="payment_ml_id"/>
+                                    <field name="currency"/>
+                                    <field name="payment_method"/>
+                                    <field name="total_paid_amount"/>
+                                    <field name="integration_id"/>
+                                </tree>
+                            </field>
                         </group>
                     </page>
 
@@ -181,6 +227,7 @@
 
                 <xpath expr="//field[@name='categ_id']" position="after">
                     <field name="omna_product_id" attrs="{'invisible': [('is_product_variant', '=', True)]}"/>
+                    <field name="remote_product_id"/>
                 </xpath>
 
                 <xpath expr="//field[@name='categ_id']" position="replace">

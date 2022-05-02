@@ -103,7 +103,7 @@ class OmnaSyncProducts(models.TransientModel):
                     category_id = cat_br.get('value')
 
             categ_result = category_obj.search([('omna_category_id', '=', category_id)]) if category_id else False
-
+            remote_product_id = product.get('integration').get('product').get('remote_product_id')
             if act_product:
                 data = {
                     'name': product.get('name') or 'No definido',
@@ -116,7 +116,8 @@ class OmnaSyncProducts(models.TransientModel):
                     'longitud': product.get('package').get('length', 0),
                     'ancho': product.get('package').get('width', 0),
                     'overwrite': product.get('package').get('overwrite', False),
-                    'omna_variant_qty': product.get('variants', 0)
+                    'omna_variant_qty': product.get('variants', 0),
+                    'remote_product_id': remote_product_id
                 }
                 if (len(product.get('images'))):
                     url = product.get('images')[0]
@@ -161,7 +162,8 @@ class OmnaSyncProducts(models.TransientModel):
                     'longitud': product.get('package').get('length', 0),
                     'ancho': product.get('package').get('width', 0),
                     'overwrite': product.get('package').get('overwrite', False),
-                    'omna_variant_qty': product.get('variants', 0)
+                    'omna_variant_qty': product.get('variants', 0),
+                    'remote_product_id': remote_product_id
                 }
                 if len(product.get('images', [])):
                     url = product.get('images')[0]
