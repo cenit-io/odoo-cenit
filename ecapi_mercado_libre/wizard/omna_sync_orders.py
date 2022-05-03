@@ -21,7 +21,7 @@ class OmnaSyncOrders(models.TransientModel):
 
     def sync_orders(self):
         try:
-            limit = 5
+            limit = 100
             offset = 0
             requester = True
             orders = []
@@ -43,8 +43,8 @@ class OmnaSyncOrders(models.TransientModel):
                         response = self.get('integrations/%s/orders' % self.integration_id.integration_id, {'limit': limit, 'offset': offset, 'with_details': True})
                     data = response.get('data')
                     orders.extend(data)
-                    # if len(data) < limit:
-                    if offset >= 5:
+                    if len(data) < limit:
+                    # if offset >= 5:
                         requester = False
                     else:
                         offset += limit
@@ -125,6 +125,8 @@ class OmnaSyncOrders(models.TransientModel):
                                     'bill_phone': order.get('bill_address').get('phone'),
                                     'bill_zip_code': order.get('bill_address').get('zip_code'),
                                     'bill_address': ", ".join(order.get('bill_address').get('address')),
+                                    'doc_type': order.get('original_raw_data').get('address_billing').get('billing_info').get('doc_type'),
+                                    'doc_number': order.get('original_raw_data').get('address_billing').get('billing_info').get('doc_number'),
                                     'order_payment_ids': payment_list,
 
                                 }

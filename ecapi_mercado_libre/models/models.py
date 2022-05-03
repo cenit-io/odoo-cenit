@@ -1577,6 +1577,8 @@ class SaleOrder(models.Model):
     bill_phone = fields.Char("Telefono")
     bill_zip_code = fields.Char("Codigo postal")
     bill_address = fields.Char("Direccion")
+    doc_type = fields.Char("Tipo de Documento")
+    doc_number = fields.Char("Numero de Documento")
     order_payment_ids = fields.One2many('order.payment.items', 'order_id', string='Payments')
 
 

@@ -104,6 +104,8 @@
                                 <group name="bill_address" string="Bill Address">
                                     <field name="bill_first_name" readonly="1"/>
                                     <field name="bill_last_name" readonly="1"/>
+                                    <field name="doc_type" readonly="1"/>
+                                    <field name="doc_number" readonly="1"/>
                                     <field name="bill_country" readonly="1"/>
                                     <field name="bill_state" readonly="1"/>
                                     <field name="bill_city" readonly="1"/>
