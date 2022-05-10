@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'ECAPI Ecommerce Mercado Libre',
-    'version': '13.0.20220503',
+    'version': '13.0.20220510',
     'category': 'Sales',
     'summary': 'Integration: Mercado Libre',
     'description': 'Integrate global online marketplaces & web-stores with Odoo. Sync products, inventory and orders from multiple channels',

@@ -12,6 +12,7 @@
                 <field name="payment_method"/>
                 <field name="total_paid_amount"/>
                 <field name="integration_id"/>
+                <field name="status"/>
             </tree>
         </field>
     </record>

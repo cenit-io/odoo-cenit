@@ -77,15 +77,15 @@ class OmnaSyncOrders(models.TransientModel):
                     with_error = False
 
                     if not act_order:
-                        partner_related = self._create_partner(order.get('customer'))
-                        partner_invoice = self._create_partner(order.get('ship_address'))
-                        partner_shipping = self._create_partner(order.get('bill_address'))
+                        partner_related = self._create_partner(order.get('customer'), contact_type='contact')
+                        partner_invoice = self._create_partner(order.get('ship_address'), contact_type='delivery')
+                        partner_shipping = self._create_partner(order.get('bill_address'), contact_type='invoice')
 
                         if order.get('integration'):
                             integration = self.env['omna.integration'].search([('integration_id', '=', order.get('integration').get('id'))], limit=1)
                             warehouse_delivery = self.env['stock.warehouse'].search([('integration_id', '=', integration.id), ('omna_id', '!=', False)], limit=1)
                             payment_list = [(0, 0, {'currency': X.get('currency_id'), 'payment_method': X.get('payment_method'),
-                                     'payment_ml_id': str(X.get('id')), 'total_paid_amount': X.get('total_paid_amount'), 'integration_id': integration.id})for X in order.get('original_raw_data').get('payments')]
+                                     'payment_ml_id': str(X.get('id')), 'total_paid_amount': X.get('total_paid_amount'), 'integration_id': integration.id, 'status': X.get('status')})for X in order.get('original_raw_data').get('payments')]
                             if integration:
 
                                 data = {
@@ -171,20 +171,20 @@ class OmnaSyncOrders(models.TransientModel):
             raise exceptions.AccessError(e)
 
 
-    def _create_partner(self, dict_param):
+    def _create_partner(self, dict_param, contact_type):
         if not dict_param:
             return False
 
         data = {
             'name': '%s %s' % (dict_param.get('first_name'), dict_param.get('last_name')),
             'company_type': 'person',
-            'type': 'contact',
+            'type': contact_type,
             'email': dict_param.get('email'),
             'lang': self.env.user.lang,
             'integration_id': self.integration_id.id,
             'phone':  dict_param.get('phone'),
-            # 'country_id':  self.env['res.country'].search([('code', '=', dict_key.get('country').lower())]).id,
-            # 'omna_id':  str(dict_key.get('id'))
+            'street':  ", ".join(dict_param.get('address')),
+            'zip':  dict_param.get('zip_code')
         }
 
         # data['country_id'] = self.env.ref('base.ar').id
