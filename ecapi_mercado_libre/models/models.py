@@ -538,7 +538,7 @@ class ProductTemplate(models.Model):
 
 
     def write(self, vals):
-        if self.env.context.get('from_omna_api') or self.env.context.get('synchronizing'):
+        if self.env.context.get('from_omna_api') or self.env.context.get('synchronizing') or self.env.context.get('install_mode'):
             return super(ProductTemplate, self).write(vals)
         else:
             for record in self:
@@ -611,7 +611,7 @@ class ProductTemplate(models.Model):
                     category_id = cat_br.get('value')
 
             if category_id:
-                categ_result = self.env['product.category'].search([('omna_category_id', '=', category_id)])
+                categ_result = self.env['product.category'].search([('integration_id', '=', self.integration_ids.id), ('omna_category_id', '=', category_id)])
 
             if categ_result:
                 vals.update({'categ_id': categ_result.id})
@@ -973,7 +973,7 @@ class ProductProduct(models.Model):
 
 
     def write(self, vals):
-        if self.env.context.get('from_omna_api') or self.env.context.get('synchronizing'):
+        if self.env.context.get('from_omna_api') or self.env.context.get('synchronizing') or self.env.context.get('install_mode'):
             return super(ProductProduct, self).write(vals)
         else:
             for record in self:

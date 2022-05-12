@@ -159,6 +159,8 @@ class OmnaExtraImport(models.TransientModel):
                 'code': self.integration_id.integration_id,
                 'omna_id': location.get('id'),
                 'integration_id': self.integration_id.id,
+                'company_id': self.integration_id.company_id.id,
+                'partner_id': self.integration_id.company_id.partner_id.id,
 
             }
 

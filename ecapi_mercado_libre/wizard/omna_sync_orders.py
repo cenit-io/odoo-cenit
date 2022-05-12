@@ -175,6 +175,9 @@ class OmnaSyncOrders(models.TransientModel):
         if not dict_param:
             return False
 
+        street =  "País: {0}, Estado: {1}, Ciudad: {2}, Distrito: {3}, Barrio/Localidad: {4}, ".format(dict_param.get('country') or '-',
+                dict_param.get('state') or '-', dict_param.get('city') or '-', dict_param.get('district') or '-', dict_param.get('town') or '-')
+        street += ", ".join(dict_param.get('address', []))
         data = {
             'name': '%s %s' % (dict_param.get('first_name'), dict_param.get('last_name')),
             'company_type': 'person',
@@ -183,7 +186,7 @@ class OmnaSyncOrders(models.TransientModel):
             'lang': self.env.user.lang,
             'integration_id': self.integration_id.id,
             'phone':  dict_param.get('phone'),
-            'street':  ", ".join(dict_param.get('address')),
+            'street':  street,
             'zip':  dict_param.get('zip_code')
         }
 
