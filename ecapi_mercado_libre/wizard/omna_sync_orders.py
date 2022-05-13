@@ -21,7 +21,7 @@ class OmnaSyncOrders(models.TransientModel):
 
     def sync_orders(self):
         try:
-            limit = 100
+            limit = 5
             offset = 0
             requester = True
             orders = []
@@ -43,8 +43,8 @@ class OmnaSyncOrders(models.TransientModel):
                         response = self.get('integrations/%s/orders' % self.integration_id.integration_id, {'limit': limit, 'offset': offset, 'with_details': True})
                     data = response.get('data')
                     orders.extend(data)
-                    if len(data) < limit:
-                    # if offset >= 5:
+                    # if len(data) < limit:
+                    if offset >= 5:
                         requester = False
                     else:
                         offset += limit
@@ -78,8 +78,8 @@ class OmnaSyncOrders(models.TransientModel):
 
                     if not act_order:
                         partner_related = self._create_partner(order.get('customer'), contact_type='contact')
-                        partner_invoice = self._create_partner(order.get('ship_address'), contact_type='delivery')
-                        partner_shipping = self._create_partner(order.get('bill_address'), contact_type='invoice')
+                        partner_shipping  = self._create_partner(order.get('ship_address'), contact_type='delivery')
+                        partner_invoice = self._create_partner(order.get('bill_address'), contact_type='invoice')
 
                         if order.get('integration'):
                             integration = self.env['omna.integration'].search([('integration_id', '=', order.get('integration').get('id'))], limit=1)
@@ -100,8 +100,8 @@ class OmnaSyncOrders(models.TransientModel):
                                     'date_order': fields.Datetime.to_string(parse(order.get('last_import_date').split('T')[0])),
                                     'create_date': fields.Datetime.to_string(datetime.now(timezone.utc)),
                                     'partner_id': partner_related.id,
-                                    'partner_invoice_id': partner_invoice.id,
-                                    'partner_shipping_id': partner_shipping.id,
+                                    'partner_invoice_id': partner_invoice.id if partner_invoice else False,
+                                    'partner_shipping_id': partner_shipping.id if partner_shipping else False,
                                     'warehouse_id': warehouse_delivery.id,
                                     'pricelist_id': self.env.ref('product.list0').id,
 
