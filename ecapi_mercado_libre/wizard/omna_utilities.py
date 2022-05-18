@@ -22,7 +22,7 @@ class OmnaUtilities(models.TransientModel):
 
     omna_id = fields.Char('Omna Product ID')
     omna_ids = fields.Text('Omna Product IDs')
-    integration_id = fields.Many2one('omna.integration', 'Integration')
+    integration_id = fields.Many2one('omna.integration', 'Integration', domain=lambda self:[('company_id', '=', self.env.company.id)])
     function_selection = fields.Selection([('unlink_one_product', 'Unlink One Product'), ('unlink_multi_products', 'Unlink Multi Products'), ('delete_unlinked_products', 'Delete Unlinked Products'),
                                            ('delete_one_product', 'Delete One Product'), ('delete_multi_products', 'Delete Multi Products'), ('get_one_product', 'Get One Product'),
                                            ('test_cron_api', 'Test Cron Api'), ('native_prestashop_api', 'Native Prestashop Api')], string='Operation')

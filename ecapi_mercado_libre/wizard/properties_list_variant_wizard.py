@@ -73,7 +73,7 @@ class PropertiesListVariantWizard(models.TransientModel):
     # property_value_ids = fields.Many2many('properties.values', string='Property List')
     # property_value_primary_ids = fields.Many2many('properties.values', default=_get_property_value_primary_ids, string='Property Primary List')
     # omna_integration_id = fields.Many2one('omna.integration', 'Integration', required=True, default=_get_omna_integration_id)
-    omna_integration_id = fields.Many2one('omna.integration', 'Integration', required=True)
+    omna_integration_id = fields.Many2one('omna.integration', 'Integration', required=True, domain=lambda self:[('company_id', '=', self.env.company.id)])
     # category_id = fields.Many2one('product.category', 'Category', required=True, default=_get_category_id, domain=_get_category_domain)
     category_id = fields.Many2one('product.category', 'Category', required=True, domain=_get_category_domain)
     # property_value_ids = fields.Many2many('properties.values.variant', default=_get_property_value_ids, string='Property List')

@@ -14,7 +14,7 @@ class OmnaExportOrdersFromIntegrationWizard(models.TransientModel):
     _inherit = 'omna.api'
 
     integration_id = fields.Many2one('omna.integration', 'From Integration',
-                                     required=True)
+                                     required=True, domain=lambda self:[('company_id', '=', self.env.company.id)])
     target_integration_id = fields.Many2one('omna.integration',
                                             'Target Integration',
                                             help='If the target_integrarion_id '
@@ -23,7 +23,7 @@ class OmnaExportOrdersFromIntegrationWizard(models.TransientModel):
                                                  'all integrations that have '
                                                  'the order export workflow '
                                                  'defined with its scheduler '
-                                                 'disabled')
+                                                 'disabled', domain=lambda self:[('company_id', '=', self.env.company.id)])
 
     def export_orders(self):
         try:

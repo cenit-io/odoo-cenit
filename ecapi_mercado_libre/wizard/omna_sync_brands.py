@@ -20,7 +20,7 @@ class OmnaSyncBrands(models.TransientModel):
     sync_type = fields.Selection([('by_integration', 'By Integration'),
                                   ('by_external_id', 'By External Id')], 'Import Type',
                                  required=True, default='by_integration')
-    integration_id = fields.Many2one('omna.integration', 'Integration')
+    integration_id = fields.Many2one('omna.integration', 'Integration', domain=lambda self:[('company_id', '=', self.env.company.id)])
     brand_id = fields.Many2one('product.brand', 'Brand')
     quantity_max = fields.Integer('Max Quantity', default=100)
 

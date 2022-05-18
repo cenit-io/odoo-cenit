@@ -11,7 +11,7 @@ class OmnaSyncDocOrders(models.TransientModel):
     _name = 'omna.sync_doc_orders_wizard'
     _inherit = 'omna.api'
 
-    integration_id = fields.Many2one('omna.integration', 'Integration')
+    integration_id = fields.Many2one('omna.integration', 'Integration', domain=lambda self:[('company_id', '=', self.env.company.id)])
     number = fields.Char("Order Number")
     document_type = fields.Many2one('omna.doc.type', 'Document type', domain="[('sale_order.name', '=', number)]")
     # document_type = fields.Many2one('omna.doc.type', 'Document type')

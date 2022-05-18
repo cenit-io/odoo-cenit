@@ -20,7 +20,7 @@ class OmnaExternalImporter(models.TransientModel):
                                   ('brands', 'Brands'),
                                   ('products', 'Products'),
                                   ('orders', 'Orders')], 'Resource Type', required=True)
-    integration_id = fields.Many2one('omna.integration', 'Integration', required=True)
+    integration_id = fields.Many2one('omna.integration', 'Integration', required=True, domain=lambda self:[('company_id', '=', self.env.company.id)])
     limit_date = fields.Date('Limit Date')
 
 

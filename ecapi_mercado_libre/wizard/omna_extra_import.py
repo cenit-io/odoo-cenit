@@ -18,7 +18,7 @@ class OmnaExtraImport(models.TransientModel):
 
 
 
-    integration_id = fields.Many2one('omna.integration', 'Integration')
+    integration_id = fields.Many2one('omna.integration', 'Integration', domain=lambda self:[('company_id', '=', self.env.company.id)])
     function_selection = fields.Selection(
         [('import_attributes_values', 'Attributes / Values'), ('import_stock_warehouse', 'Stock Warehouse'),
          ('import_stock_items', 'Stock Items'), ('import_order_statuses', 'Order Statuses'), ('import_tax_rules', 'Tax Rules'),

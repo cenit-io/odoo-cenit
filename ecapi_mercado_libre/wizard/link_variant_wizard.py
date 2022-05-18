@@ -15,7 +15,7 @@ class LinkVariantWizard(models.TransientModel):
 
 
 
-    omna_integration_id = fields.Many2one('omna.integration', 'Integration to Link', required=True)
+    omna_integration_id = fields.Many2one('omna.integration', 'Integration to Link', required=True, domain=lambda self:[('company_id', '=', self.env.company.id)])
     state = fields.Selection([('linked', 'LINKED'), ('unlinked', 'UNLINKED')])
 
 

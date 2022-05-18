@@ -13,7 +13,7 @@ class OmnaExportOrderWizard(models.TransientModel):
     _name = 'omna.export_order_wzd'
     _inherit = 'omna.api'
 
-    integration_id = fields.Many2one('omna.integration', 'Integration')
+    integration_id = fields.Many2one('omna.integration', 'Integration', domain=lambda self:[('company_id', '=', self.env.company.id)])
 
     def export_order(self):
         try:

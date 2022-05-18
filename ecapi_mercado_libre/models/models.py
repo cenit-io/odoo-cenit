@@ -189,6 +189,31 @@ class OmnaIntegration(models.Model):
         }
 
 
+    # def read(self, fields=None, load='_classic_read'):
+    #     category_id = False
+    #     categ_result = False
+    #     vals = {}
+    #
+    #     if (len(self) <= 1) and self.integration_ids and not (self.categ_id.omna_category_id):
+    #         response = self.get('integrations/%s/products/%s' % (self.integration_ids.integration_id, self.omna_product_id), {'with_details': True})
+    #         data = response.get('data')
+    #         category_or_brands = data.get('integration').get('product').get('properties', [])
+    #         for cat_br in category_or_brands:
+    #             if (cat_br.get('id') == 'category_id') and (cat_br.get('options')):
+    #                 category_id = cat_br.get('value')
+    #
+    #         if category_id:
+    #             categ_result = self.env['product.category'].search([('integration_id', '=', self.integration_ids.id), ('omna_category_id', '=', category_id)])
+    #
+    #         if categ_result:
+    #             vals.update({'categ_id': categ_result.id})
+    #
+    #         self.with_context(from_omna_api=True).write(vals)
+    #         self.env.cr.commit()
+    #
+    #     return super(OmnaIntegration, self).read(fields=fields, load=load)
+
+
 
 class OmnaWebhook(models.Model):
     _name = 'omna.webhook'

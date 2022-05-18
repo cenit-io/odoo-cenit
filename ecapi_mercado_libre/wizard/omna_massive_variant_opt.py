@@ -20,7 +20,7 @@ class OmnaMassiveVariantOpt(models.TransientModel):
     _inherit = 'omna.api'
     _description = "Omna Massive Variant Operations"
 
-    integration_id = fields.Many2one('omna.integration', 'Integration')
+    integration_id = fields.Many2one('omna.integration', 'Integration', domain=lambda self:[('company_id', '=', self.env.company.id)])
     function_selection = fields.Selection(
         [('create_variants', 'Create Variants'), ('link_variants', 'Link Variants'),
          ('unlink_variants', 'Unlink Variants'), ('update_variants', 'Update Variants')], string='Operation')

@@ -17,7 +17,7 @@ class OmnaMassiveProductOpt(models.TransientModel):
     _inherit = 'omna.api'
     _description = "Omna Massive Product Operations"
 
-    integration_id = fields.Many2one('omna.integration', 'Integration')
+    integration_id = fields.Many2one('omna.integration', 'Integration', domain=lambda self:[('company_id', '=', self.env.company.id)])
     function_selection = fields.Selection(
         [('create_products', 'Create Products'), ('link_products', 'Link Products'),
          ('unlink_products', 'Unlink Products'), ('update_products', 'Update Products'),

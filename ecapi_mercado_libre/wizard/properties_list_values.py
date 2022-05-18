@@ -44,7 +44,7 @@ class PropertiesValuesWizard(models.TransientModel):
 
 
 
-    omna_integration_id = fields.Many2one('omna.integration', 'Integration to Link', required=True, default=_get_omna_integration_id)
+    omna_integration_id = fields.Many2one('omna.integration', 'Integration to Link', required=True, default=_get_omna_integration_id, domain=lambda self:[('company_id', '=', self.env.company.id)])
     property_value_ids = fields.Many2many('properties.values.product', default=_get_property_value_ids, string='Property List')
 
 

@@ -7,7 +7,7 @@ class OmnaUpdateProductInIntegration(models.TransientModel):
     _name = "omna.update.product.in.integration"
     _description = "Update Product ID in a Integration"
 
-    integration_id = fields.Many2one('omna.integration', 'Integrations')
+    integration_id = fields.Many2one('omna.integration', 'Integrations', domain=lambda self:[('company_id', '=', self.env.company.id)])
 
     def update_product(self):
         product = self.env['product.template'].search([('id', '=', self._context.get('active_id'))], limit=1)

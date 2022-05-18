@@ -18,7 +18,7 @@ class OmnaSyncVariant(models.TransientModel):
     _inherit = 'omna.api'
 
     sync_type = fields.Selection([('all', 'All Variants in the Integration'), ('by_product_id', 'All Variants of the Product')], 'Import Type', required=True, default='all')
-    integration_id = fields.Many2one('omna.integration', 'Integration')
+    integration_id = fields.Many2one('omna.integration', 'Integration', domain=lambda self:[('company_id', '=', self.env.company.id)])
     template_id = fields.Many2one('product.template', 'Product')
 
 

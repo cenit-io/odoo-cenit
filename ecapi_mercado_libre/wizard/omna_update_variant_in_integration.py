@@ -10,7 +10,7 @@ class OmnaUpdateVariantInIntegration(models.TransientModel):
 
     # external_id = fields.Char(u"External Product Id")
     # external_variant_id = fields.Char(u"External Variant Id")
-    integration_id = fields.Many2one('omna.integration', 'Integrations')
+    integration_id = fields.Many2one('omna.integration', 'Integrations', domain=lambda self:[('company_id', '=', self.env.company.id)])
 
     def update_variant(self):
         product = self.env['product.product'].search([('id', '=', self._context.get('active_id'))], limit=1)
