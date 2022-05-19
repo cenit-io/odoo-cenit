@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'ECAPI Ecommerce Mercado Libre',
-    'version': '13.0.20220518',
+    'version': '13.0.20220519',
     'category': 'Sales',
     'summary': 'Integration: Mercado Libre',
     'description': 'Integrate global online marketplaces & web-stores with Odoo. Sync products, inventory and orders from multiple channels',
@@ -11,7 +11,7 @@
     'support': 'support@cenit.io',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'sale', 'sale_management', 'board', 'stock', 'purchase', 'web_widget_numeric_step', 'web_widget_url_advanced'],
+    'depends': ['base', 'sale', 'sale_management', 'board', 'stock', 'purchase'],
 
     # always loaded
     'data': [
@@ -38,6 +38,7 @@
         'views/product_attribute_inherit_views.xml',
         'views/import_log.xml',
         'views/order_payment_views.xml',
+        'views/res_users_view.xml',
         # wizard
         'wizard/omna_sync_products_view.xml',
         'wizard/omna_sync_variant_view.xml',
@@ -82,6 +83,7 @@
     'qweb': [
         'static/src/xml/systray.xml',
         'static/src/xml/dashboard_template.xml',
+        'static/src/xml/numeric_step.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

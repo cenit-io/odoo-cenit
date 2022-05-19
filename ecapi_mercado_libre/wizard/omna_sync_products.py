@@ -4,12 +4,18 @@ import requests
 import base64
 import json
 import logging
+import threading
+import time
 from datetime import *
 from odoo.exceptions import ValidationError
 # from odoo import models, api, exceptions, fields
 from odoo import models, fields, api, exceptions, tools, _
 
 _logger = logging.getLogger(__name__)
+
+maxthreads = 10
+sema = threading.Semaphore(value=maxthreads)
+threads = list()
 
 
 class OmnaSyncProducts(models.TransientModel):
@@ -36,24 +42,48 @@ class OmnaSyncProducts(models.TransientModel):
         pass
 
 
+    def function_aux(self, limit, offset, integration_id, products):
+        sema.acquire()
+        _logger.info("Starting process %s" % (offset,))
+        with api.Environment.manage():
+            # As this function is in a new thread, I need to open a new cursor, because the old one may be closed
+            new_cr = self.pool.cursor()
+            self = self.with_env(self.env(cr=new_cr))
+            response = self.get('integrations/%s/products' % (integration_id,), {'limit': limit, 'offset': offset})
+            data = response.get('data')
+            products.extend(data)
+            new_cr.close()
+        sema.release()
+
     # Importacion
 
     def by_integration_import_products(self, param_integration_id):
         limit = 70
-        offset = 0
-        flag = True
+        # offset = 0
+        # flag = True
         products = []
         create_list = []
 
-        while flag:
-            # response = self.get('integrations/%s/products' % (self.integration_id.integration_id,), {'limit': limit, 'offset': offset, 'with_details': True})
-            response = self.get('integrations/%s/products' % (param_integration_id,), {'limit': limit, 'offset': offset})
-            data = response.get('data')
-            products.extend(data)
-            if len(data) < limit:
-                flag = False
-            else:
-                offset += limit
+        response_temp = self.get('integrations/%s/products' % self.integration_id.integration_id, {'limit': 5, 'offset': 0})
+        total_products = response_temp.get('pagination').get('total')
+
+        for item in list(range(0, total_products, limit)):
+            threaded_api_request = threading.Thread(target=self.function_aux, args=([limit, item, self.integration_id.integration_id, products]))
+            threaded_api_request.start()
+            threads.append(threaded_api_request)
+
+        for item in threads:
+            item.join()
+
+        # while flag:
+        #     # response = self.get('integrations/%s/products' % (self.integration_id.integration_id,), {'limit': limit, 'offset': offset, 'with_details': True})
+        #     response = self.get('integrations/%s/products' % (param_integration_id,), {'limit': limit, 'offset': offset})
+        #     data = response.get('data')
+        #     products.extend(data)
+        #     if len(data) < limit:
+        #         flag = False
+        #     else:
+        #         offset += limit
 
         product_obj = self.env['product.template']
         category_obj = self.env['product.category']

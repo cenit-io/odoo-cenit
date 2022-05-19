@@ -58,9 +58,11 @@ class OmnaSyncCategories(models.TransientModel):
 
             for item in list(range(0, total_categories, limit)):
                 threaded_api_request = threading.Thread(target=self.function_aux, args=([limit, item, self.integration_id.integration_id, categories]))
-                threads.append(threaded_api_request)
                 threaded_api_request.start()
+                threads.append(threaded_api_request)
 
+            for item in threads:
+                item.join()
             # while requester:
             #     response = self.get('integrations/%s/categories' % self.integration_id.integration_id, {'limit': limit, 'offset': offset, 'with_details': True})
             #     data = response.get('data')
@@ -70,7 +72,7 @@ class OmnaSyncCategories(models.TransientModel):
             #     else:
             #         offset += limit
 
-            time.sleep(300)
+            # time.sleep(300)
             category_obj = self.env['product.category']
             categories.sort(key=lambda x: x.get("name"))
             for category in categories:
