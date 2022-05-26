@@ -162,7 +162,7 @@ class OmnaIntegration(models.Model):
     def authorize(self):
         self.ensure_one()
         omna_api_url = self.env['ir.config_parameter'].sudo().get_param(
-            "ecapi_mercado_libre.cenit_url", default='https://cenit.io/app/ecapi-v1'
+            "ecapi_mercado_libre.cenit_url", default='https://server.cenit.io/app/ecapi_v1_prod'
         )
         redirect = self.env['ir.config_parameter'].sudo().get_param(
             'web.base.url') + '/omna/integrations/authorize/' + self.integration_id

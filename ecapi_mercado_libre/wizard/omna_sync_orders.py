@@ -11,7 +11,7 @@ from dateutil.parser import parse
 
 _logger = logging.getLogger(__name__)
 
-maxthreads = 10
+maxthreads = 5
 sema = threading.Semaphore(value=maxthreads)
 threads = list()
 

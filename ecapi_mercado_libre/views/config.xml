@@ -6,12 +6,12 @@
             <field name="name">Omna settings</field>
             <field name="model">omna.settings</field>
             <field name="arch" type="xml">
-                <form string="Configure Omnab"
+                <form string="Configure Omna"
                       class="oe_form_configuration">
                     <div>
                         <group string="Connection settings">
                             <field name="cenit_url"
-                                   placeholder="Ecapi API url (Default: 'https://cenit.io/app/ecapi-v1')"/>
+                                   placeholder="Ecapi API url (Default: 'https://server.cenit.io/app/ecapi_v1_prod')"/>
                             <field name="mercado_libre_base_url"
                                    placeholder="Mercado Libre base url (Default: 'https://sellercenter.lazada.com.my')"/>
 <!--                            <field name="lazada_ws_key"-->
@@ -53,7 +53,7 @@
                     </p>
                     <group>
                         <field name="cenit_url"
-                               placeholder="Ecapi API url (Default: 'https://cenit.io/app/ecapi-v1')"/>
+                               placeholder="Ecapi API url (Default: 'https://server.cenit.io/app/ecapi_v1_prod')"/>
                     </group>
                     <footer>
                         <button string="Apply" type="object" name="execute"

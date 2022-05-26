@@ -195,7 +195,7 @@ class OmnaApi(models.AbstractModel):
         tenant = self.env['omna.tenant'].search([('id', '=', self.env.user.context_omna_current_tenant.id)], limit=1)
         config = {
             'omna_api_url': icp.sudo().get_param(
-                "ecapi_mercado_libre.cenit_url", default='https://cenit.io/app/ecapi_v1'
+                "ecapi_mercado_libre.cenit_url", default='https://server.cenit.io/app/ecapi_v1_prod'
             ),
             'cenit_user_secret': tenant.secret,
             'cenit_user_token': tenant.token,

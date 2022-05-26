@@ -13,7 +13,7 @@ from odoo import models, fields, api, exceptions, tools, _
 
 _logger = logging.getLogger(__name__)
 
-maxthreads = 10
+maxthreads = 2
 sema = threading.Semaphore(value=maxthreads)
 threads = list()
 
@@ -59,8 +59,8 @@ class OmnaSyncProducts(models.TransientModel):
 
     def by_integration_import_products(self, param_integration_id):
         limit = 70
-        # offset = 0
-        # flag = True
+        offset = 0
+        flag = True
         products = []
         create_list = []
 

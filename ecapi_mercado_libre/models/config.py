@@ -36,7 +36,7 @@ class OmnaSettings(models.TransientModel):
     _name = 'omna.settings'
     _inherit = 'res.config.settings'
 
-    cenit_url = fields.Char('Ecapi URL', default='https://cenit.io/app/ecapi-v1')
+    cenit_url = fields.Char('Ecapi URL', default='https://server.cenit.io/app/ecapi_v1_prod')
     mercado_libre_base_url = fields.Char('Mercado Libre Base URL', default='https://sellercenter.lazada.com.my/')
     # lazada_ws_key = fields.Char('Mercado Libre WS Key')
 
@@ -70,13 +70,13 @@ class OnmaSignInSettings(models.TransientModel):
     _name = "omna.signin.settings"
 
     def _default_url(self):
-        return self.env['ir.config_parameter'].sudo().get_param("ecapi_mercado_libre.cenit_url", 'https://cenit.io/app/ecapi-v1')
+        return self.env['ir.config_parameter'].sudo().get_param("ecapi_mercado_libre.cenit_url", 'https://server.cenit.io/app/ecapi_v1_prod')
 
     cenit_url = fields.Char('ECAPI BASE URL', default=_default_url)
 
     def execute(self):
         redirect = self.env['ir.config_parameter'].sudo().get_param('web.base.url') + '/omna/sign_in/'
-        self.env['ir.config_parameter'].sudo().set_param("ecapi_mercado_libre.cenit_url", self.cenit_url or 'https://cenit.io/app/ecapi-v1')
+        self.env['ir.config_parameter'].sudo().set_param("ecapi_mercado_libre.cenit_url", self.cenit_url or 'https://server.cenit.io/app/ecapi_v1_prod')
         return {
             "type": "ir.actions.act_url",
             "url": '%s?%s' % (self.cenit_url + '/sign_in', werkzeug.urls.url_encode({'redirect_uri': redirect})),
