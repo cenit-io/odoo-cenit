@@ -182,5 +182,21 @@ class OmnaUtilities(models.TransientModel):
 
 
     def native_prestashop_api(self):
-        pass
+        # lolo = base64.b64encode(open("C:\\Users\\Administrador\\Desktop\\Mejoras TRM\\invoice.pdf", 'rb').read())
+        #
+        # data = {
+        #     "data": {
+        #         "path": "/packs/5330184278/fiscal_documents",
+        #         "method": "POST",
+        #         "headers": {"Content-Type": "multipart/form-data"},
+        #         "file": {
+        #             "content": lolo,
+        #             "contentType": "application/pdf",
+        #             "filename": "LOLO.pdf"
+        #         }
+        #     }
+        # }
+        # response = self.post('integrations/%s/call/native/service' % (self.integration_id.integration_id,), data)
+
+        return True
 

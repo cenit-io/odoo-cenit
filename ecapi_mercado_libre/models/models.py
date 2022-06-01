@@ -1952,3 +1952,54 @@ class OrderPaymentItems(models.Model):
     total_paid_amount = fields.Float("Total Paid Amount")
     status = fields.Char("Payment Status")
 
+
+
+class AccountMove(models.Model):
+    _name = 'account.move'
+    _inherit = 'account.move'
+
+
+
+    def _default_integration(self):
+        self.ensure_one()
+        order = self.env['sale.order'].search([('name', '=', self.invoice_origin)])
+        self.integration_id = order.integration_id.id
+
+
+
+    integration_id = fields.Many2one('omna.integration', 'Integration', compute='_default_integration')
+
+
+
+    def action_upload_invoice_ml(self):
+        nowTime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        pdf = self.env.ref('account.account_invoices').sudo().render_qweb_pdf(self.ids)
+        content = base64.b64encode(pdf[0])
+        order = self.env['sale.order'].search([('name', '=', self.invoice_origin)])
+        # https://cenit.io/app/ecapi-v1/integrations/{integration_id}/orders/{number}
+        path = 'integrations/{0}/orders/{1}'.format(self.integration_id.integration_id, order.omna_order_reference)
+        order_response = self.env['omna.api'].get(path)
+        pack_number = order_response.get('data').get('original_raw_data').get('pack_id')
+        if pack_number is None:
+            pack_number = order_response.get('data').get('number')
+
+
+        params = {
+            "data": {
+                "path": "/packs/{0}/fiscal_documents".format(pack_number),
+                "method": "POST",
+                "headers": {"Content-Type": "multipart/form-data"},
+                "file": {
+                    "content": content,
+                    "contentType": "application/pdf",
+                    "filename": self.name + ".pdf" if len(self.name) > 1 else "Invoice_Odoo_" + nowTime + ".pdf"
+                }
+            }
+        }
+        url = 'integrations/{0}/call/native/service'.format(self.integration_id.integration_id)
+        response = self.env['omna.api'].post(url, params)
+        if response.get('data').get('ids', False):
+            self.env.user.notify_channel('info', _("The document was uploaded to marketplace."), _("Information"), True)
+        if response.get('data').get('code', False):
+            self.env.user.notify_channel('danger', _("The order already has a document associated."), _("Error"), True)
+        return True

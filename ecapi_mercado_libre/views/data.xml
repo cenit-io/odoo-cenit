@@ -731,4 +731,30 @@
         </field>
     </record>
 
+
+
+    <!-- Update account invoice !-->
+    <record model="ir.ui.view" id="account_invoice_form_ecapi">
+        <field name="name">Account Invoice</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="sale.account_invoice_form"/>
+        <field name="arch" type="xml">
+            <data>
+
+                <xpath expr="//field[@name='company_id']" position="after">
+                    <field name="integration_id"/>
+                </xpath>
+
+                <xpath expr="//button[@id='account_invoice_payment_btn']" position="after">
+                   <button name="action_upload_invoice_ml" id="upload_invoice_ml_btn"
+                                type="object" class="oe_highlight"
+                                attrs="{'invisible': [('integration_id', '=', False)]}"
+                                string="Upload Invoice"
+                                groups="account.group_account_invoice"/>
+               </xpath>
+
+            </data>
+        </field>
+    </record>
+
 </odoo>
