@@ -254,5 +254,5 @@ License
     redistribute and/or modify the Cenit Integrations Odoo Client according to
     the terms of the license.
 
-.. _Cenit IO: https://cenit.io
+.. _Cenit IO: https://server.cenit.io
 .. _the repository: https://github.com/cenit-io/odoo-cenit

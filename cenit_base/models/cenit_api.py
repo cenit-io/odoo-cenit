@@ -249,7 +249,7 @@ class CenitApi(models.AbstractModel):
 
         try:
             _logger.info("[DEL] %s ? {%s}", url, headers)
-            """https://cenit.io/json_data_type/5fa194ffb90e8128fe006b8d/simple_delete_data_type"""
+            """https://server.cenit.io/json_data_type/5fa194ffb90e8128fe006b8d/simple_delete_data_type"""
             # r = requests.delete(url, headers=headers)
 
             options = {
@@ -288,7 +288,7 @@ class CenitApi(models.AbstractModel):
 
         config = {
             'cenit_url': icp.get_param(
-                "odoo_cenit.cenit_url", default='https://cenit.io'
+                "odoo_cenit.cenit_url", default='https://server.cenit.io'
             ),
             'cenit_user_key': icp.get_param(
                 "odoo_cenit.cenit_user_key", default=None

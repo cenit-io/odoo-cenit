@@ -25,7 +25,7 @@
     "version": "0.15.1",
     "application": True,
     "author": "Cenit IO",
-    "website": "https://cenit.io",
+    "website": "https://server.cenit.io",
     # ~ "license": "LGPL-3",
     "category": "Extra Tools",
     "summary": "Odoo, Cenit, Integration, Connector",
