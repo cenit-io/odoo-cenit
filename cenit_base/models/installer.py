@@ -187,27 +187,15 @@ class CollectionInstaller(models.TransientModel):
     def _install_connections(self, values):
         connection_pool = self.env['cenit.connection']
         names_pool = self.env['cenit.namespace']
-        cenit_api = self.env['cenit.api']
 
         for connection in values:
-            if connection.get('id'):
-                path = "/setup/connection/%s.json" % (connection.get('id'),)
-                rc = cenit_api.get(path)
-                conn_data = {
-                    'cenitID': rc.get('id'),
-                    'name': rc.get('name'),
-                    'url': rc.get('url'),
-                    'key': rc.get('number'),
-                    'token': rc.get('token'),
-                }
-            else:
-                conn_data = {
-                    'cenitID': connection.get('id'),
-                    'name': connection.get('name'),
-                    'url': connection.get('url'),
-                    'key': connection.get('number'),
-                    'token': connection.get('token'),
-                }
+            conn_data = {
+                'cenitID': connection.get('id'),
+                'name': connection.get('name'),
+                'url': connection.get('url'),
+                'key': connection.get('number'),
+                'token': connection.get('token'),
+            }
 
             domain = [('name', '=', connection.get('namespace'))]
             rc = names_pool.search(domain)
@@ -695,17 +683,17 @@ class CollectionInstaller(models.TransientModel):
         if params:
             key = list(params.keys())[0]
             if key == 'id':
-                path = "/setup/collection.json"
+                path = "/setup/collection"
                 path = "%s/%s" % (path, params.get(key))
             else:
-                path = "/setup/collection.json?"
+                path = "/setup/collection?"
                 path = "%s%s=%s" % (path, key, params.get(key))
 
         rc = cenit_api.get(path)
         if isinstance(rc, list):
             rc = rc[0]
         data = rc
-        if 'collections' in data and len(data['collections']):
+        if 'collections' in data:
             data = data['collections'][0]
 
         if not params:

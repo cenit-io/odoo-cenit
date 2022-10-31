@@ -25,7 +25,7 @@
     "version": "0.13.1",
     "application": True,
     "author": "Cenit IO",
-    "website": "https://cenit.io",
+    "website": "https://server.cenit.io",
     # ~ "license": "LGPL-3",
     "category": "Extra Tools",
     "summary": "Odoo, Cenit, Integration, Connector",
@@ -34,7 +34,7 @@
     """,
     "depends": ["base", "base_automation"],
     "external_dependencies": {
-        "python": ["inflect", "pyasn1", "OpenSSL", "ndg"]
+        "python": ["inflect", "pyasn1", "ndg"]
     },
     "data": [
         "security/ir.model.access.csv",

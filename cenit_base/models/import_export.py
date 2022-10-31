@@ -139,8 +139,7 @@ class ImportExport(models.TransientModel):
             for trigger in data['triggers']:
                 vals = {'data_type': dt.id, 'name': trigger['name'], 'cron_lapse': trigger['cron_lapse'],
                         'cron_units': trigger['cron_units'], 'cron_restrictions': trigger['cron_restrictions'],
-                        # 'cron_name': trigger['cron_name']
-                        }
+                        'cron_name': trigger['cron_name']}
                 trigger_pool.create(vals)
 
             for line in data['lines']:

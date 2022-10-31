@@ -19,7 +19,7 @@
                     </header>
                     <div>
                         <group string="Connection settings">
-                            <field name="cenit_url" placeholder="Your Cenit's url (Default: 'https://cenit.io')"/>
+                            <field name="cenit_url" placeholder="Your Cenit's url (Default: 'https://server.cenit.io')"/>
                             <field name="cenit_user_key" placeholder="Your Cenit's user key"/>
                             <field name="cenit_user_token" placeholder="Your Cenit's user token" password="True"/>
                         </group>
@@ -170,7 +170,7 @@
                         Set the credentials given to your Cenit tenant.
                     </p>
                     <group>
-                        <field name="cenit_url" placeholder="Your Cenit's url (Default: 'https://cenit.io')"/>
+                        <field name="cenit_url" placeholder="Your Cenit's url (Default: 'https://server.cenit.io')"/>
                         <field name="cenit_user_key" placeholder="Your Cenit's user key"/>
                         <field name="cenit_user_token" placeholder="Your Cenit's user token" password="True"/>
                     </group>
