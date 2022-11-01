@@ -155,9 +155,10 @@ class CenitWebhook(models.Model):
 
     @api.depends('method')
     def _compute_purpose(self):
-        self.purpose = {
-            'get': 'send'
-        }.get(self.method, 'receive')
+        for rec in self:
+            rec.purpose = {
+                'get': 'send'
+            }.get(rec.method, 'receive')
 
     _name = 'cenit.webhook'
     _inherit = 'cenit.api'
